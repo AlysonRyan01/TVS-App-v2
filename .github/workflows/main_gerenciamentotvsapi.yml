@@ -22,11 +22,14 @@ jobs:
         with:
           dotnet-version: '9.x'
 
+      - name: Restore dependencies
+        run: dotnet restore "Src/TVS-App.Api/TVS-App.Api.csproj"
+
       - name: Build API project
-        run: dotnet build "Src/TVS-App.Api/TVS-App.Api.csproj" --configuration Release
+        run: dotnet build "Src/TVS-App.Api/TVS-App.Api.csproj" --configuration Release --no-restore
 
       - name: Publish API project
-        run: dotnet publish "Src/TVS-App.Api/TVS-App.Api.csproj" -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish "Src/TVS-App.Api/TVS-App.Api.csproj" -c Release -o ${{env.DOTNET_ROOT}}/myapp --no-build
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -46,6 +49,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
       
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -53,5 +57,5 @@ jobs:
         with:
           app-name: 'gerenciamentotvsapi'
           slot-name: 'Production'
-          package: .
+          package: ${{env.DOTNET_ROOT}}/myapp
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_1962AAF89FE64FF6B6FB006734DA5560 }}
