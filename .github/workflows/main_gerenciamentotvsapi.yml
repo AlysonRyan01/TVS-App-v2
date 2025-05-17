@@ -54,5 +54,5 @@ jobs:
         with:
           app-name: 'gerenciamentotvsapi'
           slot-name: 'Production'
-          package: .net-api
+          package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_1962AAF89FE64FF6B6FB006734DA5560 }}
