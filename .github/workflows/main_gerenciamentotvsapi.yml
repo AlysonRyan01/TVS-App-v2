@@ -29,13 +29,13 @@ jobs:
         run: dotnet build "Src/TVS-App.Api/TVS-App.Api.csproj" --configuration Release --no-restore
 
       - name: Publish API project
-        run: dotnet publish "Src/TVS-App.Api/TVS-App.Api.csproj" -c Release -o ${{env.DOTNET_ROOT}}/myapp --no-build
+        run: dotnet publish "Src/TVS-App.Api/TVS-App.Api.csproj" -c Release -o ${{ github.workspace }}/myapp --no-build
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ${{ github.workspace }}/myapp
 
   deploy:
     runs-on: ubuntu-latest
@@ -49,7 +49,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ${{ github.workspace }}/myapp
       
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -57,5 +57,5 @@ jobs:
         with:
           app-name: 'gerenciamentotvsapi'
           slot-name: 'Production'
-          package: ${{env.DOTNET_ROOT}}/myapp
+          package: ${{ github.workspace }}/myapp
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_1962AAF89FE64FF6B6FB006734DA5560 }}
