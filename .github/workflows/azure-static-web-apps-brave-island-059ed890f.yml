@@ -25,8 +25,7 @@ jobs:
       - name: Publish Blazor WebAssembly
         run: dotnet publish ./Src/TVSApp.Web/TVSApp.Web.csproj -c Release -o publish
 
-      - name: Copiar staticwebapp.config.json para o diretório de saída
-        run: cp ./Src/TVSApp.Web/staticwebapp.config.json ./publish/wwwroot/
+      # Etapa de cópia removida!
 
       - name: Deploy to Azure Static Web Apps
         id: builddeploy
