@@ -1,0 +1,48 @@
+@using TVS_App.Application.Commands.ServiceOrderCommands
+@using TVS_App.Domain.Entities
+@using TVSApp.Web.Handlers
+
+
+@if (_isProcessing)
+{
+    <MudProgressCircular Color="Color.Primary" Size="Size.Medium" Indeterminate="true" />
+}
+else
+{
+    <MudButton OnClick="AddPurchased" Disabled="_isProcessing" EndIcon="@Icons.Material.Filled.Done" Variant="Variant.Filled" Color="Color.Primary">
+        Comprado
+    </MudButton>
+}
+
+@code {
+    [Parameter] public IMudDialogInstance DialogInstance { get; set; }
+    [Parameter] public ServiceOrder ServiceOrder { get; set; } = null!;
+    [Inject] public ServiceOrderHandler ServiceOrderHandler { get; set; } = null!;
+    [Inject] public ISnackbar Snackbar { get; set; } = null!;
+
+    private bool _isProcessing = false;
+    public async Task AddPurchased()
+    {
+        try
+        {
+            _isProcessing = true;
+            var result = await ServiceOrderHandler.AddPurchasedPart(new GetServiceOrderByIdCommand { Id = ServiceOrder.Id });
+            if (result.IsSuccess)
+            {
+                Snackbar.Add(result.Message ?? "Compra adicionada com sucesso!", Severity.Success);
+                DialogInstance?.Close(DialogResult.Ok(true));
+            }
+            else
+                Snackbar.Add(result.Message?? "Erro ao adicionar a compra da peça", Severity.Error);
+            
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+}

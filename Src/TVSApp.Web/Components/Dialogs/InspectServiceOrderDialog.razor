@@ -1,0 +1,144 @@
+@using TVS_App.Domain.Entities
+@using TVS_App.Domain.Enums
+@using TVSApp.Web.Extensions
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h5" Align="Align.Center" Color="Color.Primary" Class="font-extrabold">
+            DETALHES DA ORDEM DE SERVIÇO - OS @ServiceOrder.Id
+        </MudText>
+    </TitleContent>
+
+    <DialogContent>
+
+        <!-- EMPRESA -->
+        <MudPaper Class="p-4 mb-4" Elevation="0" Style="border-bottom: 1px solid #dfdfdf;">
+            <MudText Typo="Typo.h6" Color="Color.Primary" Class="font-bold uppercase mb-2">Empresa</MudText>
+            <MudTextField T="string" Label="Empresa" Value="@ServiceOrder.Enterprise.GetDisplayName()" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+        </MudPaper>
+
+        <!-- DADOS DO CLIENTE -->
+        <MudPaper Class="p-4 mb-4" Elevation="0" Style="border-bottom: 1px solid #dfdfdf;">
+            <MudText Typo="Typo.h6" Color="Color.Primary" Class="font-bold uppercase mb-4">Dados do Cliente</MudText>
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Nome" Value="@ServiceOrder.Customer.Name.CustomerName" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Telefone 1" Value="@ServiceOrder.Customer.Phone.CustomerPhone" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Endereço" Value="@ServiceOrder.Customer.Address.ToString().ToUpper()" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Telefone 2" Value="@ServiceOrder.Customer.Phone2.CustomerPhone" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <!-- DADOS DO PRODUTO -->
+        <MudPaper Class="p-4 mb-4" Elevation="0" Style="border-bottom: 1px solid #dfdfdf;">
+            <MudText Typo="Typo.h6" Color="Color.Primary" Class="font-bold uppercase mb-4">Dados do Produto</MudText>
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Tipo" Value="@ServiceOrder.Product.Type.GetDisplayName()" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Marca" Value="@ServiceOrder.Product.Brand" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Modelo" Value="@ServiceOrder.Product.Model" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Série" Value="@ServiceOrder.Product.SerialNumber" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField T="string" Label="Defeito" Value="@ServiceOrder.Product.Defect" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Data de Entrada" Value="@ServiceOrder.EntryDate.ToString("dd/MM/yyyy")" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Data da Compra" Value="@ServiceOrder.PurchasePartDate?.ToString("dd/MM/yyyy")" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Prateleira" Value="@ServiceOrder.Product.Location" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Acessórios" Value="@ServiceOrder.Product.Accessories" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        <!-- INFORMAÇÕES DO ORÇAMENTO -->
+        <MudPaper Class="p-4 mb-4" Elevation="0">
+            <MudText Typo="Typo.h6" Color="Color.Primary" Class="font-bold uppercase mb-4">Informações do Orçamento</MudText>
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Situação" Value="@Situacao" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Resposta do Cliente" Value="@Resposta" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Resultado" Value="@TemConserto" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Solução" Value="@ServiceOrder.Solution?.ServiceOrderSolution" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Valor" Value="@ServiceOrder.TotalAmount.ToString("C")" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Data da Aprovação" Value="@ServiceOrder.ResponseDate?.ToString("dd/MM/yyyy")" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Data do Conserto" Value="@ServiceOrder.RepairDate?.ToString("dd/MM/yyyy")" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string" Label="Data da Entrega" Value="@ServiceOrder.DeliveryDate?.ToString("dd/MM/yyyy")" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudTextField T="string" Label="Mensagem de Orçamento" Value="@ServiceOrder.EstimateMessage" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </DialogContent>
+</MudDialog>
+
+
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public ServiceOrder ServiceOrder { get; set; } = null!;
+
+    public string Situacao =>
+        ServiceOrder.ServiceOrderStatus switch
+        {
+            EServiceOrderStatus.Entered => "Avaliação pendente",
+            EServiceOrderStatus.Evaluated => "Avaliado",
+            EServiceOrderStatus.OrderPart => "Aguardando peça",
+            EServiceOrderStatus.Repaired => "Consertado",
+            EServiceOrderStatus.Delivered => "Entregue",
+            _ => "Desconhecido"
+        };
+
+    public string TemConserto =>
+        ServiceOrder.RepairResult switch
+        {
+            ERepairResult.Repair => "Pode ser consertado",
+            ERepairResult.Unrepaired => "Não tem conserto",
+            ERepairResult.NoDefectFound => "Não apresentou defeito",
+            _ => "Não foi avaliado ainda"
+        };
+
+    public string Resposta =>
+        ServiceOrder.RepairStatus switch
+        {
+            ERepairStatus.Entered => "Sem orçamento ainda",
+            ERepairStatus.Waiting => "Aguardando resposta",
+            ERepairStatus.Approved => "Aprovado",
+            ERepairStatus.Disapproved => "Não aprovou",
+            _ => "Desconhecido"
+        };
+}

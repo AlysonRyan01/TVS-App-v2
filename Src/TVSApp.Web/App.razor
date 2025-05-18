@@ -1,0 +1,25 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using TVSApp.Web.Components
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData">
+                <Authorizing>
+                    <div style="display: flex; justify-content: center; align-items: center; height: 20vh; flex-direction: column;">
+                        <p style="margin-top: 10px; font-size: 18px;">Carregando...</p>
+                    </div>
+                </Authorizing>
+                <NotAuthorized>
+                    <h1>Você não tem acesso a esta funcionalidade</h1>
+                    <RedirectToLogin/>
+                </NotAuthorized>
+            </AuthorizeRouteView>
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <h1>Erro 404</h1>
+            <p>Página não encontrada</p>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

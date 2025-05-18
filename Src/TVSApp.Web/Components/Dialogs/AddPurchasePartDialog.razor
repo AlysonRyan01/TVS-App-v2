@@ -1,0 +1,174 @@
+@using TVS_App.Application.Commands.ServiceOrderCommands
+@using TVS_App.Domain.Entities
+@using TVS_App.Domain.Enums
+@using TVSApp.Web.Extensions
+@using TVSApp.Web.Handlers
+
+<MudDialog Class="rounded-lg">
+    <TitleContent>
+        <h2 class="font-extrabold text-xl lg:text-3xl font-sans text-[#750303] text-center">
+            ADICIONAR COMPRA DE PEÇA - OS @ServiceOrder.Id
+        </h2>
+    </TitleContent>
+
+    <DialogContent>
+        <MudPaper Class="p-6" Elevation="0">
+
+            <!-- EMPRESA -->
+            <MudPaper Class="mb-4 pb-4" Elevation="0">
+                <MudText Typo="Typo.h6" Class="text-[#750303] font-bold uppercase mb-2">Empresa</MudText>
+                <MudTextField Variant="Variant.Outlined" ReadOnly="true" Value="@ServiceOrder.Enterprise.GetDisplayName()" Label="Empresa" FullWidth="true" />
+            </MudPaper>
+
+            <!-- DADOS DO CLIENTE -->
+            <MudPaper Class="mb-4 pb-4" Elevation="0">
+                <MudText Typo="Typo.h6" Class="text-[#750303] font-bold uppercase mb-2">Dados do Cliente</MudText>
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Nome" Value="@ServiceOrder.Customer.Name.CustomerName" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Telefone 1" Value="@ServiceOrder.Customer.Phone.CustomerPhone" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Endereço" Value="@ServiceOrder.Customer.Address.ToString().ToUpper()" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Telefone 2" Value="@ServiceOrder.Customer.Phone2.CustomerPhone" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            <!-- DADOS DO PRODUTO -->
+            <MudPaper Class="mb-4 pb-4" Elevation="0">
+                <MudText Typo="Typo.h6" Class="text-[#750303] font-bold uppercase mb-2">Dados do Produto</MudText>
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Tipo" Value="@ServiceOrder.Product.Type.GetDisplayName()" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Marca" Value="@ServiceOrder.Product.Brand" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Modelo" Value="@ServiceOrder.Product.Model" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Série" Value="@ServiceOrder.Product.SerialNumber" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Defeito" Value="@ServiceOrder.Product.Defect" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Data de Entrada" Value="@ServiceOrder.EntryDate.ToString("dd/MM/yyyy")" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Prateleira" Value="@ServiceOrder.Product.Location" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12">
+                        <LocationButton ServiceOrder="ServiceOrder" OnLocationChanged="AtualizarPrateleira" />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            <!-- INFORMAÇÕES DO ORÇAMENTO -->
+            <MudPaper Class="mb-4 pb-4" Elevation="0">
+                <MudText Typo="Typo.h6" Class="text-[#750303] font-bold uppercase mb-2">Informações do Orçamento</MudText>
+                <MudGrid>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Solução" Value="@ServiceOrder.Solution?.ServiceOrderSolution" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Valor" Value="@ServiceOrder.TotalAmount" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Data da resposta do cliente" Value="@ServiceOrder.ResponseDate?.ToString("dd/MM/yyyy")" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Situação" Value="@Situacao" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Tem conserto?" Value="@TemConserto" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" md="6">
+                        <MudTextField Variant="Variant.Outlined" Label="Resposta do Cliente" Value="@Resposta" ReadOnly="true" FullWidth="true" />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+            <!-- BOTÕES -->
+            <MudGrid Class="pt-6" Justify="Justify.FlexEnd" GutterSize="GutterSize.Small">
+                @if (_isProcessing)
+                {
+                    <MudItem>
+                        <MudProgressCircular Color="Color.Primary" Size="Size.Medium" Indeterminate="true" />
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem>
+                        <AddPurchasedPartButton ServiceOrder="ServiceOrder" DialogInstance="MudDialog"/>
+                    </MudItem>
+                    
+                }
+            </MudGrid>
+
+        </MudPaper>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    private bool _isProcessing = false;
+    
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public ServiceOrder ServiceOrder { get; set; } = null!;
+    [Parameter] public EventCallback OnPurchasePartAdded { get; set; }
+    [Inject] public ServiceOrderHandler ServiceOrderHandler { get; set; } = null!;
+    [Inject] public ISnackbar Snackbar { get; set; } = null!;
+    
+    public string Situacao =>
+        ServiceOrder.ServiceOrderStatus switch
+        {
+            EServiceOrderStatus.Entered => "Avaliação pendente",
+            EServiceOrderStatus.Evaluated => "Avaliado",
+            EServiceOrderStatus.OrderPart => "Aguardando peça",
+            EServiceOrderStatus.Repaired => "Consertado",
+            EServiceOrderStatus.Delivered => "Entregue",
+            _ => "Desconhecido"
+        };
+
+    public string TemConserto =>
+        ServiceOrder.RepairResult switch
+        {
+            ERepairResult.Repair => "Sim",
+            ERepairResult.Unrepaired => "Não",
+            ERepairResult.NoDefectFound => "Não apresentou defeito",
+            _ => "Desconhecido"
+        };
+
+    public string Resposta =>
+        ServiceOrder.RepairStatus switch
+        {
+            ERepairStatus.Entered => "Sem orçamento ainda",
+            ERepairStatus.Waiting => "Aguardando resposta",
+            ERepairStatus.Approved => "Aprovado",
+            ERepairStatus.Disapproved => "Não aprovou",
+            _ => "Desconhecido"
+        };
+
+    private async Task AtualizarPrateleira()
+    {
+        var result = await ServiceOrderHandler.GetServiceOrderById(new GetServiceOrderByIdCommand { Id = ServiceOrder.Id });
+        if (result.IsSuccess)
+        {
+            if (result.Data != null)
+            {
+                ServiceOrder.Product.AddLocation(result.Data.Product.Location);
+                StateHasChanged();
+            }
+            else
+            {
+                Snackbar.Add("Ocorreu um erro ao obter a ordem de serviço", Severity.Error);
+            }
+        }
+    }
+}

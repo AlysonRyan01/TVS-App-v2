@@ -1,0 +1,95 @@
+@page "/geral"
+@using Microsoft.AspNetCore.Authorization
+@using TVS_App.Domain.Entities
+@using TVSApp.Web.Components
+@using TVSApp.Web.Layout
+@layout MainLayout
+@attribute [Authorize]
+
+<div class="w-full min-h-[80vh] flex justify-center items-start bg-cinza p-6">
+    <div class="w-full max-w-4xl grid grid-cols-1 gap-8">
+        <h1 class="text-4xl font-bold text-gray-800 justify-self-center pb-4">Funções Gerais</h1>
+
+        <!-- Adicionar Prateleira -->
+        <div class="bg-white shadow-2xl rounded-xl p-6 border border-cinza">
+            <h2 class="text-xl font-semibold text-titlecolor mb-4">Adicionar Prateleira</h2>
+            <div class="flex flex-wrap gap-4 items-center">
+                <MudTextField @bind-Value="_locationCommand.ServiceOrderId"
+                              Label="Ordem de serviço"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              Class="w-[200px]"/>
+                <MudTextField @bind-Value="_locationCommand.Location"
+                              Label="Prateleira"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              Class="w-[200px]"/>
+            </div>
+            <MudButton OnClick="SetProductLocation"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="mt-2"
+                       FullWidth="true"
+                       Size="Size.Medium">Adicionar</MudButton>
+        </div>
+
+        <!-- Alterar Ordem -->
+        <div class="bg-white shadow-2xl rounded-xl p-6 border border-cinza">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Alterar Ordem de Serviço</h2>
+            <div class="flex gap-4 items-center">
+                <MudTextField @bind-Value="_serviceOrderId"
+                              Label="Ordem de serviço"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              Class="w-[300px]"/>
+            </div>
+            <MudButton OnClick="OpenEditServiceOrderDialog"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       FullWidth="true"
+                       Class="mt-2"
+                       Size="Size.Medium">Alterar</MudButton>
+        </div>
+
+        <!-- Editar Cliente -->
+        <div class="bg-white shadow-2xl rounded-xl p-6 border border-cinza">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Editar Cliente</h2>
+            <div class="flex flex-col gap-3">
+                <MudAutocomplete T="Customer"
+                                 @bind-Value="SelectedCustomer"
+                                 SearchFunc="SearchCustomers"
+                                 ToStringFunc="@(c => c?.Name?.CustomerName ?? "")"
+                                 MinCharacters="2"
+                                 ResetValueOnEmptyText="true"
+                                 Clearable="true"
+                                 AdornmentIcon="@Icons.Material.Filled.Person2"
+                                 IconSize="Size.Large"
+                                 AdornmentColor="Color.Primary"
+                                 FullWidth="true"
+                                 Variant="Variant.Outlined"
+                                 Placeholder="Digite o nome do cliente"/>
+                <MudButton OnClick="OnCustomerSelected"
+                           Class="self-start"
+                           FullWidth="true"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary">Editar</MudButton>
+            </div>
+        </div>
+
+        <!-- Reimprimir Ordem -->
+        <div class="bg-white shadow-2xl rounded-xl p-6 border border-cinza">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4">Reimprimir Ordem de Serviço</h2>
+            <div class="flex flex-col gap-3">
+                <MudTextField @bind-Value="_printCommand.Id"
+                              Label="Ordem de serviço"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              FullWidth="true"
+                              AdornmentIcon="@Icons.Material.Filled.Print"
+                              IconSize="Size.Large"
+                              AdornmentColor="Color.Primary"/>
+                <ReprintServiceOrder Command="_printCommand"/>
+            </div>
+        </div>
+    </div>
+</div>
