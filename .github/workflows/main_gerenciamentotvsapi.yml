@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: read #This is required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
@@ -23,16 +23,16 @@ jobs:
         with:
           dotnet-version: '9.x'
 
-      - name: Build API project
+      - name: Build with dotnet
         run: dotnet build Src/TVS-App.Api/TVS-App.Api.csproj --configuration Release
 
-      - name: Publish API project
+      - name: dotnet publish
         run: dotnet publish Src/TVS-App.Api/TVS-App.Api.csproj -c Release -o ${{github.workspace}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
-          name: .net-api
+          name: .net-app
           path: ${{github.workspace}}/myapp
 
   deploy:
@@ -41,13 +41,13 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
+    
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
-          name: .net-api
-
+          name: .net-app
+      
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
