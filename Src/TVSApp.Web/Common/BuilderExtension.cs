@@ -21,7 +21,7 @@ public static class BuilderExtension
         builder.Services.AddSingleton<HubConnection>(sp =>
         {
             return new HubConnectionBuilder()
-                .WithUrl(new Uri($"http://localhost:5119/osHub"), options =>
+                .WithUrl(new Uri("https://gerenciamentotvsapi-f7e9dyhyfbhrbpa8.brazilsouth-01.azurewebsites.net/osHub"), options =>
                 {
                     options.SkipNegotiation = true;
                     options.Transports = HttpTransportType.WebSockets;
@@ -35,7 +35,7 @@ public static class BuilderExtension
     {
         builder.Services.AddHttpClient("api", client =>
         {
-            client.BaseAddress = new Uri("http://localhost:5119/");
+            client.BaseAddress = new Uri("https://gerenciamentotvsapi-f7e9dyhyfbhrbpa8.brazilsouth-01.azurewebsites.net/");
             client.Timeout = TimeSpan.FromSeconds(60);
         }).AddHttpMessageHandler<AuthorizationMessageHandler>();
     }
