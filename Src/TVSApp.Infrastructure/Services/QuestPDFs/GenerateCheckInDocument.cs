@@ -19,7 +19,7 @@ public class GenerateCheckInDocument : QuestPdf
     {
         try
         {
-            var qrCodeBytes = GenerateQrCodeService.GenerateImage($"https://tvseletronica.com/consultar-os?id={_serviceOrder.Id}&code={_serviceOrder.SecurityCode}");
+            var qrCodeBytes = GenerateQrCodeService.GenerateImage($"https://tvseletronica.com/consultar?id={_serviceOrder.Id}&code={_serviceOrder.SecurityCode}");
 
             document.Page(page =>
             {

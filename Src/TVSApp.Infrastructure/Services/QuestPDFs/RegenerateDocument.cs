@@ -20,7 +20,7 @@ public class RegenerateDocument : QuestPdf
     {
         if (!_serviceOrder.DeliveryDate.HasValue)
         {
-            var qrCodeBytes = GenerateQrCodeService.GenerateImage($"https://tvseletronica.com/consultar-os/{_serviceOrder.Id}");
+            var qrCodeBytes = GenerateQrCodeService.GenerateImage($"https://tvseletronica.com/consultar?id={_serviceOrder.Id}&code={_serviceOrder.SecurityCode}");
 
             document.Page(page =>
             {
