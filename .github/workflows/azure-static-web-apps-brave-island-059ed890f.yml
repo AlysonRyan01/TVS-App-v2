@@ -16,30 +16,37 @@ jobs:
     name: Build and Deploy Job
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: false
 
-      # Instalar SDK do .NET se necessário
-      - name: Setup .NET SDK
+      # Instala o .NET 9.0 SDK
+      - name: Setup .NET 9.0 SDK
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x' # ou 7.0.x conforme seu projeto
+          dotnet-version: '9.0.x'
 
-      # Restaurar pacotes e compilar o projeto
+      # Instala o Node.js (necessário pro Tailwind)
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # Instala as dependências do Tailwind
+      - name: Install NPM dependencies
+        run: npm install
+        working-directory: ./Src/TVSApp.Web
+
+      # Gera o CSS do Tailwind
+      - name: Build Tailwind CSS
+        run: npm run build
+        working-directory: ./Src/TVSApp.Web
+
+      # Publica o Blazor WebAssembly
       - name: Publish Blazor WebAssembly
         run: dotnet publish ./Src/TVSApp.Web/TVSApp.Web.csproj -c Release -o build --nologo
 
-      # Instalar dependências JS para Tailwind
-      - name: Install Node Modules
-        working-directory: ./Src/TVSApp.Web
-        run: |
-          npm install
-          chmod +x node_modules/.bin/tailwindcss
-
-      # Rodar Tailwind
-      - name: Build Tailwind CSS
-        working-directory: ./Src/TVSApp.Web
-        run: npm run build
-
-      # Deploy dos arquivos gerados em /build/wwwroot
+      # Deploy para o Azure Static Web Apps
       - name: Deploy to Azure Static Web Apps
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
@@ -47,9 +54,9 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BRAVE_ISLAND_059ED890F }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "build/wwwroot"
-          api_location: ""
-          output_location: "" # não usar se app_location já aponta para wwwroot
+          app_location: "./build/wwwroot"
+          api_location: "Api"
+          output_location: ""
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -57,6 +64,7 @@ jobs:
     name: Close Pull Request Job
     steps:
       - name: Close Pull Request
+        id: closepullrequest
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BRAVE_ISLAND_059ED890F }}
