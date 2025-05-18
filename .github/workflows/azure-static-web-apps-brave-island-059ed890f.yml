@@ -16,33 +16,40 @@ jobs:
     name: Build and Deploy Job
     steps:
       - uses: actions/checkout@v3
-        with:
-          submodules: true
-          lfs: false
 
-      # ✅ Instalar dependências manualmente e corrigir permissão do tailwindcss
-      - name: Install Node.js dependencies
+      # Instalar SDK do .NET se necessário
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x' # ou 7.0.x conforme seu projeto
+
+      # Restaurar pacotes e compilar o projeto
+      - name: Publish Blazor WebAssembly
+        run: dotnet publish ./Src/TVSApp.Web/TVSApp.Web.csproj -c Release -o build --nologo
+
+      # Instalar dependências JS para Tailwind
+      - name: Install Node Modules
         working-directory: ./Src/TVSApp.Web
         run: |
           npm install
           chmod +x node_modules/.bin/tailwindcss
 
-      # ✅ Rodar o build do CSS antes do deploy
+      # Rodar Tailwind
       - name: Build Tailwind CSS
         working-directory: ./Src/TVSApp.Web
         run: npm run build
 
-      # ✅ Fazer o deploy via action da Azure
-      - name: Build And Deploy
+      # Deploy dos arquivos gerados em /build/wwwroot
+      - name: Deploy to Azure Static Web Apps
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BRAVE_ISLAND_059ED890F }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "./Src/TVSApp.Web"
-          api_location: "Api"
-          output_location: "wwwroot"
+          app_location: "build/wwwroot"
+          api_location: ""
+          output_location: "" # não usar se app_location já aponta para wwwroot
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -50,7 +57,6 @@ jobs:
     name: Close Pull Request Job
     steps:
       - name: Close Pull Request
-        id: closepullrequest
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BRAVE_ISLAND_059ED890F }}
