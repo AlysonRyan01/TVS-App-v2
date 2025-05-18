@@ -1,6 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
-name: Build and deploy ASP.Net Core API to Azure Web App - gerenciamentotvsapi
+
+name: Build and deploy ASP.Net Core app to Azure Web App - gerenciamentotvsapi
 
 on:
   push:
@@ -12,7 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: read #This is required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
@@ -22,20 +23,17 @@ jobs:
         with:
           dotnet-version: '9.x'
 
-      - name: Restore dependencies
-        run: dotnet restore "Src/TVS-App.Api/TVS-App.Api.csproj"
+      - name: Build with dotnet
+        run: dotnet build Src/TVS-App.Api/TVS-App.Api.csproj --configuration Release
 
-      - name: Build API project
-        run: dotnet build "Src/TVS-App.Api/TVS-App.Api.csproj" --configuration Release --no-restore
-
-      - name: Publish API project
-        run: dotnet publish "Src/TVS-App.Api/TVS-App.Api.csproj" -c Release -o ${{ github.workspace }}/myapp --no-build
+      - name: dotnet publish
+        run: dotnet publish Src/TVS-App.Api/TVS-App.Api.csproj -c Release -o ${{github.workspace}}/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{ github.workspace }}/myapp
+          path: ${{github.workspace}}/myapp
 
   deploy:
     runs-on: ubuntu-latest
@@ -49,7 +47,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-          path: ${{ github.workspace }}/myapp
       
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -57,5 +54,5 @@ jobs:
         with:
           app-name: 'gerenciamentotvsapi'
           slot-name: 'Production'
-          package: ${{ github.workspace }}/myapp
+          package: .
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_1962AAF89FE64FF6B6FB006734DA5560 }}
