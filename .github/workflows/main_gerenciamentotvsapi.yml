@@ -1,6 +1,9 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
 name: Build and deploy ASP.Net Core app to Azure Web App - gerenciamentotvsapi
 
 on:
@@ -25,16 +28,16 @@ jobs:
         run: dotnet build Src/TVSApp.Api/TVSApp.Api.csproj --configuration Release
 
       - name: Publish the app
-        run: dotnet publish Src/TVSApp.Api/TVSApp.Api.csproj -c Release -o ./publish
+        run: dotnet publish Src/TVSApp.Api/TVSApp.Api.csproj --configuration Release --output ./app
 
       - name: Verificar arquivos publicados
-        run: ls -R ./publish
+        run: ls -R ./app
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: app
-          path: ./publish/
+          path: ./app
 
   deploy:
     runs-on: ubuntu-latest
