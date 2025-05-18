@@ -16,6 +16,7 @@ public partial class EditServiceOrderPage : ComponentBase
     private string _serviceOrderId = string.Empty;
     private GetServiceOrderByIdCommand _printCommand = new();
     private AddProductLocationCommand _locationCommand = new();
+    private bool _isBusy;
     
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
     [Inject] public IDialogService DialogService { get; set; } = null!;

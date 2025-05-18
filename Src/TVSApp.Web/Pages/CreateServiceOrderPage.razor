@@ -90,10 +90,17 @@
                     </div>
                 </MudForm>
 
-                <MudButton OnClick="CreateCustomer" Class="mt-6"
-                           Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           Size="Size.Large">Criar cliente</MudButton>
+                @if (_isLoading)
+                {
+                    <MudProgressLinear Indeterminate Color="Color.Primary" />
+                }
+                else
+                {
+                    <MudButton OnClick="CreateCustomer" Class="mt-6"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Large">Criar cliente</MudButton>
+                }
             </div>
         </div>
     </div>

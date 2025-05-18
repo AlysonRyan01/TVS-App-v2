@@ -91,13 +91,20 @@
 
             <!-- BOTÃO -->
             <div class="flex justify-end mt-6">
-                <MudButton @onclick="Repaired"
-                           EndIcon="@Icons.Material.Filled.Done"
-                           Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           Class="text-white text-lg font-semibold px-6 py-2 rounded-lg shadow-md transition">
-                    Consertado
-                </MudButton>
+                @if (_isBusy)
+                {
+                    <MudProgressLinear Indeterminate Color="Color.Primary" />
+                }
+                else
+                {
+                    <MudButton @onclick="Repaired"
+                               EndIcon="@Icons.Material.Filled.Done"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Class="text-white text-lg font-semibold px-6 py-2 rounded-lg shadow-md transition">
+                        Consertado
+                    </MudButton>
+                }
             </div>
         </MudPaper>
     </DialogContent>
@@ -113,8 +120,11 @@
     [Inject] public ServiceOrderHandler ServiceOrderHandler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
 
+
+    private bool _isBusy;
     public async Task Repaired()
     {
+        _isBusy = true;
         try
         {
             var result = await ServiceOrderHandler.AddServiceOrderRepair(new GetServiceOrderByIdCommand { Id = ServiceOrder.Id });
@@ -131,6 +141,10 @@
         catch (Exception e)
         {
             Snackbar.Add(e.Message, Severity.Error);
+        }
+        finally
+        {
+            _isBusy = false;
         }
     }
 

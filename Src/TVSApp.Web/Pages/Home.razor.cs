@@ -16,6 +16,7 @@ public partial class Home : ComponentBase
     public List<ServiceOrder> WaitingPartsServiceOrders { get; set; } = new();
     public List<ServiceOrder> WaitingPickupServiceOrders { get; set; } = new();
     public List<ServiceOrder> DeliveredServiceOrders { get; set; } = new();
+    private bool _isBusy;
 
     [Inject] public ServiceOrderHandler Handler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
@@ -37,7 +38,7 @@ public partial class Home : ComponentBase
                 await HubConnection.StartAsync();
                 Console.WriteLine("SignalR conectado");
             }
-            
+
             await UpdateServiceOrdersAsync();
         }
         catch (Exception ex)
@@ -163,10 +164,12 @@ public partial class Home : ComponentBase
     private readonly SemaphoreSlim _updateSemaphore = new(1, 1);
     public async Task UpdateServiceOrdersAsync()
     {
+        _isBusy = true;
         if (!await _updateSemaphore.WaitAsync(0)) return;
 
         try
         {
+            
             await LoadPendingEstimatesAsync();
             await LoadWaitingResponseAsync();
             await LoadPendingPurchaseAsync();
@@ -181,6 +184,7 @@ public partial class Home : ComponentBase
         }
         finally
         {
+            _isBusy = false;
             _updateSemaphore.Release();
         }
     }

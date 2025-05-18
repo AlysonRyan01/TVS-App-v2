@@ -78,17 +78,26 @@
             </MudForm>
 
             <div class="flex gap-4 mt-6">
-                <MudButton Variant="Variant.Filled"
-                           OnClick="UpdateAndConfirmCustomer"
-                           Color="Color.Primary"
-                           Size="Size.Large"
-                           Class="px-8">Salvar</MudButton>
 
-                <MudButton Variant="Variant.Text"
-                           OnClick="() => MudDialog.Cancel()"
-                           Color="Color.Default"
-                           Size="Size.Large"
-                           Class="px-8">Cancelar</MudButton>
+                @if (_isBusy)
+                {
+                    <MudProgressLinear Indeterminate Color="Color.Primary" />
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Filled"
+                               OnClick="UpdateAndConfirmCustomer"
+                               Color="Color.Primary"
+                               Size="Size.Large"
+
+                               Class="px-8">Salvar</MudButton>
+
+                    <MudButton Variant="Variant.Text"
+                               OnClick="() => MudDialog.Cancel()"
+                               Color="Color.Default"
+                               Size="Size.Large"
+                               Class="px-8">Cancelar</MudButton>
+                }
             </div>
         </div>
     </DialogContent>
@@ -148,13 +157,16 @@
         }
     }
 
+    private bool _isBusy;
+    
     private async Task UpdateAndConfirmCustomer()
     {
+        _isBusy = true;
         try
         {
             EditableCustomerCommand.Normalize();
             EditableCustomerCommand.Validate();
-            
+
             var updateResult = await CustomerHandler.UpdateCustomerAsync(EditableCustomerCommand);
             if (updateResult.IsSuccess)
             {
@@ -169,6 +181,10 @@
         catch (Exception e)
         {
             Snackbar.Add(e.Message, Severity.Error);
+        }
+        finally
+        {
+            _isBusy = false;
         }
     }
 }

@@ -71,11 +71,12 @@ public partial class CreateServiceOrderPage : ComponentBase
 
     public async Task CreateCustomer()
     {
+        _isLoading = true;
         try
         {
             CreateCustomerCommand.Normalize();
             CreateCustomerCommand.Validate();
-            
+
             var createResult = await CustomerHandler.CreateCustomerAsync(CreateCustomerCommand);
             if (createResult.IsSuccess || createResult.Data != null)
             {
@@ -97,6 +98,10 @@ public partial class CreateServiceOrderPage : ComponentBase
         catch (Exception e)
         {
             Snackbar.Add($"Erro: {e.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
         }
     }
 
