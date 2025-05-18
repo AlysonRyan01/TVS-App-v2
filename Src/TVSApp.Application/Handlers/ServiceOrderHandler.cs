@@ -270,7 +270,11 @@ public class ServiceOrderHandler
                 serviceOrder.Product.Model,
                 serviceOrder.Product.Defect ?? "",
                 serviceOrder.Guarantee?.ServiceOrderGuarantee,
-                serviceOrder.TotalAmount, serviceOrder.EstimateMessage);
+                serviceOrder.TotalAmount, serviceOrder.EstimateMessage,
+                serviceOrder.ServiceOrderStatus,
+                serviceOrder.RepairResult,
+                serviceOrder.RepairStatus,
+                serviceOrder.Enterprise);
 
             return new BaseResponse<EstimateServiceOrder>(dto, 200, "Ordem de serviço obtida com sucesso!");
         }
