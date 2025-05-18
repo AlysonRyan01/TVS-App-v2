@@ -17,17 +17,25 @@ jobs:
       with:
         dotnet-version: '9.x'
 
-    - name: Publish
+    - name: Build and Publish
       run: |
         cd Src/TVS-App.Api
-        dotnet publish -c Release -o ${{ github.workspace }}/publish
-        echo "Arquivos gerados:"
+        dotnet publish -c Release -o ${{ github.workspace }}/publish \
+          /p:DeployOnBuild=true \
+          /p:WebPublishMethod=FileSystem \
+          /p:AssemblyName=TVS-App.Api
+        
+        echo "##[group]Artefatos gerados"
         ls -la ${{ github.workspace }}/publish
+        echo "##[endgroup]"
 
-    - name: Validate DLL
+    - name: Validate Artifact
       run: |
+        echo "### Validando arquivo principal ###"
         if [ ! -f "${{ github.workspace }}/publish/TVS-App.Api.dll" ]; then
-          echo "##[error] DLL não encontrada!"
+          echo "##[error] ERRO CRÍTICO: TVS-App.Api.dll não encontrado!"
+          echo "Conteúdo da pasta:"
+          ls -R ${{ github.workspace }}/publish
           exit 1
         fi
 
@@ -47,9 +55,16 @@ jobs:
         name: dotnet-app
         path: ${{ github.workspace }}/publish
 
+    - name: Validate Before Deploy
+      run: |
+        echo "### Verificação final ###"
+        ls -la ${{ github.workspace }}/publish/TVS-App.Api.dll
+        file ${{ github.workspace }}/publish/TVS-App.Api.dll
+
     - name: Deploy to Azure
       uses: azure/webapps-deploy@v3
       with:
         app-name: 'gerenciamentotvsapi'
         package: ${{ github.workspace }}/publish
         publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_1962AAF89FE64FF6B6FB006734DA5560 }}
+        startup-command: 'dotnet TVS-App.Api.dll'
