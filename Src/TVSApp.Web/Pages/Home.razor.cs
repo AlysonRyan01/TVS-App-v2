@@ -27,6 +27,8 @@ public partial class Home : ComponentBase
     {
         try
         {
+            await UpdateServiceOrdersAsync();
+            
             HubConnection.On<string>("Atualizar", async (mensagem) =>
             {
                 Console.WriteLine($"Web socket Recebido: {mensagem}");
@@ -38,8 +40,6 @@ public partial class Home : ComponentBase
                 await HubConnection.StartAsync();
                 Console.WriteLine("SignalR conectado");
             }
-
-            await UpdateServiceOrdersAsync();
         }
         catch (Exception ex)
         {
@@ -160,16 +160,12 @@ public partial class Home : ComponentBase
             Snackbar.Add(ex.Message, Severity.Error);
         }
     }
-
-    private readonly SemaphoreSlim _updateSemaphore = new(1, 1);
+    
     public async Task UpdateServiceOrdersAsync()
     {
         _isBusy = true;
-        if (!await _updateSemaphore.WaitAsync(0)) return;
-
         try
         {
-            
             await LoadPendingEstimatesAsync();
             await LoadWaitingResponseAsync();
             await LoadPendingPurchaseAsync();
@@ -185,7 +181,6 @@ public partial class Home : ComponentBase
         finally
         {
             _isBusy = false;
-            _updateSemaphore.Release();
         }
     }
     
