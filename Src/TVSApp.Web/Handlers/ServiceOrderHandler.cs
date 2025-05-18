@@ -98,7 +98,7 @@ public class ServiceOrderHandler
                 $"get-service-order-by-id/{command.Id}");
             
             if (response == null || !response.IsSuccess)
-                return new BaseResponse<ServiceOrder?>(null, 500, response.Message ?? "");
+                return new BaseResponse<ServiceOrder?>(null, 500, response?.Message ?? "");
             
             return response;
         }
@@ -201,25 +201,6 @@ public class ServiceOrderHandler
         catch (Exception ex)
         {
             return ExceptionHandler.Handle<List<ServiceOrder>>(ex);
-        }
-    }
-
-    public async Task<BaseResponse<ServiceOrder?>> GetServiceOrderForCustomer(
-        GetServiceOrdersForCustomerCommand command)
-    {
-        try
-        {
-            var response = await _httpClient.GetFromJsonAsync<BaseResponse<ServiceOrder?>>(
-                $"get-service-order-for-customer/{command.ServiceOrderId}/{command.SecurityCode}");
-            
-            if (response == null || !response.IsSuccess)
-                return new BaseResponse<ServiceOrder?>(null, 500, response?.Message);
-            
-            return response;
-        }
-        catch (Exception ex)
-        {
-            return ExceptionHandler.Handle<ServiceOrder?>(ex);
         }
     }
 

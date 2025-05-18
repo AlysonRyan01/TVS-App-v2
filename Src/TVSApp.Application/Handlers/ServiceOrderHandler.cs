@@ -265,7 +265,8 @@ public class ServiceOrderHandler
             
             var dto = new EstimateServiceOrder(
                 serviceOrder.Id, 
-                serviceOrder.Customer.Name.CustomerName, 
+                serviceOrder.Customer.Name.CustomerName,
+                serviceOrder.Product.Type,
                 serviceOrder.Product.Brand, 
                 serviceOrder.Product.Model,
                 serviceOrder.Product.Defect ?? "",

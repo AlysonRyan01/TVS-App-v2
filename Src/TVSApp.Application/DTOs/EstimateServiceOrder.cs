@@ -6,7 +6,8 @@ namespace TVS_App.Application.DTOs;
 public class EstimateServiceOrder
 {
     public EstimateServiceOrder(long id, 
-        string customerName, 
+        string customerName,
+        EProduct productType,
         string productBrand, 
         string productModel, 
         string productDefect, 
@@ -30,10 +31,12 @@ public class EstimateServiceOrder
         Result = result;
         RepairStatus = repairStatus;
         Enterprise = enterprise;
+        ProductType = productType;
     }
 
     public long Id { get; set; }
     public string CustomerName { get; set; }
+    public EProduct ProductType { get; set; }
     public string ProductBrand { get; set; }
     public string ProductModel { get; set; }
     public string ProductDefect { get; set; } 
