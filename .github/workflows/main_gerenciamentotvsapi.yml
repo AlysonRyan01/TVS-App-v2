@@ -1,68 +1,58 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
-name: Deploy API
+
+name: Build and deploy ASP.Net Core app to Azure Web App - gerenciamentotvsapi
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read #This is required for actions/checkout
+
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '9.x'
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
 
-    - name: Restore Dependencies
-      run: |
-        dotnet restore "Src/TVS-App.Api/TVS-App.Api.csproj"
-        echo "Dependências restauradas com sucesso"
+      - name: Build with dotnet
+        run: dotnet build Src/TVSApp.Api/TVSApp.Api.csproj --configuration Release
 
-    - name: Publish Project
-      run: |
-        cd Src/TVS-App.Api
-        dotnet publish -c Release -o ${{ github.workspace }}/publish \
-          /p:AssemblyName=TVS-App.Api \
-          /p:DeployOnBuild=true \
-          /p:WebPublishMethod=FileSystem
-        
-        echo "##[group]Artefatos gerados"
-        ls -la ${{ github.workspace }}/publish
-        echo "##[endgroup]"
+      - name: dotnet publish
+        run: dotnet publish Src/TVSApp.Api/TVSApp.Api.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
-    - name: Validate Artifact
-      run: |
-        if [ ! -f "${{ github.workspace }}/publish/TVS-App.Api.dll" ]; then
-          echo "##[error] ERRO: TVS-App.Api.dll não encontrado!"
-          echo "Conteúdo da pasta:"
-          ls -R ${{ github.workspace }}/publish
-          exit 1
-        fi
-
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: dotnet-app
-        path: ${{ github.workspace }}/publish
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: .net-app
+          path: ${{env.DOTNET_ROOT}}/myapp
 
   deploy:
-    needs: build
     runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    
     steps:
-    - name: Download Artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: dotnet-app
-        path: ${{ github.workspace }}/publish
-
-    - name: Deploy to Azure
-      uses: azure/webapps-deploy@v3
-      with:
-        app-name: 'gerenciamentotvsapi'
-        package: ${{ github.workspace }}/publish
-        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_XXX }}
-        startup-command: 'dotnet TVS-App.Api.dll'
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: .net-app
+      
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'gerenciamentotvsapi'
+          slot-name: 'Production'
+          package: .
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_1962AAF89FE64FF6B6FB006734DA5560 }}
