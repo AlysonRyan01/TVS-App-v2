@@ -17,22 +17,18 @@ jobs:
       with:
         dotnet-version: '9.x'
 
-    - name: Build and Publish
+    - name: Restore Dependencies
       run: |
-        # Usando caminho absoluto para evitar ambiguidade
-        PROJECT_PATH="${{ github.workspace }}/Src/TVS-App.Api/TVS-App.Api.csproj"
-        
-        echo "##[group]Restaurando dependências"
-        dotnet restore "$PROJECT_PATH"
-        echo "##[endgroup]"
-        
-        echo "##[group]Publicando projeto"
-        dotnet publish "$PROJECT_PATH" \
-          -c Release \
-          -o ${{ github.workspace }}/publish \
+        dotnet restore "Src/TVS-App.Api/TVS-App.Api.csproj"
+        echo "Dependências restauradas com sucesso"
+
+    - name: Publish Project
+      run: |
+        cd Src/TVS-App.Api
+        dotnet publish -c Release -o ${{ github.workspace }}/publish \
           /p:AssemblyName=TVS-App.Api \
-          /p:DeployOnBuild=true
-        echo "##[endgroup]"
+          /p:DeployOnBuild=true \
+          /p:WebPublishMethod=FileSystem
         
         echo "##[group]Artefatos gerados"
         ls -la ${{ github.workspace }}/publish
@@ -41,8 +37,8 @@ jobs:
     - name: Validate Artifact
       run: |
         if [ ! -f "${{ github.workspace }}/publish/TVS-App.Api.dll" ]; then
-          echo "##[error] ERRO: Arquivo principal não encontrado!"
-          echo "Conteúdo da pasta publish:"
+          echo "##[error] ERRO: TVS-App.Api.dll não encontrado!"
+          echo "Conteúdo da pasta:"
           ls -R ${{ github.workspace }}/publish
           exit 1
         fi
@@ -68,4 +64,5 @@ jobs:
       with:
         app-name: 'gerenciamentotvsapi'
         package: ${{ github.workspace }}/publish
-        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_1962AAF89FE64FF6B6FB006734DA5560 }}
+        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_XXX }}
+        startup-command: 'dotnet TVS-App.Api.dll'
