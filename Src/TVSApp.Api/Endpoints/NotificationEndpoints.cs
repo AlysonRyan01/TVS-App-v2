@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using TVS_App.Api.SignalR;
+using TVS_App.Application.DTOs;
 using TVS_App.Application.Handlers;
 
 namespace TVS_App.Api.Endpoints;
@@ -8,9 +9,9 @@ public static class NotificationEndpoints
 {
     public static void MapNotificationEndpoints(this WebApplication app)
     {
-        app.MapPost("/notifications", async (NotificationHandler handler, string title, string message, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPost("/notifications", async (NotificationHandler handler, CreateNotification dto, IHubContext<ServiceOrderHub> hubContext) =>
         {
-            var result = await handler.CreateNotification(title, message);
+            var result = await handler.CreateNotification(dto.Title, dto.Message);
             
             await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
             
