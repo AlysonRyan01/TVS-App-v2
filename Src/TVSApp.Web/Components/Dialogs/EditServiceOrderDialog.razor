@@ -273,7 +273,7 @@
                     </MudItem>
                 </MudPaper>
             }
-            else if (ServiceOrder.ServiceOrderStatus == EServiceOrderStatus.Evaluated && ServiceOrder.RepairStatus == ERepairStatus.Approved)
+            else if (ServiceOrder.ServiceOrderStatus == EServiceOrderStatus.Evaluated && ServiceOrder.RepairStatus == ERepairStatus.Approved && ServiceOrder.RepairResult == ERepairResult.Repair)
             {
                 <MudText Typo="Typo.h6" Color="Color.Primary" Class="uppercase font-bold mb-4">Adicionar Compra de Peça</MudText>
                 @if (_isProcessing)
