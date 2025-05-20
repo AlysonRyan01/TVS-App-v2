@@ -471,6 +471,28 @@ namespace TVS_App.Infrastructure.Migrations
                                 .HasForeignKey("CustomerId");
                         });
 
+                    b.OwnsOne("TVS_App.Domain.ValueObjects.Customer.Cpf", "Cpf", b1 =>
+                        {
+                            b1.Property<long>("CustomerId")
+                                .HasColumnType("bigint");
+
+                            b1.Property<string>("Number")
+                                .IsRequired()
+                                .HasMaxLength(20)
+                                .HasColumnType("nvarchar(20)")
+                                .HasColumnName("Cpf")
+                                .HasAnnotation("Relational:JsonPropertyName", "number");
+
+                            b1.HasKey("CustomerId");
+
+                            b1.ToTable("Customers");
+
+                            b1.HasAnnotation("Relational:JsonPropertyName", "Document");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CustomerId");
+                        });
+
                     b.OwnsOne("TVS_App.Domain.ValueObjects.Customer.Email", "Email", b1 =>
                         {
                             b1.Property<long>("CustomerId")
@@ -516,6 +538,9 @@ namespace TVS_App.Infrastructure.Migrations
                         });
 
                     b.Navigation("Address")
+                        .IsRequired();
+
+                    b.Navigation("Cpf")
                         .IsRequired();
 
                     b.Navigation("Email");

@@ -73,6 +73,13 @@
                                   Variant="Variant.Outlined"
                                   Class="mb-4"
                                   FullWidth="true" />
+
+                    <MudTextField @bind-Value="CreateCustomerCommand.Cpf"
+                                  Label="Cpf"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  Class="mb-4"
+                                  Mask="@(new PatternMask("000.000.000-00"))" />
                     
                     <div class="flex gap-4 mb-2">
                         <MudTextField @bind-Value="CreateCustomerCommand.Phone"

@@ -349,7 +349,7 @@ public static class ServiceOrderEndpoints
             }
         }).WithTags("ServiceOrder").RequireAuthorization();
 
-        app.MapPut("/add-service-order-estimate", async (ServiceOrderHandler handler, AddServiceOrderEstimateCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-service-order-estimate", async (ServiceOrderHandler handler,NotificationHandler notificationhandler,AddServiceOrderEstimateCommand command, IHubContext<ServiceOrderHub> hubContext) =>
         {
             try
             {
@@ -358,6 +358,8 @@ public static class ServiceOrderEndpoints
                 var createOrderResult = await handler.AddServiceOrderEstimate(command);
                 if (!createOrderResult.IsSuccess)
                     return Results.Ok(createOrderResult);
+
+                await notificationhandler.CreateNotification("Orçamento Concluído", $"Favor enviar mensagem de orçamento para o responsável da ordem de serviço: {command.ServiceOrderId}");
 
                 await hubContext.Clients.All.SendAsync("Atualizar", createOrderResult.Message);
 
@@ -433,7 +435,7 @@ public static class ServiceOrderEndpoints
             }
         }).WithTags("ServiceOrder").RequireAuthorization();
 
-        app.MapPut("/add-service-order-repair", async (ServiceOrderHandler handler, GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-service-order-repair", async (ServiceOrderHandler handler,NotificationHandler notificationhandler ,GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
         {
             try
             {
@@ -442,6 +444,8 @@ public static class ServiceOrderEndpoints
                 var createOrderResult = await handler.AddServiceOrderRepair(command);
                 if (!createOrderResult.IsSuccess)
                     return Results.Ok(createOrderResult);
+                
+                await notificationhandler.CreateNotification("Conserto Concluído", $"Favor avisar o responsável da ordem de serviço: {command.Id}");
 
                 await hubContext.Clients.All.SendAsync("Atualizar", createOrderResult.Message);
 

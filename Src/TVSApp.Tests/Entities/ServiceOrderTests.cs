@@ -29,6 +29,7 @@ public class ServiceOrderTests
             new Phone("41999999999"),
             new Phone("41999999999"),
             new Email("teste@email.com")
+            , new Cpf("00000000000")
         );
     }
 

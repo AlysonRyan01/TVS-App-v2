@@ -17,6 +17,7 @@ public class CreateCustomerCommand : ICommand
     public string Phone2 { get; set; } = string.Empty;
 
     public string Email { get; set; } = string.Empty;
+    public string Cpf { get; set; } = string.Empty;
 
     public void Validate()
     {
@@ -25,6 +26,9 @@ public class CreateCustomerCommand : ICommand
 
         if (string.IsNullOrEmpty(Phone))
             throw new CommandException<CreateCustomerCommand>("O telefone do cliente não pode estar vazio");
+        
+        if (Cpf.Length != 11)
+            throw new CommandException<UpdateCustomerCommand>("O CPF deve ter 11 caracteres");
     }
 
     public void Normalize()
@@ -39,5 +43,6 @@ public class CreateCustomerCommand : ICommand
         Phone = Phone.Trim();
         Phone2 = Phone2.Trim();
         Email = Email.Trim().ToLower();
+        Cpf = Cpf.Replace(".", "").Replace("-", "").Trim();
     }
 }

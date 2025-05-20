@@ -25,7 +25,7 @@ public class CustomerTests
     [TestMethod]
     public void deve_retornar_verdade_se_o_parametro_da_funcao_UpdateName_for_vazia()
     {
-        var customer = new Customer(_name, _address, _phone, _phone2, _email);
+        var customer = new Customer(_name, _address, _phone, _phone2, _email, new Cpf("00000000000"));
 
         Assert.ThrowsException<EntityException<Customer>>(() =>
         {
@@ -36,7 +36,7 @@ public class CustomerTests
     [TestMethod]
     public void deve_retornar_verdade_se_o_metodo_UpdateName_funcionar()
     {
-        var customer = new Customer(_name, _address, _phone, _phone2, _email);
+        var customer = new Customer(_name, _address, _phone, _phone2, _email, new Cpf("00000000000"));
         customer.UpdateName("Francisco");
 
         Assert.AreEqual("Francisco", customer.Name.CustomerName);
@@ -45,7 +45,7 @@ public class CustomerTests
     [TestMethod]
     public void deve_retornar_verdade_se_o_parametro_da_funcao_UpdatePhone_for_vazia()
     {
-        var customer = new Customer(_name, _address, _phone, _phone2, _email);
+        var customer = new Customer(_name, _address, _phone, _phone2, _email, new Cpf("00000000000"));
 
         Assert.ThrowsException<EntityException<Customer>>(() =>
         {
@@ -56,7 +56,7 @@ public class CustomerTests
     [TestMethod]
     public void deve_retornar_verdade_se_o_metodo_UpdatePhone_funcionar()
     {
-        var customer = new Customer(_name, _address, _phone, _phone2, _email);
+        var customer = new Customer(_name, _address, _phone, _phone2, _email, new Cpf("00000000000"));
         customer.UpdatePhone("4132923047", "");
 
         Assert.AreEqual("4132923047", customer.Phone.CustomerPhone);

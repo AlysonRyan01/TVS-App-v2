@@ -33,6 +33,9 @@
                 <MudItem xs="12" md="6">
                     <MudTextField T="string" Label="Telefone 2" Value="@ServiceOrder.Customer.Phone2.CustomerPhone" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
                 </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField Mask="@(new PatternMask("000.000.000-00"))" T="string" Label="CPF" Value="@ServiceOrder.Customer.Cpf.Number" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                </MudItem>
             </MudGrid>
         </MudPaper>
 

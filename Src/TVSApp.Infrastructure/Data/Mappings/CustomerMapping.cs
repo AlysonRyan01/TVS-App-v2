@@ -22,6 +22,14 @@ public class CustomerMapping : IEntityTypeConfiguration<Customer>
                 .HasMaxLength(150)
                 .IsRequired();
         });
+        
+        builder.OwnsOne(c => c.Cpf, cpf =>
+        {
+            cpf.Property(n => n.Number)
+                .HasColumnName("Cpf")
+                .HasMaxLength(20)
+                .IsRequired();
+        });
 
         builder.OwnsOne(c => c.Address, address =>
         {

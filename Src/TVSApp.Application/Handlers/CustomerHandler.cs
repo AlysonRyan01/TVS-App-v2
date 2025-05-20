@@ -35,8 +35,9 @@ public class CustomerHandler
             var phone = new Phone(command.Phone);
             var phone2 = new Phone(command.Phone2);
             var email = new Email(command.Email);
+            var cpf = new Cpf(command.Cpf);
 
-            var customer = new Customer(name, address, phone, phone2, email);
+            var customer = new Customer(name, address, phone, phone2, email, cpf);
 
             return await _customerRepository.CreateAsync(customer);
         }
@@ -69,6 +70,7 @@ public class CustomerHandler
                 command.State);
             customer.UpdatePhone(command.Phone, command.Phone2);
             customer.UpdateEmail(command.Email);
+            customer.UpdateCpf(command.Cpf);
 
             return await _customerRepository.UpdateAsync(customer);
         }

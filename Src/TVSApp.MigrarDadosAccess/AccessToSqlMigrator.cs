@@ -62,7 +62,7 @@ public class AccessToSqlMigrator
                 var emailStr = reader["Email"] as string ?? "Não tem";
                 var email = new Email(emailStr);
 
-                var customer = new Customer(name, address, phone, phone2, email)
+                var customer = new Customer(name, address, phone, phone2, email, new Cpf("00000000000"))
                 {
                     Id = 0
                 };

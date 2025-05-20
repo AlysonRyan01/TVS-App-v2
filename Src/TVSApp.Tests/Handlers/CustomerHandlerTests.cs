@@ -28,7 +28,8 @@ public class CustomerHandlerTests
             new Address("Rua Centenario", "Centro", "Campo Largo", "123", "83601000", "Parana"),
             new Phone("41997561468"),
             new Phone("41997561468"),
-            new Email("alysonullirsch8@gmail.com"));
+            new Email("alysonullirsch8@gmail.com")
+            , new Cpf("00000000000"));
 
         _createCustomerCommand = new()
         {

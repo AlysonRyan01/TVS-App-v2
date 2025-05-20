@@ -58,6 +58,17 @@
                                   Class="w-48"
                                   Mask="@(new PatternMask("00000-000"))" />
                 </div>
+
+                <p class="text-lg font-semibold mb-3 mt-6 text-gray-600">Documento</p>
+
+                <div class="flex gap-4 mb-4">
+                    <MudTextField @bind-Value="EditableCustomerCommand.Cpf"
+                                  Label="CPF"
+                                  Variant="Variant.Text"
+                                  Required="true"
+                                  Mask="@(new PatternMask("000.000.000-00"))"
+                                  Class="flex-grow" />
+                </div>
                 
                 <p class="text-lg font-semibold mb-3 mt-6 text-gray-600">Contato</p>
 
@@ -138,7 +149,8 @@
                     State = Customer.Address.State,
                     Phone = Customer.Phone.CustomerPhone,
                     Phone2 = Customer.Phone2.CustomerPhone,
-                    Email = Customer.Email?.CustomerEmail ?? ""
+                    Email = Customer.Email?.CustomerEmail ?? "",
+                    Cpf = Customer.Cpf.Number
                 };
             }
             else

@@ -11,13 +11,14 @@ public class Customer : Entity
     public Customer() { }
 
     [JsonConstructor]
-    public Customer(Name name, Address address, Phone phone, Phone phone2, Email? email)
+    public Customer(Name name, Address address, Phone phone, Phone phone2, Email? email, Cpf cpf)
     {
         Name = name;
         Address = address;
         Phone = phone;
         Phone2 = phone2;
         Email = email;
+        Cpf = cpf;
     }
 
     [JsonPropertyName("name")]
@@ -30,6 +31,8 @@ public class Customer : Entity
     public Phone Phone2 { get; private set; } = null!;
     [JsonPropertyName("email")]
     public Email? Email { get; private set; }
+
+    [JsonPropertyName("Document")] public Cpf Cpf { get; private set; } = null!;
 
     [JsonPropertyName("serviceOrders")]
     public IReadOnlyCollection<ServiceOrder> ServiceOrders => _serviceOrders.AsReadOnly();
@@ -56,5 +59,10 @@ public class Customer : Entity
     public void UpdateEmail(string email)
     {
         Email = new Email(email);
+    }
+
+    public void UpdateCpf(string cpf)
+    {
+        Cpf = new Cpf(cpf);
     }
 }
