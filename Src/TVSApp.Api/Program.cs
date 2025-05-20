@@ -19,6 +19,8 @@ var app = builder.Build();
 
 app.UseCors(builder.Configuration["Cors:PolicyName"]!);
 
+app.AddMigrations();
+
 app.MapHub<ServiceOrderHub>("/osHub");
 app.AddAuthorization();
 app.AddEndpoints();

@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using TVS_App.Api.Endpoints;
+using TVS_App.Infrastructure.Data;
 
 namespace TVS_App.Api.Common;
 
@@ -22,5 +24,14 @@ public static class AppExtensions
     {
         app.UseSwagger();
         app.UseSwaggerUI();
+    }
+
+    public static void AddMigrations(this WebApplication app)
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDataContext>();
+            db.Database.Migrate();
+        }
     }
 }
