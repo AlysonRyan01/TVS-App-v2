@@ -164,6 +164,7 @@ public partial class Home : ComponentBase
     public async Task UpdateServiceOrdersAsync()
     {
         _isBusy = true;
+        StateHasChanged();
         try
         {
             await LoadPendingEstimatesAsync();
@@ -181,6 +182,7 @@ public partial class Home : ComponentBase
         finally
         {
             _isBusy = false;
+            StateHasChanged();
         }
     }
     
