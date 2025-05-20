@@ -104,7 +104,7 @@
                 <div class="flex justify-end">
                     @if (_isProcessing)
                     {
-                        <MudProgressCircular Color="Color.Primary" Size="Size.Medium" Indeterminate="true" />
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
                     }
                     else
                     {
@@ -112,7 +112,7 @@
                                    Disabled="_isProcessing"
                                    Variant="Variant.Filled"
                                    Color="Color.Primary"
-                                   Class="text-white px-6 py-2 shadow-md mt-3">
+                                   Class="mt-3">
                             Adicionar
                         </MudButton>
                     }

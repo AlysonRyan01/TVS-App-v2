@@ -25,6 +25,7 @@ public partial class EditServiceOrderPage : ComponentBase
 
     public async Task OpenEditServiceOrderDialog()
     {
+        _isBusy = true;
         var normalizeNumber = new string(_serviceOrderId.Where(char.IsDigit).ToArray());
         if (!long.TryParse(normalizeNumber, out var longNumber) || longNumber <= 0)
         {
@@ -49,10 +50,12 @@ public partial class EditServiceOrderPage : ComponentBase
         {
             Snackbar.Add(serviceOrderResult.Message ?? "Ocorreu um erro ao tentar buscar a ordem de serviço", Severity.Error);
         }
+        _isBusy = false;
     }
     
     public async Task OpenEditDialog(ServiceOrder order)
     {
+        _isBusy = true;
         var parameters = new DialogParameters
         {
             ["ServiceOrder"] = order
@@ -66,6 +69,7 @@ public partial class EditServiceOrderPage : ComponentBase
         };
 
         await DialogService.ShowAsync<EditServiceOrderDialog>("Editar ordem de serviço", parameters, options);
+        _isBusy = false;
     }
     
     private async Task<IEnumerable<Customer>> SearchCustomers(string? searchTerm, CancellationToken cancellationToken)
@@ -116,6 +120,7 @@ public partial class EditServiceOrderPage : ComponentBase
     
     private async Task OpenConfirmCustomerDialog(long customerId)
     {
+        _isBusy = true;
         var parameters = new DialogParameters
         {
             ["CustomerId"] = customerId
@@ -130,10 +135,12 @@ public partial class EditServiceOrderPage : ComponentBase
 
         var dialog = await DialogService.ShowAsync<ConfirmCustomerDialog>("Confirmar cliente", parameters, options);
         var result = await dialog.Result;
+        _isBusy = false;
     }
 
     public async Task SetProductLocation()
     {
+        _isBusy = true;
         try
         {
             var result = await ServiceOrderHandler.AddProductLocation(_locationCommand);
@@ -146,5 +153,6 @@ public partial class EditServiceOrderPage : ComponentBase
         {
             Snackbar.Add($"Erro: {e.Message}", Severity.Error);
         }
+        _isBusy = false;
     }
 }

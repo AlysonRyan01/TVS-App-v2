@@ -25,12 +25,19 @@
                               Required="true"
                               Class="w-[200px]"/>
             </div>
-            <MudButton OnClick="SetProductLocation"
-                       Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       Class="mt-2"
-                       FullWidth="true"
-                       Size="Size.Medium">Adicionar</MudButton>
+            @if (_isBusy)
+            {
+                <MudProgressLinear Indeterminate Color="Color.Primary" />
+            }
+            else
+            {
+                <MudButton OnClick="SetProductLocation"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Class="mt-2"
+                           FullWidth="true"
+                           Size="Size.Medium">Adicionar</MudButton>
+            }
         </div>
 
         <!-- Alterar Ordem -->
@@ -43,12 +50,19 @@
                               Required="true"
                               Class="w-[300px]"/>
             </div>
-            <MudButton OnClick="OpenEditServiceOrderDialog"
-                       Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       FullWidth="true"
-                       Class="mt-2"
-                       Size="Size.Medium">Alterar</MudButton>
+            @if (_isBusy)
+            {
+                <MudProgressLinear Indeterminate Color="Color.Primary" />
+            }
+            else
+            {
+                <MudButton OnClick="OpenEditServiceOrderDialog"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           Class="mt-2"
+                           Size="Size.Medium">Alterar</MudButton>
+            }
         </div>
 
         <!-- Editar Cliente -->

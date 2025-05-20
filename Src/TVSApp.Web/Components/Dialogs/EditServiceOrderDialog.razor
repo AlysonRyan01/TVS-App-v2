@@ -192,18 +192,25 @@
             </div>
 
             <div class="flex justify-end pt-4 gap-3">
-                <MudButton Variant="Variant.Text"
-                           Color="Color.Default"
-                           Class="px-6 py-2"
-                           OnClick="() => MudDialog.Cancel()">
-                    Cancelar
-                </MudButton>
+                @if (_isProcessing)
+                {
+                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Default"
+                               Class="px-6 py-2"
+                               OnClick="() => MudDialog.Cancel()">
+                        Cancelar
+                    </MudButton>
 
-                <MudButton Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           OnClick="EditServiceOrder">
-                    Salvar Alterações
-                </MudButton>
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               OnClick="EditServiceOrder">
+                        Salvar Alterações
+                    </MudButton>
+                }
             </div>
         </div>
         <div class="px-6 bg-gray-50 py-4 border-b border-cinza">
@@ -241,7 +248,7 @@
                         <div class="flex justify-end">
                             @if (_isProcessing)
                             {
-                                <MudProgressCircular Color="Color.Primary" Size="Size.Medium" Indeterminate="true" />
+                                <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
                             }
                             else
                             {
@@ -249,7 +256,7 @@
                                            Disabled="_isProcessing"
                                            Variant="Variant.Filled"
                                            Color="Color.Primary"
-                                           Class="text-white text-lg font-semibold px-6 py-2 mt-3 rounded-lg shadow-md">
+                                           Class="mt-3">
                                     Adicionar
                                 </MudButton>
                             }
@@ -261,16 +268,23 @@
             {
                 <MudText Typo="Typo.h6" Color="Color.Primary" Class="uppercase font-bold mb-4">Adicionar Resposta</MudText>
                 <MudPaper Class="py-4 px-2 flex flex-row gap-5" Elevation="0">
-                    <MudItem>
-                        <MudButton OnClick="AddApproveEstimateAsync" Disabled="_isProcessing" Variant="Variant.Filled" Color="Color.Success" Class="text-white text-lg font-semibold px-6 py-2 rounded-lg shadow-md">
-                            Aprovado
-                        </MudButton>
-                    </MudItem>
-                    <MudItem>
-                        <MudButton OnClick="AddReproveEstimateAsync" Disabled="_isProcessing" Variant="Variant.Filled" Color="Color.Error" Class="text-white text-lg font-semibold px-6 py-2 rounded-lg shadow-md">
-                            Reprovado
-                        </MudButton>
-                    </MudItem>
+                    @if (_isProcessing)
+                    {
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                    }
+                    else
+                    {
+                        <MudItem>
+                            <MudButton OnClick="AddApproveEstimateAsync" Disabled="_isProcessing" Variant="Variant.Filled" Color="Color.Success">
+                                Aprovado
+                            </MudButton>
+                        </MudItem>
+                        <MudItem>
+                            <MudButton OnClick="AddReproveEstimateAsync" Disabled="_isProcessing" Variant="Variant.Filled" Color="Color.Error">
+                                Reprovado
+                            </MudButton>
+                        </MudItem>
+                    }
                 </MudPaper>
             }
             else if (ServiceOrder.ServiceOrderStatus == EServiceOrderStatus.Evaluated && ServiceOrder.RepairStatus == ERepairStatus.Approved && ServiceOrder.RepairResult == ERepairResult.Repair)
@@ -279,7 +293,7 @@
                 @if (_isProcessing)
                 {
                     <MudItem>
-                        <MudProgressCircular Color="Color.Primary" Size="Size.Medium" Indeterminate="true" />
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
                     </MudItem>
                 }
                 else
@@ -293,13 +307,19 @@
             else if (ServiceOrder.ServiceOrderStatus == EServiceOrderStatus.OrderPart && ServiceOrder.RepairStatus == ERepairStatus.Approved)
             {
                 <MudText Typo="Typo.h6" Color="Color.Primary" Class="uppercase font-bold mb-4">Marcar Como Consertado</MudText>
-                <MudButton @onclick="Repaired"
-                           EndIcon="@Icons.Material.Filled.Done"
-                           Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           Class="text-white text-lg font-semibold px-6 py-2 rounded-lg shadow-md transition">
-                    Consertado
-                </MudButton>
+                @if (_isProcessing)
+                {
+                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                }
+                else
+                {
+                    <MudButton @onclick="Repaired"
+                               EndIcon="@Icons.Material.Filled.Done"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary">
+                        Consertado
+                    </MudButton>
+                }
             }
             else if (ServiceOrder.ServiceOrderStatus == EServiceOrderStatus.Repaired ||
                      ServiceOrder.RepairStatus == ERepairStatus.Disapproved ||

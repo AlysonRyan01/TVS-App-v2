@@ -100,18 +100,18 @@
                 @if (_isProcessing)
                 {
                     <MudItem>
-                        <MudProgressCircular Color="Color.Primary" Size="Size.Medium" Indeterminate="true" />
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
                     </MudItem>
                 }
                 else
                 {
                     <MudItem>
-                        <MudButton OnClick="Aprovado" Disabled="_isProcessing" Variant="Variant.Filled" Color="Color.Success" Class="text-white text-lg font-semibold px-6 py-2 rounded-lg shadow-md">
+                        <MudButton OnClick="Aprovado" Disabled="_isProcessing" Variant="Variant.Filled" Color="Color.Success">
                             Aprovado
                         </MudButton>
                     </MudItem>
                     <MudItem>
-                        <MudButton OnClick="Reprovado" Disabled="_isProcessing" Variant="Variant.Filled" Color="Color.Error" Class="text-white text-lg font-semibold px-6 py-2 rounded-lg shadow-md">
+                        <MudButton OnClick="Reprovado" Disabled="_isProcessing" Variant="Variant.Filled" Color="Color.Error">
                             Reprovado
                         </MudButton>
                     </MudItem>
