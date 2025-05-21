@@ -198,7 +198,8 @@ public partial class Home : ComponentBase
         {
             CloseButton = true,
             FullWidth = true,
-            MaxWidth = MaxWidth.Large
+            MaxWidth = MaxWidth.False,
+            FullScreen = true
         };
 
         var dialog = await DialogService.ShowAsync<AddEstimateDialog>("Atualizar Ordem de Serviço", parameters, options);
@@ -222,7 +223,8 @@ public partial class Home : ComponentBase
         {
             CloseButton = true,
             FullWidth = true,
-            MaxWidth = MaxWidth.Large
+            MaxWidth = MaxWidth.False,
+            FullScreen = true
         };
 
         var dialog = await DialogService.ShowAsync<AddResponseDialog>("Atualizar Ordem de Serviço", parameters, options);
@@ -246,7 +248,8 @@ public partial class Home : ComponentBase
         {
             CloseButton = true,
             FullWidth = true,
-            MaxWidth = MaxWidth.Large
+            MaxWidth = MaxWidth.False,
+            FullScreen = true
         };
 
         var dialog = await DialogService.ShowAsync<AddPurchasePartDialog>("Atualizar Ordem de Serviço", parameters, options);
@@ -270,7 +273,8 @@ public partial class Home : ComponentBase
         {
             CloseButton = true,
             FullWidth = true,
-            MaxWidth = MaxWidth.Large
+            MaxWidth = MaxWidth.False,
+            FullScreen = true
         };
 
         var dialog = await DialogService.ShowAsync<AddRepairDialog>("Atualizar Ordem de Serviço", parameters, options);
@@ -294,7 +298,8 @@ public partial class Home : ComponentBase
         {
             CloseButton = true,
             FullWidth = true,
-            MaxWidth = MaxWidth.Large
+            MaxWidth = MaxWidth.False,
+            FullScreen = true
         };
 
         var dialog = await DialogService.ShowAsync<AddDeliveryDialog>("Atualizar Ordem de Serviço", parameters, options);

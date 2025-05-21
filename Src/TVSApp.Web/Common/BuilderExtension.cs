@@ -12,6 +12,10 @@ public static class BuilderExtension
 {
     public static void AddServices(this WebAssemblyHostBuilder builder)
     {
+        var baseAddress = builder.HostEnvironment.IsDevelopment()
+            ? "http://localhost:5119/"
+            : "https://gerenciamentotvsapi-f7e9dyhyfbhrbpa8.brazilsouth-01.azurewebsites.net/";
+        
         builder.Services.AddTransient<CustomerHandler>();
         builder.Services.AddTransient<NotificationHandler>();
         builder.Services.AddTransient<AuthorizationMessageHandler>();
@@ -21,7 +25,7 @@ public static class BuilderExtension
         builder.Services.AddSingleton<HubConnection>(sp =>
         {
             return new HubConnectionBuilder()
-                .WithUrl(new Uri("https://gerenciamentotvsapi-f7e9dyhyfbhrbpa8.brazilsouth-01.azurewebsites.net/osHub"), options =>
+                .WithUrl(new Uri($"{baseAddress}osHub"), options =>
                 {
                     options.SkipNegotiation = true;
                     options.Transports = HttpTransportType.WebSockets;
@@ -33,9 +37,13 @@ public static class BuilderExtension
     
     public static void AddHttpClient(this WebAssemblyHostBuilder builder)
     {
+        var baseAddress = builder.HostEnvironment.IsDevelopment()
+            ? "http://localhost:5119/"
+            : "https://gerenciamentotvsapi-f7e9dyhyfbhrbpa8.brazilsouth-01.azurewebsites.net/";
+        
         builder.Services.AddHttpClient("api", client =>
         {
-            client.BaseAddress = new Uri("https://gerenciamentotvsapi-f7e9dyhyfbhrbpa8.brazilsouth-01.azurewebsites.net/");
+            client.BaseAddress = new Uri(baseAddress);
             client.Timeout = TimeSpan.FromSeconds(60);
         }).AddHttpMessageHandler<AuthorizationMessageHandler>();
     }
