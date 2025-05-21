@@ -25,7 +25,12 @@
                        Label="Empresa"
                        @bind-Value="_command.Enterprise"
                        Variant="Variant.Outlined"
-                       Class="w-full" />
+                       Class="w-full mb-5">
+                @foreach (var enterprise in Enum.GetValues(typeof(EEnterprise)).Cast<EEnterprise>())
+                {
+                    <MudSelectItem Value="@enterprise">@enterprise.GetDisplayName()</MudSelectItem>
+                }
+            </MudSelect>
         </div>
 
         <!-- CLIENTE -->
@@ -48,7 +53,12 @@
                            Label="Tipo"
                            @bind-Value="_command.Type"
                            Variant="Variant.Outlined"
-                           Class="w-full" />
+                           Class="w-full">
+                    @foreach (var type in Enum.GetValues(typeof(EProduct)).Cast<EProduct>())
+                    {
+                        <MudSelectItem Value="@type">@type.GetDisplayName()</MudSelectItem>
+                    }
+                </MudSelect>
 
                 <MudTextField Variant="Variant.Outlined" Label="Marca" @bind-Value="_command.Brand" Class="w-full" />
                 <MudTextField Variant="Variant.Outlined" Label="Modelo" @bind-Value="_command.Model" Class="w-full" />
@@ -66,16 +76,26 @@
             <MudText Typo="Typo.h6" Color="Color.Tertiary" Class="font-extrabold uppercase mb-2">ORÇAMENTO</MudText>
             <div class="flex flex-col gap-3">
                 <MudSelect T="EServiceOrderStatus"
-                           Variant="Variant.Outlined"
                            Label="Status da OS"
                            @bind-Value="_command.ServiceOrderStatus"
-                           Class="w-full" />
+                           Variant="Variant.Outlined"
+                           Class="w-full">
+                    @foreach (var status in Enum.GetValues(typeof(EServiceOrderStatus)).Cast<EServiceOrderStatus>())
+                    {
+                        <MudSelectItem Value="@status">@status.GetDisplayName()</MudSelectItem>
+                    }
+                </MudSelect>
 
                 <MudSelect T="ERepairStatus"
-                           Variant="Variant.Outlined"
                            Label="Status do Reparo"
                            @bind-Value="_command.RepairStatus"
-                           Class="w-full" />
+                           Variant="Variant.Outlined"
+                           Class="w-full">
+                    @foreach (var status in Enum.GetValues(typeof(ERepairStatus)).Cast<ERepairStatus>())
+                    {
+                        <MudSelectItem Value="@status">@status.GetDisplayName()</MudSelectItem>
+                    }
+                </MudSelect>
 
                 <MudTextField Variant="Variant.Outlined" Label="Solução" @bind-Value="_command.Solution" Lines="3" Class="w-full" />
                 <MudTextField Variant="Variant.Outlined" Label="Mensagem de orçamento" @bind-Value="_command.EstimateMessage" Class="w-full" />
@@ -84,10 +104,15 @@
                 <MudTextField Variant="Variant.Outlined" Label="Garantia" @bind-Value="_command.Guarantee" Class="w-full" />
 
                 <MudSelect T="ERepairResult"
-                           Variant="Variant.Outlined"
-                           Label="Resultado"
+                           Label="Resultado do Reparo"
                            @bind-Value="_command.RepairResult"
-                           Class="w-full" />
+                           Variant="Variant.Outlined"
+                           Class="w-full">
+                    @foreach (var result in Enum.GetValues(typeof(ERepairResult)).Cast<ERepairResult>())
+                    {
+                        <MudSelectItem Value="@result">@result.GetDisplayName()</MudSelectItem>
+                    }
+                </MudSelect>
 
                 <MudDatePicker Label="Data de Entrega" @bind-Date="_command.DeliveryDate" Class="w-full" />
             </div>
