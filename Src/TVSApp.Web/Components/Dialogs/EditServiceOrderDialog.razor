@@ -7,331 +7,118 @@
 @using TVSApp.Web.Extensions
 @using TVSApp.Web.Handlers
 
-<MudDialog>
+<MudDialog MaxWidth="MaxWidth.False" FullWidth="true">
+
     <TitleContent>
-        <div class="bg-red-700 p-4 rounded-t-lg">
-            <h2 class="font-bold text-xl lg:text-2xl text-[#BE0405] tracking-tight">
-                EDITAR ORDEM DE SERVIÇO: @ServiceOrder.Id
+        <div class="bg-red-700 p-3 rounded-t-lg">
+            <h2 class="font-extrabold text-2xl text-[#BE0405]">
+                EDITAR OS: @ServiceOrder.Id
             </h2>
         </div>
     </TitleContent>
 
     <DialogContent>
-        <!-- Seção Empresa -->
-        <div class="px-6 pt-4 pb-2 border-b border-cinza">
-            <h3 class="font-bold text-lg text-[#BE0405] mb-3">EMPRESA</h3>
+        <!-- EMPRESA -->
+        <div class="pt-3 pb-2">
+            <MudText Typo="Typo.h6" Color="Color.Tertiary" Class="font-extrabold uppercase mb-2">EMPRESA</MudText>
             <MudSelect T="EEnterprise"
                        Label="Empresa"
                        @bind-Value="_command.Enterprise"
                        Variant="Variant.Outlined"
-                       Class="w-full mb-5">
-                @foreach (var enterprise in Enum.GetValues(typeof(EEnterprise)).Cast<EEnterprise>())
-                {
-                    <MudSelectItem Value="@enterprise">@enterprise.GetDisplayName()</MudSelectItem>
-                }
-            </MudSelect>
+                       Class="w-full" />
         </div>
 
-        <!-- Seção Cliente -->
-        <div class="px-6 py-4 border-b border-cinza bg-gray-50">
-            <h3 class="font-bold text-lg text-[#BE0405] mb-3">CLIENTE</h3>
-
+        <!-- CLIENTE -->
+        <div class="py-3 bg-gray-50">
+            <MudText Typo="Typo.h6" Color="Color.Tertiary" Class="font-extrabold uppercase mb-2">CLIENTE</MudText>
             <MudAutocomplete T="Customer"
                              @bind-Value="_command.Customer"
+                             Variant="Variant.Outlined"
                              SearchFunc="SearchCustomers"
                              ToStringFunc="@(c => c?.Name?.CustomerName ?? "")"
                              MinCharacters="2"
-                             ResetValueOnEmptyText="true"
-                             Clearable="true"
-                             Variant="Variant.Outlined"
-                             Class="max-w-[300px] mb-5"
-                             Placeholder="Digite o nome do cliente" />
-            
+                             Class="w-full" />
         </div>
 
-        <!-- Seção Produto -->
-        <div class="px-6 py-4 border-b border-cinza">
-            <h3 class="font-bold text-lg text-[#BE0405] mb-3">DADOS DO PRODUTO</h3>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <!-- PRODUTO -->
+        <div class="py-3">
+            <MudText Typo="Typo.h6" Color="Color.Tertiary" Class="font-extrabold uppercase mb-2">PRODUTO</MudText>
+            <div class="flex flex-col gap-3">
                 <MudSelect T="EProduct"
                            Label="Tipo"
                            @bind-Value="_command.Type"
                            Variant="Variant.Outlined"
-                           Class="w-full">
-                    @foreach (var type in Enum.GetValues(typeof(EProduct)).Cast<EProduct>())
-                    {
-                        <MudSelectItem Value="@type">@type.GetDisplayName()</MudSelectItem>
-                    }
-                </MudSelect>
+                           Class="w-full" />
 
-                <MudTextField Label="Marca"
-                              @bind-Value="_command.Brand"
-                              Variant="Variant.Outlined"
-                              Class="w-full"
-                              Immediate="true" />
+                <MudTextField Variant="Variant.Outlined" Label="Marca" @bind-Value="_command.Brand" Class="w-full" />
+                <MudTextField Variant="Variant.Outlined" Label="Modelo" @bind-Value="_command.Model" Class="w-full" />
+                <MudTextField Variant="Variant.Outlined" Label="Série" @bind-Value="_command.SerialNumber" Class="w-full" />
+                <MudTextField Variant="Variant.Outlined" Label="Defeito" @bind-Value="_command.Defect" Class="w-full" />
+                <MudTextField Variant="Variant.Outlined" Label="Acessórios" @bind-Value="_command.Accessories" Class="w-full" />
+                <MudTextField Variant="Variant.Outlined" Label="Prateleira" @bind-Value="_command.Location" Class="w-full" />
 
-                <MudTextField Label="Modelo"
-                              @bind-Value="_command.Model"
-                              Variant="Variant.Outlined"
-                              Class="w-full"
-                              Immediate="true" />
-
-                <MudTextField Label="Série"
-                              @bind-Value="_command.SerialNumber"
-                              Variant="Variant.Outlined"
-                              Class="w-full"
-                              Immediate="true" />
-
-                <div class="col-span-2">
-                    <MudTextField Label="Defeito"
-                                  @bind-Value="_command.Defect"
-                                  Variant="Variant.Outlined"
-                                  Class="w-full"
-                                  Lines="3"
-                                  Multiline="true"
-                                  Immediate="true" />
-                </div>
-
-                <MudTextField Label="Acessórios"
-                              @bind-Value="_command.Accessories"
-                              Variant="Variant.Outlined"
-                              Class="w-full"
-                              Immediate="true" />
-
-                <MudTextField Label="Prateleira Atual"
-                              @bind-Value="_command.Location"
-                              Variant="Variant.Outlined"
-                              Class="w-full"
-                              Immediate="true" />
-
-                <div class="col-span-2">
-                    <div class="flex items-center gap-2">
-                        <LocationButton ServiceOrder="ServiceOrder" OnLocationChanged="UpdateLocation"/>
-                    </div>
-                </div>
+                <LocationButton ServiceOrder="ServiceOrder" OnLocationChanged="UpdateLocation" />
             </div>
         </div>
 
-        <!-- Seção Orçamento -->
-        <div class="px-6 bg-gray-50 py-4 border-b border-cinza">
-            <h3 class="font-bold text-lg text-[#BE0405] mb-4">DADOS DO ORÇAMENTO</h3>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- ORÇAMENTO -->
+        <div class="py-3 bg-gray-50">
+            <MudText Typo="Typo.h6" Color="Color.Tertiary" Class="font-extrabold uppercase mb-2">ORÇAMENTO</MudText>
+            <div class="flex flex-col gap-3">
                 <MudSelect T="EServiceOrderStatus"
+                           Variant="Variant.Outlined"
                            Label="Status da OS"
                            @bind-Value="_command.ServiceOrderStatus"
-                           Variant="Variant.Outlined"
-                           Class="w-full">
-                    @foreach (var status in Enum.GetValues(typeof(EServiceOrderStatus)).Cast<EServiceOrderStatus>())
-                    {
-                        <MudSelectItem Value="@status">@status.GetDisplayName()</MudSelectItem>
-                    }
-                </MudSelect>
+                           Class="w-full" />
 
                 <MudSelect T="ERepairStatus"
+                           Variant="Variant.Outlined"
                            Label="Status do Reparo"
                            @bind-Value="_command.RepairStatus"
-                           Variant="Variant.Outlined"
-                           Class="w-full">
-                    @foreach (var status in Enum.GetValues(typeof(ERepairStatus)).Cast<ERepairStatus>())
-                    {
-                        <MudSelectItem Value="@status">@status.GetDisplayName()</MudSelectItem>
-                    }
-                </MudSelect>
-                
-                <MudTextField Label="Solução"
-                              @bind-Value="_command.Solution"
-                              Variant="Variant.Outlined"
-                              Class="w-full"
-                              Lines="3"/>
+                           Class="w-full" />
 
-                <MudTextField Label="Mensagem de orçamento"
-                              @bind-Value="_command.EstimateMessage"
-                              Variant="Variant.Outlined"
-                              Class="w-full"
-                              Lines="3"/>
-
-                <div class="space-y-4">
-                    <MudNumericField Label="Valor da peça"
-                                     @bind-Value="_command.PartCost"
-                                     Variant="Variant.Outlined"
-                                     Class="w-full"
-                                     InputMode="InputMode.text"
-                                     Immediate="true"/>
-
-                    <MudNumericField Label="Valor da mão de obra"
-                                     @bind-Value="_command.LaborCost"
-                                     Variant="Variant.Outlined"
-                                     Class="w-full"
-                                     InputMode="InputMode.text"
-                                     Immediate="true"/>
-                </div>
-
-                <MudTextField Label="Garantia"
-                              @bind-Value="_command.Guarantee"
-                              Variant="Variant.Outlined"
-                              Class="w-full"/>
+                <MudTextField Variant="Variant.Outlined" Label="Solução" @bind-Value="_command.Solution" Lines="3" Class="w-full" />
+                <MudTextField Variant="Variant.Outlined" Label="Mensagem de orçamento" @bind-Value="_command.EstimateMessage" Class="w-full" />
+                <MudNumericField Variant="Variant.Outlined" Label="Valor da peça" @bind-Value="_command.PartCost" Class="w-full" />
+                <MudNumericField Variant="Variant.Outlined" Label="Valor da mão de obra" @bind-Value="_command.LaborCost" Class="w-full" />
+                <MudTextField Variant="Variant.Outlined" Label="Garantia" @bind-Value="_command.Guarantee" Class="w-full" />
 
                 <MudSelect T="ERepairResult"
-                           Label="Resultado do Reparo"
-                           @bind-Value="_command.RepairResult"
                            Variant="Variant.Outlined"
-                           Class="w-full">
-                    @foreach (var result in Enum.GetValues(typeof(ERepairResult)).Cast<ERepairResult>())
-                    {
-                        <MudSelectItem Value="@result">@result.GetDisplayName()</MudSelectItem>
-                    }
-                </MudSelect>
+                           Label="Resultado"
+                           @bind-Value="_command.RepairResult"
+                           Class="w-full" />
 
-                <MudDatePicker Label="Data de Entrega"
-                               @bind-Date="_command.DeliveryDate"
-                               Variant="Variant.Outlined"
-                               Class="w-full"/>
-                
-            </div>
-
-            <div class="flex justify-end pt-4 gap-3">
-                @if (_isProcessing)
-                {
-                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
-                }
-                else
-                {
-                    <MudButton Variant="Variant.Text"
-                               Color="Color.Default"
-                               Class="px-6 py-2"
-                               OnClick="() => MudDialog.Cancel()">
-                        Cancelar
-                    </MudButton>
-
-                    <MudButton Variant="Variant.Filled"
-                               Color="Color.Primary"
-                               OnClick="EditServiceOrder">
-                        Salvar Alterações
-                    </MudButton>
-                }
+                <MudDatePicker Label="Data de Entrega" @bind-Date="_command.DeliveryDate" Class="w-full" />
             </div>
         </div>
-        <div class="px-6 bg-gray-50 py-4 border-b border-cinza">
-            @if (ServiceOrder.ServiceOrderStatus == EServiceOrderStatus.Entered && ServiceOrder.RepairStatus == ERepairStatus.Entered)
-            {
-                <MudPaper Class="py-4 px-2" Elevation="0">
-                <MudText Typo="Typo.h6" Color="Color.Primary" Class="uppercase font-bold mb-4">Adicionar Orçamento</MudText>
-                <MudForm>
-                    <MudGrid>
-                        <MudItem xs="12" md="6">
-                            <MudTextField Label="Solução" @bind-Value="AddEstimateCommand.Solution" For="@(() => AddEstimateCommand.Solution)" Variant="Variant.Outlined" />
-                        </MudItem>
-                        <MudItem xs="12" md="6">
-                            <MudTextField Label="Mensagem de orçamento" Lines="1" @bind-Value="AddEstimateCommand.EstimateMessage" For="@(() => AddEstimateCommand.EstimateMessage)" Variant="Variant.Outlined" />
-                        </MudItem>
-                        <MudItem xs="12" md="6">
-                            <MudTextField Label="Valor da peça" @bind-Value="AddEstimateCommand.PartCost" For="@(() => AddEstimateCommand.PartCost)" Variant="Variant.Outlined" />
-                        </MudItem>
-                        <MudItem xs="12" md="6">
-                            <MudTextField Label="Valor da mão de obra" @bind-Value="AddEstimateCommand.LaborCost" For="@(() => AddEstimateCommand.LaborCost)" Variant="Variant.Outlined" />
-                        </MudItem>
-                        <MudItem xs="12" md="6">
-                            <MudTextField Label="Garantia" @bind-Value="AddEstimateCommand.Guarantee" For="@(() => AddEstimateCommand.Guarantee)" Variant="Variant.Outlined" />
-                        </MudItem>
-                        <MudItem xs="12" md="6">
-                            <MudSelect  Variant="Variant.Outlined" T="ERepairResult" Label="Situação" @bind-Value="AddEstimateCommand.RepairResult" Color="Color.Primary">
-                                @foreach (var value in Enum.GetValues(typeof(ERepairResult)).Cast<ERepairResult>())
-                                {
-                                    <MudSelectItem Value="@value">@GetPortugueseLabel(value)</MudSelectItem>
-                                }
-                            </MudSelect>
-                        </MudItem>
-                        </MudGrid>
 
-                        <div class="flex justify-end">
-                            @if (_isProcessing)
-                            {
-                                <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
-                            }
-                            else
-                            {
-                                <MudButton @onclick="AddEstimateAsync"
-                                           Disabled="_isProcessing"
-                                           Variant="Variant.Filled"
-                                           Color="Color.Primary"
-                                           Class="mt-3">
-                                    Adicionar
-                                </MudButton>
-                            }
-                        </div>
-                    </MudForm>
-                </MudPaper>
-            }
-            else if (ServiceOrder.ServiceOrderStatus == EServiceOrderStatus.Evaluated && ServiceOrder.RepairStatus == ERepairStatus.Waiting)
+        <div class="py-3 flex flex-col gap-2">
+            @if (_isProcessing)
             {
-                <MudText Typo="Typo.h6" Color="Color.Primary" Class="uppercase font-bold mb-4">Adicionar Resposta</MudText>
-                <MudPaper Class="py-4 px-2 flex flex-row gap-5" Elevation="0">
-                    @if (_isProcessing)
-                    {
-                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
-                    }
-                    else
-                    {
-                        <MudItem>
-                            <MudButton OnClick="AddApproveEstimateAsync" Disabled="_isProcessing" Variant="Variant.Filled" Color="Color.Success">
-                                Aprovado
-                            </MudButton>
-                        </MudItem>
-                        <MudItem>
-                            <MudButton OnClick="AddReproveEstimateAsync" Disabled="_isProcessing" Variant="Variant.Filled" Color="Color.Error">
-                                Reprovado
-                            </MudButton>
-                        </MudItem>
-                    }
-                </MudPaper>
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
             }
-            else if (ServiceOrder.ServiceOrderStatus == EServiceOrderStatus.Evaluated && ServiceOrder.RepairStatus == ERepairStatus.Approved && ServiceOrder.RepairResult == ERepairResult.Repair)
+            else
             {
-                <MudText Typo="Typo.h6" Color="Color.Primary" Class="uppercase font-bold mb-4">Adicionar Compra de Peça</MudText>
-                @if (_isProcessing)
-                {
-                    <MudItem>
-                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
-                    </MudItem>
-                }
-                else
-                {
-                    <MudItem>
-                        <AddPurchasedPartButton ServiceOrder="ServiceOrder" DialogInstance="MudDialog"/>
-                    </MudItem>
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Class="w-full"
+                           OnClick="EditServiceOrder">
+                    Salvar Alterações
+                </MudButton>
 
-                }
-            }
-            else if (ServiceOrder.ServiceOrderStatus == EServiceOrderStatus.OrderPart && ServiceOrder.RepairStatus == ERepairStatus.Approved)
-            {
-                <MudText Typo="Typo.h6" Color="Color.Primary" Class="uppercase font-bold mb-4">Marcar Como Consertado</MudText>
-                @if (_isProcessing)
-                {
-                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
-                }
-                else
-                {
-                    <MudButton @onclick="Repaired"
-                               EndIcon="@Icons.Material.Filled.Done"
-                               Variant="Variant.Filled"
-                               Color="Color.Primary">
-                        Consertado
-                    </MudButton>
-                }
-            }
-            else if (ServiceOrder.ServiceOrderStatus == EServiceOrderStatus.Repaired ||
-                     ServiceOrder.RepairStatus == ERepairStatus.Disapproved ||
-                     ServiceOrder.RepairResult == ERepairResult.Unrepaired ||
-                     ServiceOrder.RepairResult == ERepairResult.NoDefectFound)
-            {
-                <MudText Typo="Typo.h6" Color="Color.Primary" Class="uppercase font-bold mb-4">Marcar Como Entregue</MudText>
-                <DeliveryServiceOrderButton OnDeliveryAdded="OnDeliveryAdded" Command="GetServiceOrderByIdCommand" />
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Default"
+                           Class="w-full"
+                           OnClick="() => MudDialog.Cancel()">
+                    Cancelar
+                </MudButton>
             }
         </div>
     </DialogContent>
 </MudDialog>
+
+
 
 
 @code {

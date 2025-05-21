@@ -3,19 +3,12 @@
 @using TVSApp.Web.Handlers
 
 
-@if (_isProcessing)
-{
-    <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
-}
-else
-{
-    <MudButton OnClick="AddPurchased" Disabled="_isProcessing" EndIcon="@Icons.Material.Filled.Done" Variant="Variant.Filled" Color="Color.Primary">
-        Comprado
-    </MudButton>
-}
+<MudButton OnClick="AddPurchased" Disabled="_isProcessing" Size="Size.Large" IconColor="Color.Secondary" EndIcon="@Icons.Material.Filled.Done" Variant="Variant.Filled" Color="Color.Primary">
+    <p class="text-white">@(@_isProcessing ? "Processando..." : "Comprado")</p>
+</MudButton>
 
 @code {
-    [Parameter] public IMudDialogInstance DialogInstance { get; set; }
+    [Parameter] public IMudDialogInstance DialogInstance { get; set; } = null!;
     [Parameter] public ServiceOrder ServiceOrder { get; set; } = null!;
     [Inject] public ServiceOrderHandler ServiceOrderHandler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
@@ -29,8 +22,8 @@ else
             var result = await ServiceOrderHandler.AddPurchasedPart(new GetServiceOrderByIdCommand { Id = ServiceOrder.Id });
             if (result.IsSuccess)
             {
+                DialogInstance.Close(DialogResult.Ok(true));
                 Snackbar.Add(result.Message ?? "Compra adicionada com sucesso!", Severity.Success);
-                DialogInstance?.Close(DialogResult.Ok(true));
             }
             else
                 Snackbar.Add(result.Message?? "Erro ao adicionar a compra da peça", Severity.Error);

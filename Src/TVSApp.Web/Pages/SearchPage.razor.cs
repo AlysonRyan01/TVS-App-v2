@@ -272,7 +272,8 @@ public partial class SearchPage : ComponentBase
         {
             CloseButton = true,
             FullWidth = true,
-            MaxWidth = MaxWidth.Large
+            MaxWidth = MaxWidth.False,
+            FullScreen = true
         };
 
         await DialogService.ShowAsync<InspectServiceOrderDialog>("Inspecionar ordem de serviço", parameters, options);

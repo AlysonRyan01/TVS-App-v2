@@ -203,12 +203,7 @@ public partial class Home : ComponentBase
         };
 
         var dialog = await DialogService.ShowAsync<AddEstimateDialog>("Atualizar Ordem de Serviço", parameters, options);
-        var result = await dialog.Result;
-    
-        if (result!.Canceled)
-        {
-            await UpdateServiceOrdersAsync();
-        }
+        await dialog.Result;
     }
     
     private async Task OpenAddResponseDialog(ServiceOrder order)
@@ -228,12 +223,7 @@ public partial class Home : ComponentBase
         };
 
         var dialog = await DialogService.ShowAsync<AddResponseDialog>("Atualizar Ordem de Serviço", parameters, options);
-        var result = await dialog.Result;
-    
-        if (result!.Canceled)
-        {
-            await UpdateServiceOrdersAsync();
-        }
+        await dialog.Result;
     }
     
     private async Task OpenAddPerchasePartDialog(ServiceOrder order)
@@ -253,12 +243,7 @@ public partial class Home : ComponentBase
         };
 
         var dialog = await DialogService.ShowAsync<AddPurchasePartDialog>("Atualizar Ordem de Serviço", parameters, options);
-        var result = await dialog.Result;
-    
-        if (result!.Canceled)
-        {
-            await UpdateServiceOrdersAsync();
-        }
+        await dialog.Result;
     }
     
     private async Task OpenAddRepairDialog(ServiceOrder order)
@@ -278,12 +263,7 @@ public partial class Home : ComponentBase
         };
 
         var dialog = await DialogService.ShowAsync<AddRepairDialog>("Atualizar Ordem de Serviço", parameters, options);
-        var result = await dialog.Result;
-    
-        if (result!.Canceled)
-        {
-            await UpdateServiceOrdersAsync();
-        }
+        await dialog.Result;
     }
     
     private async Task OpenAddDeliveryDialog(ServiceOrder order)
@@ -303,11 +283,6 @@ public partial class Home : ComponentBase
         };
 
         var dialog = await DialogService.ShowAsync<AddDeliveryDialog>("Atualizar Ordem de Serviço", parameters, options);
-        var result = await dialog.Result;
-    
-        if (result!.Canceled)
-        {
-            await UpdateServiceOrdersAsync();
-        }
+        await dialog.Result;
     }
 }

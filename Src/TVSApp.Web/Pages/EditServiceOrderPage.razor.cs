@@ -65,7 +65,8 @@ public partial class EditServiceOrderPage : ComponentBase
         {
             CloseButton = true,
             FullWidth = true,
-            MaxWidth = MaxWidth.Large
+            MaxWidth = MaxWidth.False,
+            FullScreen = true
         };
 
         await DialogService.ShowAsync<EditServiceOrderDialog>("Editar ordem de serviço", parameters, options);
@@ -130,7 +131,8 @@ public partial class EditServiceOrderPage : ComponentBase
         {
             CloseButton = true,
             FullWidth = true,
-            MaxWidth = MaxWidth.Medium
+            MaxWidth = MaxWidth.False,
+            FullScreen = true
         };
 
         var dialog = await DialogService.ShowAsync<ConfirmCustomerDialog>("Confirmar cliente", parameters, options);
