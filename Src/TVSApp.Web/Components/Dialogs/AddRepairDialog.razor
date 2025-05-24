@@ -117,7 +117,6 @@
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
     [Parameter] public ServiceOrder ServiceOrder { get; set; } = null!;
-    [Parameter] public EventCallback OnRepairAdded { get; set; }
     [Inject] public ServiceOrderHandler ServiceOrderHandler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
 
@@ -133,7 +132,6 @@
             if (result.IsSuccess)
             {
                 MudDialog.Close(DialogResult.Ok(true));
-                await OnRepairAdded.InvokeAsync();
                 Snackbar.Add("Conserto concluído com sucesso!", Severity.Success);
             }
             else

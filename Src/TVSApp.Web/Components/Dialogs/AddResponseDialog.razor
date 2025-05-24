@@ -125,7 +125,6 @@
     
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
     [Parameter] public ServiceOrder ServiceOrder { get; set; } = null!;
-    [Parameter] public EventCallback OnResponseAdded { get; set; }
     [Inject] public ServiceOrderHandler ServiceOrderHandler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
 
@@ -138,7 +137,6 @@
             if (result.IsSuccess)
             {
                 MudDialog.Close(DialogResult.Ok(true));
-                await OnResponseAdded.InvokeAsync();
                 Snackbar.Add("Resposta adicionada com sucesso!", Severity.Success);
             }
             else
@@ -164,7 +162,6 @@
             if (result.IsSuccess)
             {
                 Snackbar.Add("Resposta adicionada com sucesso!", Severity.Success);
-                await OnResponseAdded.InvokeAsync();
                 MudDialog.Close(DialogResult.Ok(true));
             }
             else

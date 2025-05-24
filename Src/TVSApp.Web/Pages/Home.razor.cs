@@ -17,6 +17,7 @@ public partial class Home : ComponentBase
     public List<ServiceOrder> WaitingPickupServiceOrders { get; set; } = new();
     public List<ServiceOrder> DeliveredServiceOrders { get; set; } = new();
     private bool _isBusy;
+    private bool _hubHandlerRegistered = false;
 
     [Inject] public ServiceOrderHandler Handler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
@@ -27,13 +28,18 @@ public partial class Home : ComponentBase
     {
         try
         {
+            Console.WriteLine("OnInitializedAsync chamado");
             await UpdateServiceOrdersAsync();
             
-            HubConnection.On<string>("Atualizar", async (mensagem) =>
+            if (!_hubHandlerRegistered)
             {
-                Console.WriteLine($"Web socket Recebido: {mensagem}");
-                await UpdateServiceOrdersAsync();
-            });
+                HubConnection.On<string>("Atualizar", async (mensagem) =>
+                {
+                    Console.WriteLine($"Web socket Recebido: {mensagem}");
+                    await UpdateServiceOrdersAsync();
+                });
+                _hubHandlerRegistered = true;
+            }
 
             if (HubConnection.State == HubConnectionState.Disconnected)
             {
@@ -190,8 +196,7 @@ public partial class Home : ComponentBase
     {
         var parameters = new DialogParameters
         {
-            ["ServiceOrder"] = order,
-            ["OnEstimateAdded"] = EventCallback.Factory.Create(this, UpdateServiceOrdersAsync)
+            ["ServiceOrder"] = order
         };
 
         var options = new DialogOptions
@@ -210,8 +215,7 @@ public partial class Home : ComponentBase
     {
         var parameters = new DialogParameters
         {
-            ["ServiceOrder"] = order,
-            ["OnResponseAdded"] = EventCallback.Factory.Create(this, UpdateServiceOrdersAsync)
+            ["ServiceOrder"] = order
         };
 
         var options = new DialogOptions
@@ -230,8 +234,7 @@ public partial class Home : ComponentBase
     {
         var parameters = new DialogParameters
         {
-            ["ServiceOrder"] = order,
-            ["OnPurchasePartAdded"] = EventCallback.Factory.Create(this, UpdateServiceOrdersAsync)
+            ["ServiceOrder"] = order
         };
 
         var options = new DialogOptions
@@ -250,8 +253,7 @@ public partial class Home : ComponentBase
     {
         var parameters = new DialogParameters
         {
-            ["ServiceOrder"] = order,
-            ["OnRepairAdded"] = EventCallback.Factory.Create(this, UpdateServiceOrdersAsync)
+            ["ServiceOrder"] = order
         };
 
         var options = new DialogOptions
@@ -270,8 +272,7 @@ public partial class Home : ComponentBase
     {
         var parameters = new DialogParameters
         {
-            ["ServiceOrder"] = order,
-            ["OnDeliveryAdded"] = EventCallback.Factory.Create(this, UpdateServiceOrdersAsync)
+            ["ServiceOrder"] = order
         };
 
         var options = new DialogOptions

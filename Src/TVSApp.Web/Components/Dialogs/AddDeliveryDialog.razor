@@ -87,7 +87,7 @@
 
             <!-- BOTÃO DE ENTREGA -->
             <div class="py-6 flex justify-end">
-                <DeliveryServiceOrderButton OnDeliveryAdded="OnDeliveryAdded" Command="Command" />
+                <DeliveryServiceOrderButton Command="Command" />
             </div>
         </MudPaper>
     </DialogContent>
@@ -99,7 +99,6 @@
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
     [Parameter] public ServiceOrder ServiceOrder { get; set; } = null!;
-    [Parameter] public EventCallback OnDeliveryAdded { get; set; }
     [Inject] public ServiceOrderHandler ServiceOrderHandler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
 

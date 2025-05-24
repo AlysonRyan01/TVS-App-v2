@@ -22,7 +22,6 @@ else
 @code {
     [Parameter] public GetServiceOrderByIdCommand Command { get; set; } = null!;
 
-    [Parameter] public EventCallback OnDeliveryAdded { get; set; }
     [Inject] public ServiceOrderHandler Handler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
     [Inject] public IJSRuntime Js { get; set; } = null!;
@@ -47,8 +46,6 @@ else
             {
                 var base64 = Convert.ToBase64String(result.Data);
                 await Js.InvokeVoidAsync("GeneratePdf", base64, "ordem_servico.pdf");
-            
-                await OnDeliveryAdded.InvokeAsync();
             }
             
             Snackbar.Add("Ordem de serviço entregue com sucesso!", Severity.Success);

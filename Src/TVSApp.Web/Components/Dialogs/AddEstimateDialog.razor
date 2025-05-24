@@ -132,7 +132,6 @@
 
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
     [Parameter] public ServiceOrder ServiceOrder { get; set; } = null!;
-    [Parameter] public EventCallback OnEstimateAdded { get; set; }
     [Inject] public ServiceOrderHandler ServiceOrderHandler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
 
@@ -161,7 +160,6 @@
             if (result.IsSuccess)
             {
                 MudDialog.Close(DialogResult.Ok(true));
-                await OnEstimateAdded.InvokeAsync();
                 Snackbar.Add("Orçamento adicionado com sucesso!", Severity.Success);
             }
             else
