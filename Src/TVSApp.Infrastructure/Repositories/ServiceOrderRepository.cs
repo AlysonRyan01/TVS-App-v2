@@ -255,11 +255,11 @@ public class ServiceOrderRepository : IServiceOrderRepository
             if (pageSize < 1)
                 return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 400, "O tamanho da página deve ser maior que zero.");
 
-            var oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
+            var twoMonthAgo = DateTime.UtcNow.AddMonths(-2);
 
             var query = _context.ServiceOrders
                 .Where(x => x.ServiceOrderStatus == EServiceOrderStatus.Entered &&
-                    x.RepairStatus == ERepairStatus.Entered && x.EntryDate >= oneMonthAgo)
+                    x.RepairStatus == ERepairStatus.Entered && x.EntryDate >= twoMonthAgo)
                 .OrderByDescending(x => x.Id);
 
             var totalCount = await query.CountAsync();
