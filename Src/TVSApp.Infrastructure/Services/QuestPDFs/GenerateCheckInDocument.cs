@@ -23,7 +23,7 @@ public class GenerateCheckInDocument : QuestPdf
 
             document.Page(page =>
             {
-                page.Margin(12);
+                page.Margin(8);
 
                 page.Content().Column(column =>
                 {   
