@@ -32,23 +32,17 @@ public class GenerateCheckInDocument : QuestPdf
                         container.Row(row =>
                         {
                             row.Spacing(0);
-                            row.ConstantItem(500).Text("TVS Eletrônica")
+                            row.ConstantItem(400).Text("TVS ELETRÔNICA")
                                 .FontSize(40)
                                 .ExtraBold()
-                                .FontColor(Colors.Red.Darken2)
-                                .Underline();
+                                .FontFamily("Arial")
+                                .FontColor(Colors.Red.Darken2);
 
                             row.RelativeItem(); 
 
-                            row.ConstantItem(50).Column(col =>
+                            row.ConstantItem(60).Column(col =>
                             {
                                 col.Item().Image(qrCodeBytes);
-
-                                col.Item().Text($"{_serviceOrder.SecurityCode}")
-                                    .FontSize(10)
-                                    .ExtraBold()
-                                    .FontColor(Colors.Red.Darken2)
-                                    .AlignCenter();
                             });
                         });
                     });
@@ -71,7 +65,7 @@ public class GenerateCheckInDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Black);
+                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
                     
                     column.Item().Element(container =>
                     {
@@ -80,72 +74,81 @@ public class GenerateCheckInDocument : QuestPdf
                             row.ConstantItem(350).Column(col =>
                             {
                                 col.Spacing(4);
-                                col.Item().Text($"ORDEM DE SERVIÇO N:  {_serviceOrder.Id.ToString("00'.'000")}")
+
+                                col.Item().Text($"ORDEM DE SERVIÇO N:  {_serviceOrder.Id:00'.'000}")
                                     .FontSize(12)
                                     .ExtraBold()
+                                    .FontFamily("Arial")
                                     .FontColor(Colors.Red.Darken2);
 
-                                col.Item().Text($"EMPRESA:  {_serviceOrder.Enterprise.GetDisplayName()}")
+                                col.Item().Text($"EMPRESA:  {_serviceOrder.Enterprise.ToString().ToUpper() ?? "-"}")
+                                    .FontSize(12)
+                                    .ExtraBold()
+                                    .FontFamily("Arial")
+                                    .FontColor(Colors.Red.Darken2);
+
+                                // Separador
+                                col.Item().PaddingTop(10).Text("DADOS DO CLIENTE")
                                     .FontSize(10)
                                     .ExtraBold()
                                     .FontColor(Colors.Red.Darken2);
 
-                                col.Item().Text($"Cliente:  {_serviceOrder.Customer.Name.CustomerName.ToUpper()}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Cliente:  {_serviceOrder.Customer?.Name?.CustomerName.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Endereço:  {_serviceOrder.Customer.Address.ToString().ToUpper()}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Endereço:  {_serviceOrder.Customer?.Address?.Street?.ToUpper() ?? "-"}, " +
+                                                $"{_serviceOrder.Customer?.Address?.Number ?? ""}, " +
+                                                $"{_serviceOrder.Customer?.Address?.Neighborhood?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Cidade:  {_serviceOrder.Customer.Address.City.ToUpper()}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Cidade:  {_serviceOrder.Customer?.Address?.City?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Fone:  {_serviceOrder.Customer.Phone.CustomerPhone.ToUpper()}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Fone:  {_serviceOrder.Customer?.Phone.CustomerPhone?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Fone:  {_serviceOrder.Customer.Phone2.CustomerPhone.ToUpper()}")
-                                    .FontSize(10)
-                                    .SemiBold();
-
+                                col.Item().Text($"Fone:  {_serviceOrder.Customer?.Phone2?.CustomerPhone.ToUpper() ?? "-"}")
+                                    .FontSize(10);
                             });
 
                             row.ConstantItem(200).Column(col =>
                             {
                                 col.Spacing(4);
-                                col.Item().Text($"DATA:  {_serviceOrder.EntryDate.ToString("dd/MM/yyyy")}")
+
+                                col.Item().Text($"DATA:  {_serviceOrder.EntryDate:dd/MM/yyyy}")
+                                    .FontSize(12)
+                                    .ExtraBold()
+                                    .FontFamily("Arial")
+                                    .FontColor(Colors.Red.Darken2);
+
+                                // Separador
+                                col.Item().PaddingTop(10).Text("DADOS DO PRODUTO")
                                     .FontSize(10)
                                     .ExtraBold()
                                     .FontColor(Colors.Red.Darken2);
 
-                                col.Item().Text($"Aparelho:  {_serviceOrder.Product.Type.GetDisplayName()}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Aparelho:  {_serviceOrder.Product?.Type.ToString().ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Marca:  {_serviceOrder.Product.Brand.ToUpper()}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Marca:  {_serviceOrder.Product?.Brand?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Modelo:  {_serviceOrder.Product.Model.ToUpper()}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Modelo:  {_serviceOrder.Product?.Model?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Série:  {_serviceOrder.Product.SerialNumber.ToUpper()}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Série:  {_serviceOrder.Product?.SerialNumber?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Defeito:  {_serviceOrder.Product.Defect?.ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Defeito:  {_serviceOrder?.Product?.Defect?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Acessórios:  {_serviceOrder.Product.Accessories?.ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Acessórios:  {_serviceOrder?.Product?.Accessories?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
                             });
+                        });
+                    });
 
-                            column.Item().PaddingTop(30).LineHorizontal(1).LineColor(Colors.Black);
+                column.Item().PaddingTop(20).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
 
                             column.Item().Element(container =>
                             {
@@ -162,8 +165,6 @@ public class GenerateCheckInDocument : QuestPdf
                             column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
                         });
                     });
-                });
-            });
         }
         catch (Exception ex)
         {

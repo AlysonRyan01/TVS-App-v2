@@ -27,29 +27,23 @@ public class RegenerateDocument : QuestPdf
                 page.Margin(12);
 
                 page.Content().Column(column =>
-                {   
+                {
                     column.Item().Element(container =>
                     {
                         container.Row(row =>
                         {
                             row.Spacing(0);
-                            row.ConstantItem(500).Text("TVS Eletrônica")
+                            row.ConstantItem(400).Text("TVS ELETRÔNICA")
                                 .FontSize(40)
                                 .ExtraBold()
-                                .FontColor(Colors.Red.Darken2)
-                                .Underline();
+                                .FontFamily("Arial")
+                                .FontColor(Colors.Red.Darken2);
 
-                            row.RelativeItem(); 
+                            row.RelativeItem();
 
-                            row.ConstantItem(50).Column(col =>
+                            row.ConstantItem(60).Column(col =>
                             {
                                 col.Item().Image(qrCodeBytes);
-
-                                col.Item().Text($"{_serviceOrder.SecurityCode}")
-                                    .FontSize(10)
-                                    .ExtraBold()
-                                    .FontColor(Colors.Red.Darken2)
-                                    .AlignCenter();
                             });
                         });
                     });
@@ -65,15 +59,14 @@ public class RegenerateDocument : QuestPdf
                             row.ConstantItem(120).Text("FIXO: (41) 3292-3047")
                                 .FontSize(9)
                                 .ExtraBold();
-
                             row.ConstantItem(200).Text("WHATSAPP: (41) 99274-4920")
                                 .FontSize(9)
                                 .ExtraBold();
                         });
                     });
 
-                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Black);
-                    
+                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
+
                     column.Item().Element(container =>
                     {
                         container.Row(row =>
@@ -81,88 +74,87 @@ public class RegenerateDocument : QuestPdf
                             row.ConstantItem(350).Column(col =>
                             {
                                 col.Spacing(4);
-                                col.Item().Text($"ORDEM DE SERVIÇO N:  {_serviceOrder.Id.ToString("00'.'000")}")
+                                col.Item().Text($"ORDEM DE SERVIÇO N:  {_serviceOrder.Id:00'.'000}")
                                     .FontSize(12)
                                     .ExtraBold()
+                                    .FontFamily("Arial")
                                     .FontColor(Colors.Red.Darken2);
 
-                                col.Item().Text($"EMPRESA:  {_serviceOrder.Enterprise.GetDisplayName() ?? ""}")
+                                col.Item().Text($"EMPRESA:  {_serviceOrder.Enterprise.GetDisplayName() ?? "-"}")
+                                    .FontSize(12)
+                                    .ExtraBold()
+                                    .FontFamily("Arial")
+                                    .FontColor(Colors.Red.Darken2);
+
+                                col.Item().PaddingTop(10).Text("DADOS DO CLIENTE")
                                     .FontSize(10)
                                     .ExtraBold()
                                     .FontColor(Colors.Red.Darken2);
 
-                                col.Item().Text($"Cliente:  {_serviceOrder.Customer?.Name?.CustomerName.ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Cliente:  {_serviceOrder.Customer?.Name?.CustomerName.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Endereço:  {_serviceOrder.Customer?.Address.ToString().ToUpper()}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Endereço:  {_serviceOrder.Customer?.Address?.Street?.ToUpper() ?? "-"}, " +
+                                                $"{_serviceOrder.Customer?.Address?.Number ?? ""}, " +
+                                                $"{_serviceOrder.Customer?.Address?.Neighborhood?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Cidade:  {_serviceOrder.Customer?.Address?.City?.ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Cidade:  {_serviceOrder.Customer?.Address?.City?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Fone:  {_serviceOrder.Customer?.Phone?.CustomerPhone?.ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Fone:  {_serviceOrder.Customer?.Phone.CustomerPhone?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Fone:  {_serviceOrder.Customer?.Phone2?.CustomerPhone?.ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
-
+                                col.Item().Text($"Fone:  {_serviceOrder.Customer?.Phone2?.CustomerPhone.ToUpper() ?? "-"}")
+                                    .FontSize(10);
                             });
 
                             row.ConstantItem(200).Column(col =>
                             {
                                 col.Spacing(4);
-                                col.Item().Text($"DATA:  {_serviceOrder.EntryDate.ToString("dd/MM/yyyy")}")
+                                col.Item().Text($"DATA:  {_serviceOrder.EntryDate:dd/MM/yyyy}")
+                                    .FontSize(12)
+                                    .ExtraBold()
+                                    .FontFamily("Arial")
+                                    .FontColor(Colors.Red.Darken2);
+
+                                col.Item().PaddingTop(10).Text("DADOS DO PRODUTO")
                                     .FontSize(10)
                                     .ExtraBold()
                                     .FontColor(Colors.Red.Darken2);
 
-                                col.Item().Text($"Aparelho:  {_serviceOrder.Product?.Type.GetDisplayName() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
-
-                                col.Item().Text($"Marca:  {_serviceOrder.Product?.Brand?.ToString().ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
-
-                                col.Item().Text($"Modelo:  {_serviceOrder.Product?.Model.ToString().ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
-
-                                col.Item().Text($"Série:  {_serviceOrder.Product?.SerialNumber?.ToString().ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
-
-                                col.Item().Text($"Defeito:  {_serviceOrder?.Product?.Defect?.ToString().ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
-
-                                col.Item().Text($"Acessórios:  {_serviceOrder?.Product?.Accessories?.ToString().ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Aparelho:  {_serviceOrder.Product?.Type.GetDisplayName() ?? "-"}")
+                                    .FontSize(10);
+                                col.Item().Text($"Marca:  {_serviceOrder.Product?.Brand?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
+                                col.Item().Text($"Modelo:  {_serviceOrder.Product?.Model?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
+                                col.Item().Text($"Série:  {_serviceOrder.Product?.SerialNumber?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
+                                col.Item().Text($"Defeito:  {_serviceOrder.Product?.Defect?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
+                                col.Item().Text($"Acessórios:  {_serviceOrder.Product?.Accessories?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
                             });
-
-                            column.Item().PaddingTop(30).LineHorizontal(1).LineColor(Colors.Black);
-
-                            column.Item().Element(container =>
-                            {
-                                container.Row(row =>
-                                {
-                                    row.Spacing(0);
-                                    row.ConstantItem(400).Text($"{_serviceOrder.Id.ToString("00'.'000")}")
-                                        .FontSize(120)
-                                        .ExtraBold()
-                                        .FontColor(Colors.Red.Darken3).Justify();
-                                });
-                            });
-
-                            column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
                         });
                     });
+
+                    column.Item().PaddingTop(20).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
+
+                    column.Item().Element(container =>
+                    {
+                        container.Row(row =>
+                        {
+                            row.Spacing(0);
+                            row.ConstantItem(400).Text($"{_serviceOrder.Id:00'.'000}")
+                                .FontSize(120)
+                                .ExtraBold()
+                                .FontColor(Colors.Red.Darken3)
+                                .Justify();
+                        });
+                    });
+
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
                 });
             });
         }
@@ -173,18 +165,17 @@ public class RegenerateDocument : QuestPdf
                 page.Margin(12);
 
                 page.Content().Column(column =>
-                {   
+                {
                     column.Item().Element(container =>
                     {
                         container.Row(row =>
                         {
                             row.Spacing(0);
-                            row.ConstantItem(500).MinHeight(60).Text("TVS Eletrônica")
-                                .FontSize(45)
+                            row.ConstantItem(400).Text("TVS ELETRÔNICA")
+                                .FontSize(40)
                                 .ExtraBold()
-                                .FontColor(Colors.Red.Darken2)
-                                .Underline();
-
+                                .FontFamily("Arial")
+                                .FontColor(Colors.Red.Darken2);
                         });
                     });
 
@@ -199,15 +190,14 @@ public class RegenerateDocument : QuestPdf
                             row.ConstantItem(120).Text("FIXO: (41) 3292-3047")
                                 .FontSize(9)
                                 .ExtraBold();
-
                             row.ConstantItem(200).Text("WHATSAPP: (41) 99274-4920")
                                 .FontSize(9)
                                 .ExtraBold();
                         });
                     });
 
-                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Black);
-                    
+                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
+
                     column.Item().Element(container =>
                     {
                         container.Row(row =>
@@ -215,109 +205,135 @@ public class RegenerateDocument : QuestPdf
                             row.ConstantItem(350).Column(col =>
                             {
                                 col.Spacing(4);
-                                col.Item().Text($"ORDEM DE SERVIÇO N:  {_serviceOrder.Id.ToString("00'.'000")}")
+                                col.Item().Text($"ORDEM DE SERVIÇO N:  {_serviceOrder.Id:00'.'000}")
                                     .FontSize(12)
                                     .ExtraBold()
+                                    .FontFamily("Arial")
                                     .FontColor(Colors.Red.Darken2);
 
-                                col.Item().Text($"EMPRESA:  {_serviceOrder.Enterprise.GetDisplayName() ?? ""}")
+                                col.Item().Text($"EMPRESA:  {_serviceOrder.Enterprise.GetDisplayName() ?? "-"}")
+                                    .FontSize(12)
+                                    .ExtraBold()
+                                    .FontFamily("Arial")
+                                    .FontColor(Colors.Red.Darken2);
+
+                                col.Item().PaddingTop(10).Text("DADOS DO CLIENTE")
                                     .FontSize(10)
                                     .ExtraBold()
                                     .FontColor(Colors.Red.Darken2);
 
-                                col.Item().Text($"Cliente:  {_serviceOrder.Customer?.Name?.CustomerName.ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Cliente:  {_serviceOrder.Customer?.Name?.CustomerName.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Endereço:  {_serviceOrder.Customer?.Address?.Street?.ToUpper() ?? ""}, {_serviceOrder.Customer?.Address?.Number ?? ""}, {_serviceOrder.Customer?.Address?.Neighborhood.ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Endereço:  {_serviceOrder.Customer?.Address?.Street?.ToUpper() ?? "-"}, " +
+                                                $"{_serviceOrder.Customer?.Address?.Number ?? ""}, " +
+                                                $"{_serviceOrder.Customer?.Address?.Neighborhood?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Cidade:  {_serviceOrder.Customer?.Address?.City?.ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Cidade:  {_serviceOrder.Customer?.Address?.City?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Fone:  {_serviceOrder.Customer?.Phone?.CustomerPhone?.ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Fone:  {_serviceOrder.Customer?.Phone.CustomerPhone?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
 
-                                col.Item().Text($"Fone:  {_serviceOrder.Customer?.Phone2?.CustomerPhone?.ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
-
-
+                                col.Item().Text($"Fone:  {_serviceOrder.Customer?.Phone2?.CustomerPhone.ToUpper() ?? "-"}")
+                                    .FontSize(10);
                             });
 
                             row.ConstantItem(200).Column(col =>
                             {
                                 col.Spacing(4);
-                                col.Item().Text($"DATA:  {_serviceOrder.EntryDate.ToString("dd/MM/yyyy")}")
+                                col.Item().Text($"DATA:  {_serviceOrder.EntryDate:dd/MM/yyyy}")
+                                    .FontSize(12)
+                                    .ExtraBold()
+                                    .FontFamily("Arial")
+                                    .FontColor(Colors.Red.Darken2);
+
+                                col.Item().PaddingTop(10).Text("DADOS DO PRODUTO")
                                     .FontSize(10)
                                     .ExtraBold()
                                     .FontColor(Colors.Red.Darken2);
 
-                                col.Item().Text($"Aparelho:  {_serviceOrder.Product?.Type.GetDisplayName() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
-
-                                col.Item().Text($"Marca:  {_serviceOrder.Product?.Brand?.ToString().ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
-
-                                col.Item().Text($"Modelo:  {_serviceOrder.Product?.Model.ToString().ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
-
-                                col.Item().Text($"Série:  {_serviceOrder.Product?.SerialNumber?.ToString().ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
-
-                                col.Item().Text($"Defeito:  {_serviceOrder?.Product?.Defect?.ToString().ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
-
-                                col.Item().Text($"Acessórios:  {_serviceOrder?.Product?.Accessories?.ToString().ToUpper() ?? ""}")
-                                    .FontSize(10)
-                                    .SemiBold();
+                                col.Item().Text($"Aparelho:  {_serviceOrder.Product?.Type.GetDisplayName() ?? "-"}")
+                                    .FontSize(10);
+                                col.Item().Text($"Marca:  {_serviceOrder.Product?.Brand?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
+                                col.Item().Text($"Modelo:  {_serviceOrder.Product?.Model?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
+                                col.Item().Text($"Série:  {_serviceOrder.Product?.SerialNumber?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
+                                col.Item().Text($"Defeito:  {_serviceOrder.Product?.Defect?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
+                                col.Item().Text($"Acessórios:  {_serviceOrder.Product?.Accessories?.ToUpper() ?? "-"}")
+                                    .FontSize(10);
                             });
-
-                            column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Black);
-
-                            column.Item().Element(container =>
-                            {
-                                container.Row(row =>
-                                {
-                                    row.ConstantItem(350).Column(col =>
-                                    {
-                                        col.Spacing(4);
-                                        col.Item().Text($"Solução:  {_serviceOrder.Solution?.ServiceOrderSolution?.ToString().ToUpper() ?? ""}")
-                                            .FontSize(12)
-                                            .Bold();
-                                        col.Item().Text($"Garantia de conserto: {_serviceOrder.Guarantee?.ServiceOrderGuarantee.ToUpper() ?? ""}")
-                                            .FontSize(12)
-                                            .Bold();
-                                        col.Item().Text($"Técnico: PEDRO ULLIRSCH")
-                                            .FontSize(12)
-                                            .Bold();
-                                        col.Item().Text($"Data Entrega: {_serviceOrder.DeliveryDate?.ToString("dd/MM/yyyy") ?? ""}")
-                                            .FontSize(12)
-                                            .Bold();
-                                    });
-                                    row.ConstantItem(200).Column(col =>
-                                    {
-                                        col.Spacing(4);
-                                        col.Item().Height(50);
-                                        col.Item().Text($"VALOR:  {_serviceOrder.TotalAmount.ToString("C", new CultureInfo("pt-BR")) ?? ""}")
-                                            .FontSize(14)
-                                            .ExtraBold()
-                                            .FontColor(Colors.Red.Darken2)
-                                            .Underline(true);
-                                    });
-                                });
-                            });
-                            column.Item().PaddingVertical(25).LineHorizontal(1).LineColor(Colors.Black);
                         });
                     });
+
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
+
+                    column.Item().PaddingVertical(10).Element(container =>
+                    {
+                        container.Border(1).BorderColor(Colors.Grey.Lighten1).Background(Colors.Grey.Lighten4).Padding(10).Row(row =>
+                        {
+                            // Coluna de Informações Técnicas
+                            row.RelativeItem().Column(col =>
+                            {
+                                col.Spacing(8);
+                                
+                                // Solução
+                                col.Item().Row(r => 
+                                {
+                                    r.ConstantItem(80).Text("SOLUÇÃO:").FontSize(11).SemiBold().FontColor(Colors.Grey.Darken2);
+                                    r.RelativeItem().Text(_serviceOrder.Solution?.ServiceOrderSolution?.ToUpper() ?? "-")
+                                        .FontSize(11).Bold().FontColor(Colors.Black);
+                                });
+                                
+                                // Garantia
+                                col.Item().Row(r => 
+                                {
+                                    r.ConstantItem(80).Text("GARANTIA:").FontSize(11).SemiBold().FontColor(Colors.Grey.Darken2);
+                                    r.RelativeItem().Text(_serviceOrder.Guarantee?.ServiceOrderGuarantee?.ToUpper() ?? "-")
+                                        .FontSize(11).Bold().FontColor(Colors.Black);
+                                });
+                                
+                                // Técnico
+                                col.Item().Row(r => 
+                                {
+                                    r.ConstantItem(80).Text("TÉCNICO:").FontSize(11).SemiBold().FontColor(Colors.Grey.Darken2);
+                                    r.RelativeItem().Text("PEDRO ULLIRSCH")
+                                        .FontSize(11).Bold().FontColor(Colors.Black);
+                                });
+                                
+                                // Data de Entrega
+                                col.Item().Row(r => 
+                                {
+                                    r.ConstantItem(80).Text("ENTREGA:").FontSize(11).SemiBold().FontColor(Colors.Grey.Darken2);
+                                    r.RelativeItem().Text(_serviceOrder.DeliveryDate?.ToString("dd/MM/yyyy") ?? "-")
+                                        .FontSize(11).Bold().FontColor(Colors.Black);
+                                });
+                            });
+
+                            // Coluna do Valor (destaque)
+                            row.ConstantItem(200).Column(col => 
+                            {
+                                col.Item().AlignCenter().Background(Colors.Red.Lighten5).Padding(10).Column(valueCol => 
+                                {
+                                    valueCol.Item().AlignCenter().Text("VALOR TOTAL")
+                                        .FontSize(12)
+                                        .SemiBold()
+                                        .FontColor(Colors.Grey.Darken2);
+                                    
+                                    valueCol.Item().AlignCenter().Text(_serviceOrder.TotalAmount.ToString("C", new CultureInfo("pt-BR")))
+                                        .FontSize(18)
+                                        .ExtraBold()
+                                        .FontColor(Colors.Red.Darken3);
+                                    
+                                });
+                            });
+                        });
+                    });
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
                 });
             });
         }
