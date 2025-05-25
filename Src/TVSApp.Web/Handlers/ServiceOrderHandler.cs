@@ -37,6 +37,26 @@ public class ServiceOrderHandler
         }
     }
 
+    public async Task<BaseResponse<byte[]>> CreateSalesServiceOrderAsync(CreateSalesServiceOrderCommand command)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("create-sales-service-order", command);
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                return new BaseResponse<byte[]>(null, (int)response.StatusCode, $"Erro: {error}");
+            }
+
+            var pdfBytes = await response.Content.ReadAsByteArrayAsync();
+            return new BaseResponse<byte[]>(pdfBytes, 200, "PDF gerado com sucesso");
+        }
+        catch (Exception e)
+        {
+            return ExceptionHandler.Handle<byte[]>(e);
+        }
+    }
+
     public async Task<BaseResponse<ServiceOrder?>> UpdateServiceOrderAsync(UpdateServiceOrderCommand command)
     {
         try

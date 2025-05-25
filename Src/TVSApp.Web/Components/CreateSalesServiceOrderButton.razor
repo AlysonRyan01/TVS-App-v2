@@ -1,0 +1,56 @@
+@using TVS_App.Application.Commands.ServiceOrderCommands
+@using TVSApp.Web.Handlers
+
+@if (_isProcessing)
+{
+    <MudProgressLinear Indeterminate Color="Color.Primary" />
+}
+else
+{
+    <MudButton @onclick="Create"
+               Disabled="_isProcessing"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               Class="min-w-[150px]"
+               FullWidth="false">Vender</MudButton>
+}
+
+@code {
+    [Parameter] public CreateSalesServiceOrderCommand Command { get; set; } = null!;
+
+    [Inject] public ServiceOrderHandler Handler { get; set; } = null!;
+    [Inject] public ISnackbar Snackbar { get; set; } = null!;
+    [Inject] public IJSRuntime Js { get; set; } = null!;
+    [Inject] public NavigationManager NavigationManager { get; set; } = null!;
+
+    private bool _isProcessing = false;
+    public async Task Create()
+    {
+        try
+        {
+            Command.Validate();
+            _isProcessing = true;
+
+            var result = await Handler.CreateSalesServiceOrderAsync(Command);
+            if (!result.IsSuccess || result.Data is null)
+            {
+                Snackbar.Add(result.Message ?? "Erro ao criar a ordem de serviço", Severity.Error);
+                return;
+            }
+
+            var base64 = Convert.ToBase64String(result.Data);
+            await Js.InvokeVoidAsync("GeneratePdf", base64, "ordem_servico.pdf");
+
+            Snackbar.Add("Ordem de serviço criada com sucesso!", Severity.Success);
+            NavigationManager.NavigateTo("/");
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+}

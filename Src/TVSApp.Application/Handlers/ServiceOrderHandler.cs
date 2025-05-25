@@ -59,6 +59,48 @@ public class ServiceOrderHandler
             return new BaseResponse<byte[]>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
+    
+    public async Task<BaseResponse<byte[]>> CreateSalesServiceOrderAsync(CreateSalesServiceOrderCommand command)
+    {
+        try
+        {
+            command.Normalize();
+            command.Validate();
+
+            var product = new Product(command.ProductBrand, command.ProductModel,
+                command.ProductSerialNumber, "VENDA", "", command.ProductType);
+
+            var serviceOrder = new ServiceOrder(EEnterprise.Particular, command.CustomerId, product);
+            
+            serviceOrder.EditGuarantee(new Guarantee(command.Guarantee));
+            serviceOrder.EditPartCost(new PartCost(command.Amount));
+            serviceOrder.EditServiceOrderStatus(EServiceOrderStatus.Delivered);
+            serviceOrder.EditRepairResult(ERepairResult.Repair);
+            serviceOrder.EditRepairStatus(ERepairStatus.Approved);
+            serviceOrder.EditDeliveryDate(DateTime.UtcNow);
+
+            var createServiceOrder = await _serviceOrderRepository.CreateAsync(serviceOrder);
+            if (!createServiceOrder.IsSuccess)
+                return new BaseResponse<byte[]>(null, 500, createServiceOrder.Message);
+
+            if (createServiceOrder.Data != null)
+                serviceOrder = createServiceOrder.Data;
+
+            var createPdf = await _generateServiceOrderPdf.GenerateSaleDocumentAsync(serviceOrder);
+            if (!createPdf.IsSuccess)
+                return new BaseResponse<byte[]>(null, 500, createPdf.Message);
+
+            return createPdf;
+        }
+        catch (CommandException<CreateServiceOrderCommand> ex)
+        {
+            return new BaseResponse<byte[]>(null, 400, $"Erro de validação: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            return new BaseResponse<byte[]>(null, 500, $"Ocorreu um erro: {ex.Message}");
+        }
+    }
 
     public async Task<BaseResponse<ServiceOrder?>> UpdateServiceOrderAsync(UpdateServiceOrderCommand command)
     {

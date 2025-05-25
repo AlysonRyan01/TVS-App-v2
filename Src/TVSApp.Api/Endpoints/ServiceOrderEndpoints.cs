@@ -35,6 +35,27 @@ public static class ServiceOrderEndpoints
                 return Results.Ok(response);
             }
         }).WithTags("ServiceOrder").RequireAuthorization();
+        
+        app.MapPost("/create-sales-service-order", async (ServiceOrderHandler handler, CreateSalesServiceOrderCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        {
+            try
+            {
+                command.Validate();
+
+                var createOrderResult = await handler.CreateSalesServiceOrderAsync(command);
+                if (!createOrderResult.IsSuccess)
+                    return Results.Ok(createOrderResult);
+
+                await hubContext.Clients.All.SendAsync("Atualizar", createOrderResult.Message);
+
+                return Results.File(createOrderResult.Data!, "application/pdf", "ordem_servico.pdf");
+            }
+            catch (Exception ex)
+            {
+                var response = EndpointExceptions.Handle<ServiceOrder>(ex);
+                return Results.Ok(response);
+            }
+        }).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPut("/edit-service-order", async ([FromServices]ServiceOrderHandler handler, [FromBody]ServiceOrder serviceOrder, [FromServices]IHubContext<ServiceOrderHub> hubContext) =>
         {

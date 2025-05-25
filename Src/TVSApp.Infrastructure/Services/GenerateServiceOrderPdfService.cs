@@ -40,6 +40,22 @@ public class GenerateServiceOrderPdfService : IGenerateServiceOrderPdf
         }
     }
 
+    public Task<BaseResponse<byte[]>> GenerateSaleDocumentAsync(ServiceOrder serviceOrder)
+    {
+        try
+        {
+            var document = new GenerateSaleDocument(serviceOrder);
+
+            byte[] pdfBytes = document.GeneratePdf();
+
+            return Task.FromResult(new BaseResponse<byte[]>(pdfBytes, 200, "Pdf gerado com sucesso!"));
+        }
+        catch (Exception ex)
+        {
+            return Task.FromResult(new BaseResponse<byte[]>(null, 500, $"Ocorreu um erro ao gerar o PDF de saída na classe GenerateServiceOrderPdfService: {ex.Message}"));
+        }
+    }
+
     public Task<BaseResponse<byte[]>> RegeneratePdfAsync(ServiceOrder serviceOrder)
     {
         try

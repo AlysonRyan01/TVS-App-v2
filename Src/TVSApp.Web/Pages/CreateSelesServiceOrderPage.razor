@@ -1,0 +1,191 @@
+@page "/vender"
+@using Microsoft.AspNetCore.Authorization
+@using TVS_App.Domain.Entities
+@using TVS_App.Domain.Enums
+@using TVSApp.Web.Components;
+@using TVSApp.Web.Extensions
+@layout MainLayout
+@attribute [Authorize] 
+
+<div class="flex flex-col lg:flex-row justify-center">
+    <div class="flex w-full lg:max-w-[50%] border border-cinza  rounded-lg shadow-lg p-6 mb-8 @( _customerSideCompleted ? "blur-sm pointer-events-none opacity-60" : "" )">
+        <div class="flex flex-col w-full p-5 items-start gap-3">
+            <div class="flex flex-col w-full mb-12">
+                <h1 class="font-sans mb-3 font-bold text-3xl text-titlecolor">Selecionar cliente</h1>
+                <MudAutocomplete T="Customer"
+                                 @bind-Value="SelectedCustomer"
+                                 SearchFunc="SearchCustomers"
+                                 ToStringFunc="@(c => c?.Name?.CustomerName ?? "")"
+                                 MinCharacters="2"
+                                 ResetValueOnEmptyText="true"
+                                 Clearable="true"
+                                 AdornmentIcon="@Icons.Material.Filled.Person2"
+                                 IconSize="Size.Large"
+                                 AdornmentColor="Color.Primary"
+                                 FullWidth="true"
+                                 Variant="Variant.Outlined"
+                                 Placeholder="Digite o nome do cliente existente"/>
+
+                <MudButton OnClick="OnCustomerSelected" Class="self-start mt-4" Variant="Variant.Filled" Color="Color.Primary">Selecionar</MudButton>
+            </div>
+
+            <div class="flex flex-col w-full mb-10">
+                <p class="font-sans font-bold text-3xl text-titlecolor">Criar cliente</p>
+
+                <MudForm>
+                    <MudTextField @bind-Value="CreateCustomerCommand.Name"
+                                  Label="Nome"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  Class="mb-2"
+                                  FullWidth="true" />
+
+                    <div class="flex gap-4 mb-2">
+                        <MudTextField @bind-Value="CreateCustomerCommand.Street"
+                                      Label="Rua"
+                                      Variant="Variant.Outlined"
+                                      Class="flex-grow" />
+
+                        <MudTextField @bind-Value="CreateCustomerCommand.Number"
+                                      Label="Número"
+                                      Variant="Variant.Outlined"
+                                      Class="w-32" />
+                    </div>
+
+                    <div class="flex gap-4 mb-2">
+                        <MudTextField @bind-Value="CreateCustomerCommand.Neighborhood"
+                                      Label="Bairro"
+                                      Variant="Variant.Outlined"
+                                      Class="flex-grow" />
+
+                        <MudTextField @bind-Value="CreateCustomerCommand.ZipCode"
+                                      Label="CEP"
+                                      Variant="Variant.Outlined"
+                                      Class="w-48"
+                                      Mask="@(new PatternMask("00000-000"))" />
+                    </div>
+
+                    <MudTextField @bind-Value="CreateCustomerCommand.City"
+                                  Label="Cidade"
+                                  Variant="Variant.Outlined"
+                                  Class="mb-4"
+                                  FullWidth="true" />
+
+                    <MudTextField @bind-Value="CreateCustomerCommand.Cpf"
+                                  Label="Cpf"
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  Class="mb-4"
+                                  Mask="@(new PatternMask("000.000.000-00"))" />
+
+                    <div class="flex gap-4 mb-2">
+                        <MudTextField @bind-Value="CreateCustomerCommand.Phone"
+                                      Label="Telefone"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      Class="flex-grow"
+                                      Mask="@(new PatternMask("(00) 00000-0000"))" />
+
+                        <MudTextField @bind-Value="CreateCustomerCommand.Phone2"
+                                      Label="Telefone 2"
+                                      Variant="Variant.Outlined"
+                                      Class="flex-grow"
+                                      Mask="@(new PatternMask("(00) 00000-0000"))" />
+                    </div>
+                </MudForm>
+
+                @if (_isLoading)
+                {
+                    <MudProgressLinear Indeterminate Color="Color.Primary" />
+                }
+                else
+                {
+                    <MudButton OnClick="CreateCustomer" Class="mt-6"
+                               Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Large">Criar cliente</MudButton>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="flex w-full lg:max-w-[50%] border border-cinza  rounded-lg shadow-lg p-6 @( !_serviceOrderTime ? "blur-sm pointer-events-none opacity-60" : "" )">
+        <div class="flex flex-col w-full p-5 items-center">
+            <div class="flex flex-col w-full mb-10">
+                <p class="font-sans font-bold text-3xl text-titlecolor mb-6">Nova Ordem de Serviço</p>
+
+                <MudForm Class="mt-2">
+                    <!-- Seção do Cliente -->
+                    <p class="text-lg font-semibold mb-3 text-gray-600">Informações do Cliente</p>
+
+                    <div class="flex gap-4 mb-4">
+                        <MudTextField Variant="Variant.Outlined" Value="@(SelectedCustomer?.Name?.CustomerName ?? string.Empty)"
+                                      Label="Nome do cliente"
+                                      Required="true"
+                                      ReadOnly="true"
+                                      Class="w-48"/>
+                    </div>
+
+                    <!-- Seção do Produto -->
+                    <p class="text-lg font-semibold mb-3 mt-6 text-gray-600">Informações do Produto</p>
+
+                    <div class="flex gap-4 mb-4">
+                        <MudSelect T="EProduct"
+                                   @bind-Value="CreateSalesServiceOrderCommand.ProductType"
+                                   Label="Tipo de Produto"
+                                   Variant="Variant.Outlined"
+                                   Class="flex-grow">
+                            @foreach (EProduct productType in Enum.GetValues(typeof(EProduct)))
+                            {
+                                <MudSelectItem T="EProduct" Value="productType">@productType.GetDisplayName()</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+
+                    <div class="flex gap-4 mb-4">
+                        <MudTextField @bind-Value="CreateSalesServiceOrderCommand.ProductBrand"
+                                      Label="Marca"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      Class="flex-grow" />
+
+                        <MudTextField @bind-Value="CreateSalesServiceOrderCommand.ProductModel"
+                                      Label="Modelo"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      Class="flex-grow" />
+                    </div>
+
+                    <div class="flex gap-4 mb-4">
+                        <MudTextField @bind-Value="CreateSalesServiceOrderCommand.ProductSerialNumber"
+                                      Label="Número de Série"
+                                      Variant="Variant.Outlined"
+                                      Class="flex-grow" />
+                    </div>
+
+                    <div class="flex gap-4 mb-4">
+                        <MudTextField @bind-Value="CreateSalesServiceOrderCommand.Guarantee"
+                                      Label="Garantia"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      Class="flex-grow" />
+
+                        <MudTextField @bind-Value="CreateSalesServiceOrderCommand.Amount"
+                                      Label="Valor"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      Class="flex-grow" />
+                    </div>
+                </MudForm>
+
+                <div class="flex gap-4 mt-6">
+                    <CreateSalesServiceOrderButton command="@CreateSalesServiceOrderCommand"/>
+
+                    <MudButton OnClick="CancelOrder" Variant="Variant.Outlined"
+                               Color="Color.Default"
+                               Size="Size.Large"
+                               Class="px-8">Cancelar</MudButton>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

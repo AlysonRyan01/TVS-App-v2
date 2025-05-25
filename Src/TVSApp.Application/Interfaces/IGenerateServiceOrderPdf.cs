@@ -7,5 +7,6 @@ public interface IGenerateServiceOrderPdf
 {
     Task<BaseResponse<byte[]>> GenerateCheckInDocumentAsync(ServiceOrder serviceOrder);
     Task<BaseResponse<byte[]>> GenerateCheckOutDocumentAsync(ServiceOrder serviceOrder);
+    Task<BaseResponse<byte[]>> GenerateSaleDocumentAsync(ServiceOrder serviceOrder);
     Task<BaseResponse<byte[]>> RegeneratePdfAsync(ServiceOrder serviceOrder);
 }
