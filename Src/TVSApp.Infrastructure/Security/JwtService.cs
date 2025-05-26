@@ -39,7 +39,7 @@ public class JwtService
         {
             Subject = await GenerateClaims(user),
             SigningCredentials = credentials,
-            Expires = DateTime.UtcNow.AddHours(8),
+            Expires = DateTime.UtcNow.AddHours(14),
 
         };
 
@@ -70,7 +70,7 @@ public class JwtService
     {
         context.Response.Cookies.Append("accessToken", token, new CookieOptions
         {
-            Expires = DateTime.UtcNow.AddHours(2),
+            Expires = DateTime.UtcNow.AddHours(14),
             HttpOnly = true,
             IsEssential = true
         });

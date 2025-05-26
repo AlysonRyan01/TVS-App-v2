@@ -40,7 +40,7 @@ public class GenerateCheckInDocument : QuestPdf
 
                             row.RelativeItem(); 
 
-                            row.ConstantItem(60).Column(col =>
+                            row.ConstantItem(50).Column(col =>
                             {
                                 col.Item().Image(qrCodeBytes);
                             });
@@ -53,14 +53,13 @@ public class GenerateCheckInDocument : QuestPdf
                         {
                             row.Spacing(0);
                             row.ConstantItem(140).Text("WWW.TVSELETRONICA.COM")
-                                .FontSize(9)
+                                .FontSize(8)
                                 .ExtraBold();
-                            row.ConstantItem(120).Text("FIXO: (41) 3292-3047")
-                                .FontSize(9)
+                            row.ConstantItem(120).Text("FONE: (41) 3292-3047")
+                                .FontSize(8)
                                 .ExtraBold();
-
                             row.ConstantItem(200).Text("WHATSAPP: (41) 99274-4920")
-                                .FontSize(9)
+                                .FontSize(8)
                                 .ExtraBold();
                         });
                     });
