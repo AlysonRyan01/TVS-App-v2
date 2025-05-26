@@ -15,9 +15,8 @@ public partial class Home : ComponentBase
     public List<ServiceOrder> PendingPurchaseServiceOrders { get; set; } = new();
     public List<ServiceOrder> WaitingPartsServiceOrders { get; set; } = new();
     public List<ServiceOrder> WaitingPickupServiceOrders { get; set; } = new();
-    public List<ServiceOrder> DeliveredServiceOrders { get; set; } = new();
     private bool _isBusy;
-    private bool _hubHandlerRegistered = false;
+    private bool _hubHandlerRegistered;
 
     [Inject] public ServiceOrderHandler Handler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
@@ -148,25 +147,6 @@ public partial class Home : ComponentBase
         }
     }
     
-    public async Task LoadDeliveredAsync()
-    {
-        try
-        {
-            var deliveredresult = await Handler.GetDeliveredAsync(new PaginationCommand{PageNumber = 1, PageSize = 500});
-            if (deliveredresult.IsSuccess && deliveredresult.Data != null)
-                DeliveredServiceOrders = deliveredresult.Data.Items
-                    .Where(item => item is not null)
-                    .Cast<ServiceOrder>()
-                    .ToList();
-            else
-                Snackbar.Add(deliveredresult.Message ?? "Ocorreu um erro ao carregar  os serviços entregues.");
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add(ex.Message, Severity.Error);
-        }
-    }
-    
     public async Task UpdateServiceOrdersAsync()
     {
         _isBusy = true;
@@ -178,7 +158,6 @@ public partial class Home : ComponentBase
             await LoadPendingPurchaseAsync();
             await LoadWaitingPartsAsync();
             await LoadWaitingPickupAsync();
-            await LoadDeliveredAsync();
             StateHasChanged();
         }
         catch (Exception e)
