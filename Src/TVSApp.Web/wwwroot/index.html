@@ -56,9 +56,20 @@
                 pdfWindow.onload = function() {
                     setTimeout(() => {
                         pdfWindow.print();
-                    }, 500);
+                    }, 1000);
                 };
             }
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "ordem.pdf";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+            }, 100);
         }
     </script>
 </body>
