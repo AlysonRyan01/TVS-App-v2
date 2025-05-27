@@ -47,7 +47,7 @@ public class CustomerRepository : ICustomerRepository
         {
             var customers = await _context.Customers
                 .AsNoTracking()
-                .Where(c => c.Name.CustomerName.Contains(name))
+                .Where(c => c.Name.CustomerName.StartsWith(name))
                 .OrderBy(c => c.Name.CustomerName)
                 .ToListAsync();
 
