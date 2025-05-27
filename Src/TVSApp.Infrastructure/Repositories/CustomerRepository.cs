@@ -118,15 +118,11 @@ public class CustomerRepository : ICustomerRepository
 
         try
         {
-            var existing = await _context.Customers.FindAsync(customer.Id);
-            if (existing == null)
-                return new BaseResponse<Customer?>(null, 404, $"Cliente com id {customer.Id} não encontrado.");
-
             transaction = await _context.Database.BeginTransactionAsync();
+            
+            _context.Customers.Update(customer);
 
-            _context.Entry(existing).CurrentValues.SetValues(customer);
             await _context.SaveChangesAsync();
-
             await transaction.CommitAsync();
 
             return new BaseResponse<Customer?>(customer, 200, "Cliente atualizado com sucesso!");

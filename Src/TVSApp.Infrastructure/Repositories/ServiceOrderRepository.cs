@@ -228,13 +228,13 @@ public class ServiceOrderRepository : IServiceOrderRepository
 
             var query = _context.ServiceOrders
                 .Where(x => x.ServiceOrderStatus == EServiceOrderStatus.Delivered && x.DeliveryDate >= oneMonthAgo)
-                .OrderByDescending(x => x.Id);
+                .OrderByDescending(x => x.Id)
+                .AsNoTracking();
 
             var totalCount = await query.CountAsync();
 
             var deliveredServiceOrders = await query
                 .Include(x => x.Customer)
-                .AsNoTracking()
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -265,13 +265,13 @@ public class ServiceOrderRepository : IServiceOrderRepository
             var query = _context.ServiceOrders
                 .Where(x => x.ServiceOrderStatus == EServiceOrderStatus.Entered &&
                     x.RepairStatus == ERepairStatus.Entered && x.EntryDate >= twoMonthAgo)
-                .OrderByDescending(x => x.Id);
+                .OrderByDescending(x => x.Id)
+                .AsNoTracking();
 
             var totalCount = await query.CountAsync();
 
             var deliveredServiceOrders = await query
                 .Include(x => x.Customer)
-                .AsNoTracking()
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -304,13 +304,13 @@ public class ServiceOrderRepository : IServiceOrderRepository
                     x.RepairStatus == ERepairStatus.Approved &&
                     !x.PurchasePartDate.HasValue &&
                     x.ResponseDate >= oneMonthAgo)
-                .OrderByDescending(x => x.Id);
+                .OrderByDescending(x => x.Id)
+                .AsNoTracking();
 
             var totalCount = await query.CountAsync();
 
             var deliveredServiceOrders = await query
                 .Include(x => x.Customer)
-                .AsNoTracking()
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -343,13 +343,13 @@ public class ServiceOrderRepository : IServiceOrderRepository
                     x.RepairStatus == ERepairStatus.Approved &&
                     x.PurchasePartDate.HasValue &&
                     x.PurchasePartDate >= treeMonthAgo)
-                .OrderByDescending(x => x.Id);
+                .OrderByDescending(x => x.Id)
+                .AsNoTracking();
 
             var totalCount = await query.CountAsync();
 
             var deliveredServiceOrders = await query
                 .Include(x => x.Customer)
-                .AsNoTracking()
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -381,13 +381,13 @@ public class ServiceOrderRepository : IServiceOrderRepository
                 .Where(x => (x.RepairDate >= sixMonths || x.RepairDate == null) && (x.ServiceOrderStatus == EServiceOrderStatus.Repaired ||
                                                             (x.ServiceOrderStatus == EServiceOrderStatus.Evaluated &&
                                                              (x.RepairStatus == ERepairStatus.Disapproved || x.RepairResult == ERepairResult.Unrepaired || x.RepairResult == ERepairResult.NoDefectFound))))
-                .OrderByDescending(x => x.Id);
+                .OrderByDescending(x => x.Id)
+                .AsNoTracking();
 
             var totalCount = await query.CountAsync();
 
             var deliveredServiceOrders = await query
                 .Include(x => x.Customer)
-                .AsNoTracking()
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -418,13 +418,13 @@ public class ServiceOrderRepository : IServiceOrderRepository
             var query = _context.ServiceOrders
                 .Where(x => x.ServiceOrderStatus == EServiceOrderStatus.Evaluated &&
                     x.RepairStatus == ERepairStatus.Waiting && x.InspectionDate >= sixMonthAgo && (x.RepairResult != ERepairResult.Unrepaired || x.RepairResult == ERepairResult.NoDefectFound ))
-                .OrderByDescending(x => x.Id);
+                .OrderByDescending(x => x.Id)
+                .AsNoTracking();
 
             var totalCount = await query.CountAsync();
 
             var deliveredServiceOrders = await query
                 .Include(x => x.Customer)
-                .AsNoTracking()
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
