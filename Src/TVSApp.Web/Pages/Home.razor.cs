@@ -27,24 +27,13 @@ public partial class Home : ComponentBase
     {
         try
         {
-            Console.WriteLine("OnInitializedAsync chamado");
             await UpdateServiceOrdersAsync();
-            
-            if (!_hubHandlerRegistered)
-            {
-                HubConnection.On<string>("Atualizar", async (mensagem) =>
-                {
-                    Console.WriteLine($"Web socket Recebido: {mensagem}");
-                    await UpdateServiceOrdersAsync();
-                });
-                _hubHandlerRegistered = true;
-            }
-
-            if (HubConnection.State == HubConnectionState.Disconnected)
-            {
-                await HubConnection.StartAsync();
-                Console.WriteLine("SignalR conectado");
-            }
+            RegisterHandlers();
+        
+            await TryStartConnection();
+        
+            HubConnection.Closed += HandleConnectionClosed;
+            HubConnection.Reconnected += HandleReconnected;
         }
         catch (Exception ex)
         {
@@ -264,5 +253,62 @@ public partial class Home : ComponentBase
 
         var dialog = await DialogService.ShowAsync<AddDeliveryDialog>("Atualizar Ordem de Serviço", parameters, options);
         await dialog.Result;
+    }
+    
+    private async Task TryStartConnection()
+    {
+        int maxAttempts = 5;
+        for (int i = 0; i < maxAttempts; i++)
+        {
+            try
+            {
+                if (HubConnection.State == HubConnectionState.Disconnected)
+                {
+                    await HubConnection.StartAsync();
+                    Console.WriteLine("SignalR conectado");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Tentativa {i + 1} de conexão falhou: {ex.Message}");
+                if (i == maxAttempts - 1)
+                    throw;
+            
+                await Task.Delay(CalculateRetryDelay(i));
+            }
+        }
+    }
+
+    private TimeSpan CalculateRetryDelay(int attempt)
+    {
+        double delay = Math.Min(Math.Pow(2, attempt) * 500, 10000);
+        return TimeSpan.FromMilliseconds(delay);
+    }
+    
+    private void RegisterHandlers()
+    {
+        if (_hubHandlerRegistered) return;
+    
+        HubConnection.On<string>("Atualizar", async (mensagem) =>
+        {
+            Console.WriteLine($"Web socket Recebido: {mensagem}");
+            await InvokeAsync(StateHasChanged);
+            await UpdateServiceOrdersAsync();
+        });
+    
+        _hubHandlerRegistered = true;
+    }
+    
+    private async Task HandleConnectionClosed(Exception? error)
+    {
+        Console.WriteLine($"Conexão perdida: {error?.Message}");
+        await TryStartConnection();
+    }
+
+    private async Task HandleReconnected(string? connectionId)
+    {
+        Console.WriteLine($"Reconectado com ID: {connectionId}");
+        await UpdateServiceOrdersAsync();
     }
 }

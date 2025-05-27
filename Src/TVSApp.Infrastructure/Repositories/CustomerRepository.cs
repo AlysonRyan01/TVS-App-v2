@@ -46,6 +46,7 @@ public class CustomerRepository : ICustomerRepository
         try
         {
             var customers = await _context.Customers
+                .AsNoTracking()
                 .Where(c => c.Name.CustomerName.Contains(name))
                 .OrderBy(c => c.Name.CustomerName)
                 .ToListAsync();
@@ -71,6 +72,7 @@ public class CustomerRepository : ICustomerRepository
             var totalCount = await _context.Customers.CountAsync();
 
             var customers = await _context.Customers
+                .AsNoTracking()
                 .OrderBy(c => c.Name)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -95,7 +97,9 @@ public class CustomerRepository : ICustomerRepository
             if (id <= 0)
                 return new BaseResponse<Customer?>(null, 400, "O ID não pode ser menor ou igual a 0");
 
-            var customer = await _context.Customers.FindAsync(id);
+            var customer = await _context.Customers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id);
             if (customer == null)
                 return new BaseResponse<Customer?>(null, 404, $"O cliente com id:{id} não existe");
 

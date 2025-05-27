@@ -63,8 +63,8 @@ public class ServiceOrderRepository : IServiceOrderRepository
             var totalCount = await _context.ServiceOrders.CountAsync();
 
             var serviceOrders = await _context.ServiceOrders
-                .AsNoTracking()
                 .Include(x => x.Customer)
+                .AsNoTracking()
                 .OrderByDescending(x => x.Id)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -110,6 +110,7 @@ public class ServiceOrderRepository : IServiceOrderRepository
         {
             var serviceOrders = await _context.ServiceOrders
                 .Include(so => so.Customer)
+                .AsNoTracking()
                 .Where(so => so.Customer.Name.CustomerName.Contains(customerName))
                 .OrderByDescending(so => so.Id)
                 .ToListAsync();
@@ -131,6 +132,7 @@ public class ServiceOrderRepository : IServiceOrderRepository
         {
             var serviceOrders = await _context.ServiceOrders
                 .Include(so => so.Customer)
+                .AsNoTracking()
                 .Where(so => so.Product.SerialNumber.Contains(serialNumber))
                 .OrderByDescending(so => so.Id)
                 .ToListAsync();
@@ -152,6 +154,7 @@ public class ServiceOrderRepository : IServiceOrderRepository
         {
             var serviceOrders = await _context.ServiceOrders
                 .Include(so => so.Customer)
+                .AsNoTracking()
                 .Where(so => so.Product.Model.Contains(model))
                 .OrderByDescending(so => so.Id)
                 .ToListAsync();
@@ -173,6 +176,7 @@ public class ServiceOrderRepository : IServiceOrderRepository
         {
             var serviceOrders = await _context.ServiceOrders
                 .Include(so => so.Customer)
+                .AsNoTracking()
                 .Where(so => so.Enterprise == enterprise)
                 .OrderByDescending(so => so.Id)
                 .ToListAsync();
@@ -193,10 +197,11 @@ public class ServiceOrderRepository : IServiceOrderRepository
         try
         {
             var serviceOrders = await _context.ServiceOrders
-                    .Include(so => so.Customer)
-                    .Where(so => so.EntryDate >= startDate && so.EntryDate <= endDate)
-                    .OrderBy(so => so.Id)
-                    .ToListAsync();
+                .Include(so => so.Customer)
+                .AsNoTracking()
+                .Where(so => so.EntryDate >= startDate && so.EntryDate <= endDate)
+                .OrderBy(so => so.Id)
+                .ToListAsync();
             
             if (!serviceOrders.Any())
                 return new BaseResponse<List<ServiceOrder>>(serviceOrders, 401, "Nenhuma ordem de serviço foi encontrada.");

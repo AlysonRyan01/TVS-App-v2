@@ -38,6 +38,7 @@ public class NotificationRepository : INotificationRepository
             var fiveDaysAgo = DateTime.Now.AddDays(-5);
 
             var unread = await _context.Notifications
+                .AsNoTracking()
                 .Where(n => !n.IsRead && n.CreatedAt >= fiveDaysAgo)
                 .OrderByDescending(n => n.CreatedAt)
                 .ToListAsync();
