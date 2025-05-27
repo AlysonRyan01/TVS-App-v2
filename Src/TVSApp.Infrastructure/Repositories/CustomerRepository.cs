@@ -49,7 +49,7 @@ public class CustomerRepository : ICustomerRepository
                 .AsNoTracking()
                 .Where(c => c.Name.CustomerName.StartsWith(name))
                 .OrderBy(c => c.Name.CustomerName)
-                .Take(100)
+                .Take(10)
                 .ToListAsync();
 
             return new BaseResponse<List<Customer>>(customers, 200, "Clientes obtidos com sucesso!");
