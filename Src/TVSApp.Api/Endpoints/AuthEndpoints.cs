@@ -50,13 +50,7 @@ public static class AuthEndpoints
             var token = await jwtService.Generate(user);
 
             return Results.Ok(new BaseResponse<string>(token, 200, "Usuário criado com sucesso!"));
-        }).WithTags("Auth");
-
-        app.MapGet("/test-auth", (ClaimsPrincipal user) =>
-        {
-            var name = user.Identity?.Name ?? "Sem nome";
-            return Results.Ok($"Usuário autenticado: {name}");
-        }).RequireAuthorization();
+        }).WithTags("Auth").RequireAuthorization();
     }
 }
     
