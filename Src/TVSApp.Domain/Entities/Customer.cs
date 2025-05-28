@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using TVS_App.Domain.Exceptions;
 using TVS_App.Domain.ValueObjects.Customer;
 
@@ -8,9 +7,8 @@ public class Customer : Entity
 {
     private readonly List<ServiceOrder> _serviceOrders = new();
 
-    public Customer() { }
-
-    [JsonConstructor]
+    protected Customer() { }
+    
     public Customer(Name name, Address address, Phone phone, Phone phone2, Email? email, Cpf cpf)
     {
         Name = name;
@@ -20,21 +18,14 @@ public class Customer : Entity
         Email = email;
         Cpf = cpf;
     }
-
-    [JsonPropertyName("name")]
+    
     public Name Name { get; private set; } = null!;
-    [JsonPropertyName("address")]
     public Address Address { get; private set; } = null!;
-    [JsonPropertyName("phone")]
     public Phone Phone { get; private set; } = null!;
-    [JsonPropertyName("phone2")]
     public Phone Phone2 { get; private set; } = null!;
-    [JsonPropertyName("email")]
     public Email? Email { get; private set; }
-
-    [JsonPropertyName("Document")] public Cpf Cpf { get; private set; } = null!;
-
-    [JsonPropertyName("serviceOrders")]
+    public Cpf Cpf { get; private set; } = null!;
+    
     public IReadOnlyCollection<ServiceOrder> ServiceOrders => _serviceOrders.AsReadOnly();
 
     public void UpdateName(string name)
@@ -64,5 +55,13 @@ public class Customer : Entity
     public void UpdateCpf(string cpf)
     {
         Cpf = new Cpf(cpf);
+    }
+    
+    public void AddServiceOrder(ServiceOrder serviceOrder)
+    {
+        if (serviceOrder == null)
+            throw new ArgumentNullException(nameof(serviceOrder));
+
+        _serviceOrders.Add(serviceOrder);
     }
 }

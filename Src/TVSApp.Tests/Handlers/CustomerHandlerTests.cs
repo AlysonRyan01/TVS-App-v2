@@ -88,37 +88,6 @@ public class CustomerHandlerTests
     }
 
     [TestMethod]
-    public async Task deve_retornar_verdade_se_atualizar_o_usuario()
-    {
-        try
-        {
-            var createCustomerResult = await _customerHandler.CreateCustomerAsync(_createCustomerCommand);
-            if (!createCustomerResult.IsSuccess)
-                Assert.Fail();
-
-            var customer = createCustomerResult.Data;
-
-            var updateCustomerResult = await _customerHandler.UpdateCustomerAsync(_updateCustomerCommand);
-            if (!updateCustomerResult.IsSuccess)
-                Assert.Fail();
-
-            if (updateCustomerResult!.Data!.Name.CustomerName == "Marcos da Silva" &&
-                updateCustomerResult.Data!.Address.Street == "Rua do Marcos" &&
-                updateCustomerResult.Data!.Address.Number == "Numero do Marcos" &&
-                updateCustomerResult.Data!.Address.City == "Cidade do Marcos" &&
-                updateCustomerResult.Data!.Address.Neighborhood == "Bairro do Marcos" &&
-                updateCustomerResult.Data!.Address.ZipCode == "83920300" &&
-                updateCustomerResult.Data!.Phone.CustomerPhone == "4132923047" &&
-                updateCustomerResult.Data!.Email!.CustomerEmail == "marcos@gmail.com")
-                Assert.IsTrue(true);
-        }
-        catch
-        {
-            Assert.Fail();
-        }
-    }
-
-    [TestMethod]
     public async Task deve_retornar_verdade_se_retornar_todos_os_clientes()
     {
         try

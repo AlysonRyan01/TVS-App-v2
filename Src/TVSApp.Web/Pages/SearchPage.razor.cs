@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.ServiceOrderCommands;
+using TVS_App.Application.DTOs;
 using TVS_App.Domain.Entities;
-using TVS_App.Domain.Enums;
 using TVSApp.Web.Components.Dialogs;
 using TVSApp.Web.Handlers;
 
@@ -14,11 +14,10 @@ namespace TVSApp.Web.Pages;
 public partial class SearchPage : ComponentBase
 {
     public List<ServiceOrder> FilteredServiceOrders { get; set; } = new();
-    private Customer _customerFilter = new ();
+    private CustomerDto? _customerFilter;
     private string _numberFilter = String.Empty;
     private string _serialNumberFilter = String.Empty;
     private string _modelFilter = String.Empty;
-    private EEnterprise _enterpriseFilter = EEnterprise.Particular;
     private DateTime? _startDateFilter;
     private DateTime? _endDateFilter;
     private bool _isLoading;
@@ -34,7 +33,7 @@ public partial class SearchPage : ComponentBase
         {
             var allOrdersResult =
                 await ServiceOrderHandler.GetAllServiceOrdersAsync(new PaginationCommand { PageNumber = 1, PageSize = 300 });
-            if (allOrdersResult.IsSuccess && allOrdersResult.Data?.Items?.Any() == true)
+            if (allOrdersResult.IsSuccess && allOrdersResult.Data?.Items.Any() == true)
             {
                 FilteredServiceOrders = allOrdersResult.Data.Items
                     .Where(x => x is not null)
@@ -48,10 +47,10 @@ public partial class SearchPage : ComponentBase
         }
     }
 
-    private async Task<IEnumerable<Customer>> SearchCustomers(string? searchTerm, CancellationToken cancellationToken)
+    private async Task<IEnumerable<CustomerDto>> SearchCustomers(string? searchTerm, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Length < 3)
-            return Enumerable.Empty<Customer>();
+            return Enumerable.Empty<CustomerDto>();
 
         try
         {
@@ -61,19 +60,21 @@ public partial class SearchPage : ComponentBase
             if (!result.IsSuccess || result.Data == null)
             {
                 Snackbar.Add(result.Message ?? "Erro ao buscar clientes", Severity.Error);
-                return Enumerable.Empty<Customer>();
+                return Enumerable.Empty<CustomerDto>();
             }
 
             var normalizedTerm = Normalize(searchTerm);
+            
+            var customers = result.Data;
 
-            return result.Data
-                .Where(c => Normalize(c.Name.CustomerName).Contains(normalizedTerm))
+            return customers
+                .Where(c => Normalize(c.Name).Contains(normalizedTerm))
                 .Take(20);
         }
         catch (Exception e)
         {
             Snackbar.Add($"Erro: {e.Message}", Severity.Error);
-            return Enumerable.Empty<Customer>();
+            return Enumerable.Empty<CustomerDto>();
         }
         finally
         {
@@ -87,14 +88,14 @@ public partial class SearchPage : ComponentBase
         {
             FilteredServiceOrders = new();
             
-            if (_customerFilter.Id == 0)
+            if (_customerFilter == null || _customerFilter.Id == 0)
             {
                 Snackbar.Add("Voce precisa digitar o nome de algum cliente", Severity.Error);
                 return;
             }
                
             var searchResult = await ServiceOrderHandler.
-                GetServiceOrdersByCustomerName(_customerFilter.Name.CustomerName);
+                GetServiceOrdersByCustomerName(_customerFilter.Name);
 
             if (searchResult.IsSuccess)
             {

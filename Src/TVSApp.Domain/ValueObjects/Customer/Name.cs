@@ -1,13 +1,11 @@
-using System.Text.Json.Serialization;
 using TVS_App.Domain.Exceptions;
 
 namespace TVS_App.Domain.ValueObjects.Customer;
 
 public class Name : ValueObject
 {
-    public Name() {}
-
-    [JsonConstructor]
+    protected Name() {}
+    
     public Name(string customerName)
     {
         if (string.IsNullOrEmpty(customerName))
@@ -15,8 +13,7 @@ public class Name : ValueObject
 
         CustomerName = customerName;
     }
-
-    [JsonPropertyName("customerName")]
+    
     public string CustomerName { get; private set; } = string.Empty;
 
     public override string ToString() => CustomerName;

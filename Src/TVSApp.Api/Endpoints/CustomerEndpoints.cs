@@ -4,6 +4,7 @@ using TVS_App.Api.Exceptions;
 using TVS_App.Api.SignalR;
 using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.CustomerCommands;
+using TVS_App.Application.DTOs;
 using TVS_App.Application.Handlers;
 using TVS_App.Domain.Entities;
 
@@ -17,6 +18,7 @@ public static class CustomerEndpoints
         {
             try
             {
+                command.Normalize();
                 command.Validate();
 
                 var createResult = await handler.CreateCustomerAsync(command);
@@ -38,19 +40,20 @@ public static class CustomerEndpoints
         {
             try
             {
+                command.Normalize();
                 command.Validate();
 
-                var createResult = await handler.UpdateCustomerAsync(command);
-                if (!createResult.IsSuccess)
-                    return Results.Ok(createResult);
+                var updateResult = await handler.UpdateCustomerAsync(command);
+                if (!updateResult.IsSuccess)
+                    return Results.Ok(updateResult);
 
-                await hubContext.Clients.All.SendAsync("Atualizar", createResult.Message);
+                await hubContext.Clients.All.SendAsync("Atualizar", updateResult.Message);
 
-                return Results.Ok(createResult);
+                return Results.Ok(updateResult);
             }
             catch (Exception ex)
             {
-                var response = EndpointExceptions.Handle<Customer>(ex);
+                var response = EndpointExceptions.Handle<CustomerDto>(ex);
                 return Results.Ok(response);
             }
         }).WithTags("Customer").RequireAuthorization();
@@ -62,15 +65,15 @@ public static class CustomerEndpoints
                 var command = new GetCustomerByIdCommand { Id = id };
                 command.Validate();
 
-                var createResult = await handler.GetCustomerByIdAsync(command);
-                if (!createResult.IsSuccess)
-                    return Results.Ok(createResult);
+                var getResult = await handler.GetCustomerByIdAsync(command);
+                if (!getResult.IsSuccess)
+                    return Results.Ok(getResult);
 
-                return Results.Ok(createResult);
+                return Results.Ok(getResult);
             }
             catch (Exception ex)
             {
-                var response = EndpointExceptions.Handle<Customer>(ex);
+                var response = EndpointExceptions.Handle<CustomerDto>(ex);
                 return Results.Ok(response);
             }
         }).WithTags("Customer").RequireAuthorization();
@@ -87,7 +90,7 @@ public static class CustomerEndpoints
             }
             catch (Exception ex)
             {
-                var response = EndpointExceptions.Handle<List<Customer>>(ex);
+                var response = EndpointExceptions.Handle<List<CustomerDto>>(ex);
                 return Results.Ok(response);
             }
         }).WithTags("Customer").RequireAuthorization();
@@ -102,15 +105,15 @@ public static class CustomerEndpoints
                 var command = new PaginationCommand{PageNumber = pageNumber,  PageSize = pageSize};
                 command.Validate();
 
-                var createResult = await handler.GetAllCustomersAsync(command);
-                if (!createResult.IsSuccess)
-                    return Results.Ok(createResult);
+                var getAllResult = await handler.GetAllCustomersAsync(command);
+                if (!getAllResult.IsSuccess)
+                    return Results.Ok(getAllResult);
 
-                return Results.Ok(createResult);
+                return Results.Ok(getAllResult);
             }
             catch (Exception ex)
             {
-                var response = EndpointExceptions.Handle<Customer>(ex);
+                var response = EndpointExceptions.Handle<CustomerDto>(ex);
                 return Results.Ok(response);
             }
         }).WithTags("Customer").RequireAuthorization();

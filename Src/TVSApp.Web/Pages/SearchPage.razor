@@ -1,8 +1,6 @@
 @page "/buscar-os"
 @using Microsoft.AspNetCore.Authorization
-@using TVS_App.Domain.Entities
-@using TVS_App.Domain.Enums
-@using TVSApp.Web.Layout
+@using TVS_App.Application.DTOs
 @layout MainLayout
 @attribute [Authorize] 
 
@@ -33,10 +31,10 @@
                     <MudPaper Class="w-full mb-5 rounded-lg shadow-lg">
                         <div class="w-full p-5">
                             <h1 class="font-playpen mb-3 font-bold text-xl text-[#750303]">Filtrar Por Cliente</h1>
-                            <MudAutocomplete T="Customer"
+                            <MudAutocomplete T="CustomerDto"
                                              @bind-Value="_customerFilter"
                                              SearchFunc="SearchCustomers"
-                                             ToStringFunc="@(c => c?.Name?.CustomerName ?? "")"
+                                             ToStringFunc="@(c => c?.Name ?? "")"
                                              MinCharacters="2"
                                              ResetValueOnEmptyText="true"
                                              Clearable="true"

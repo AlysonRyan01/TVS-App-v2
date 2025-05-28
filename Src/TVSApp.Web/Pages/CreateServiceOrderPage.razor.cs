@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using TVS_App.Application.Commands.CustomerCommands;
 using TVS_App.Application.Commands.ServiceOrderCommands;
+using TVS_App.Application.DTOs;
 using TVS_App.Application.Exceptions;
-using TVS_App.Domain.Entities;
 using TVSApp.Web.Components.Dialogs;
 using TVSApp.Web.Handlers;
 
@@ -15,20 +15,19 @@ public partial class CreateServiceOrderPage : ComponentBase
 {
     public CreateCustomerCommand CreateCustomerCommand { get; set; } = new();
     public CreateServiceOrderCommand CreateServiceOrderCommand { get; set; } = new();
-    public Customer SelectedCustomer { get; set; } = new();
+    public CustomerDto? SelectedCustomer { get; set; }
     private bool _isLoading;
     private bool _customerSideCompleted;
     private bool _serviceOrderTime;
 
     [Inject] public CustomerHandler CustomerHandler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
-    [Inject] public NavigationManager NavigationManager { get; set; } = null!;
     [Inject] public IDialogService DialogService { get; set; } = null!;
 
-    private async Task<IEnumerable<Customer>> SearchCustomers(string? searchTerm, CancellationToken cancellationToken)
+    private async Task<IEnumerable<CustomerDto>> SearchCustomers(string? searchTerm, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Length < 3)
-            return Enumerable.Empty<Customer>();
+            return Enumerable.Empty<CustomerDto>();
 
         try
         {
@@ -38,19 +37,21 @@ public partial class CreateServiceOrderPage : ComponentBase
             if (!result.IsSuccess || result.Data == null)
             {
                 Snackbar.Add(result.Message ?? "Erro ao buscar clientes", Severity.Error);
-                return Enumerable.Empty<Customer>();
+                return Enumerable.Empty<CustomerDto>();
             }
 
             var normalizedTerm = Normalize(searchTerm);
+            
+            var customers = result.Data;
 
-            return result.Data
-                .Where(c => Normalize(c.Name.CustomerName).Contains(normalizedTerm))
+            return customers
+                .Where(c => Normalize(c.Name).Contains(normalizedTerm))
                 .Take(20);
         }
         catch (Exception e)
         {
             Snackbar.Add($"Erro: {e.Message}", Severity.Error);
-            return Enumerable.Empty<Customer>();
+            return Enumerable.Empty<CustomerDto>();
         }
         finally
         {
@@ -60,7 +61,7 @@ public partial class CreateServiceOrderPage : ComponentBase
     
     public async Task OnCustomerSelected()
     {
-        if (SelectedCustomer.Id == 0)
+        if (SelectedCustomer == null || SelectedCustomer.Id == 0)
         {
             Snackbar.Add("Nenhum cliente foi selecionado", Severity.Error);
             return;
@@ -137,10 +138,11 @@ public partial class CreateServiceOrderPage : ComponentBase
     
         if (!result!.Canceled)
         {
-            var confirmed = (bool)result.Data!;
+            var confirmedCustomer = (CustomerDto)result.Data!;
         
-            if (confirmed)
+            if (SelectedCustomer != null)
             {
+                SelectedCustomer = confirmedCustomer;
                 CreateServiceOrderCommand.CustomerId = SelectedCustomer.Id;
                 _serviceOrderTime = true;
                 _customerSideCompleted = true;

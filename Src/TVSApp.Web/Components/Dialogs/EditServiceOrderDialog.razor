@@ -1,6 +1,9 @@
 @using System.Globalization
 @using System.Text
+@using TVS_App.Application.Commands.CustomerCommands
 @using TVS_App.Application.Commands.ServiceOrderCommands
+@using TVS_App.Application.DTOs
+@using TVS_App.Application.Mappers
 @using TVS_App.Domain.Entities
 @using TVS_App.Domain.Enums
 @using TVS_App.Domain.ValueObjects.ServiceOrder
@@ -36,11 +39,11 @@
         <!-- CLIENTE -->
         <div class="py-3 bg-gray-50">
             <MudText Typo="Typo.h6" Color="Color.Tertiary" Class="font-extrabold uppercase mb-2">CLIENTE</MudText>
-            <MudAutocomplete T="Customer"
+            <MudAutocomplete T="CustomerDto"
                              @bind-Value="_command.Customer"
                              Variant="Variant.Outlined"
                              SearchFunc="SearchCustomers"
-                             ToStringFunc="@(c => c?.Name?.CustomerName ?? "")"
+                             ToStringFunc="@(c => c?.Name ?? "")"
                              MinCharacters="2"
                              Class="w-full" />
         </div>
@@ -140,6 +143,181 @@
                 </MudButton>
             }
         </div>
+        
+        <div class="px-6 bg-gray-50 py-4 border-b border-cinza">
+            @if (ServiceOrder.ServiceOrderStatus == EServiceOrderStatus.Entered && ServiceOrder.RepairStatus == ERepairStatus.Entered)
+            {
+                <MudPaper Class="py-4 px-2" Elevation="0">
+                    <MudText Typo="Typo.h6" Color="Color.Primary" Class="uppercase font-bold mb-4">
+                        Adicionar Orçamento
+                    </MudText>
+                    <MudForm>
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <MudTextField
+                                    Label="Solução"
+                                    @bind-Value="_addEstimateCommand.Solution"
+                                    For="@(() => _addEstimateCommand.Solution)"
+                                    Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField
+                                    Label="Mensagem de orçamento"
+                                    Lines="1"
+                                    @bind-Value="_addEstimateCommand.EstimateMessage"
+                                    For="@(() => _addEstimateCommand.EstimateMessage)"
+                                    Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField
+                                    Label="Valor da peça"
+                                    @bind-Value="_addEstimateCommand.PartCost"
+                                    For="@(() => _addEstimateCommand.PartCost)"
+                                    Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField
+                                    Label="Valor da mão de obra"
+                                    @bind-Value="_addEstimateCommand.LaborCost"
+                                    For="@(() => _addEstimateCommand.LaborCost)"
+                                    Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField
+                                    Label="Garantia"
+                                    @bind-Value="_addEstimateCommand.Guarantee"
+                                    For="@(() => _addEstimateCommand.Guarantee)"
+                                    Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudSelect
+                                    Variant="Variant.Outlined"
+                                    T="ERepairResult"
+                                    Label="Situação"
+                                    @bind-Value="_addEstimateCommand.RepairResult"
+                                    Color="Color.Primary">
+                                    @foreach (var value in Enum.GetValues(typeof(ERepairResult)).Cast<ERepairResult>())
+                                    {
+                                        <MudSelectItem Value="@value">
+                                            @GetPortugueseLabel(value)
+                                        </MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                        </MudGrid>
+
+                        <div class="flex justify-end">
+                            @if (_isProcessing)
+                            {
+                                <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                            }
+                            else
+                            {
+                                <MudButton
+                                    @onclick="AddEstimateAsync"
+                                    Disabled="_isProcessing"
+                                    Variant="Variant.Filled"
+                                    Color="Color.Primary"
+                                    Class="mt-3">
+                                    Adicionar
+                                </MudButton>
+                            }
+                        </div>
+                    </MudForm>
+                </MudPaper>
+            }
+            else if (ServiceOrder.ServiceOrderStatus == EServiceOrderStatus.Evaluated && ServiceOrder.RepairStatus == ERepairStatus.Waiting)
+            {
+                <MudText Typo="Typo.h6" Color="Color.Primary" Class="uppercase font-bold mb-4">
+                    Adicionar Resposta
+                </MudText>
+                <MudPaper Class="py-4 px-2 flex flex-row gap-5" Elevation="0">
+                    @if (_isProcessing)
+                    {
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                    }
+                    else
+                    {
+                        <MudItem>
+                            <MudButton
+                                OnClick="AddApproveEstimateAsync"
+                                Disabled="_isProcessing"
+                                Variant="Variant.Filled"
+                                Color="Color.Success">
+                                Aprovado
+                            </MudButton>
+                        </MudItem>
+                        <MudItem>
+                            <MudButton
+                                OnClick="AddReproveEstimateAsync"
+                                Disabled="_isProcessing"
+                                Variant="Variant.Filled"
+                                Color="Color.Error">
+                                Reprovado
+                            </MudButton>
+                        </MudItem>
+                    }
+                </MudPaper>
+            }
+            else if (ServiceOrder.ServiceOrderStatus == EServiceOrderStatus.Evaluated &&
+                     ServiceOrder.RepairStatus == ERepairStatus.Approved &&
+                     ServiceOrder.RepairResult == ERepairResult.Repair)
+            {
+                <MudText Typo="Typo.h6" Color="Color.Primary" Class="uppercase font-bold mb-4">
+                    Adicionar Compra de Peça
+                </MudText>
+                @if (_isProcessing)
+                {
+                    <MudItem>
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem>
+                        <AddPurchasedPartButton ServiceOrder="ServiceOrder" DialogInstance="MudDialog" />
+                    </MudItem>
+                }
+            }
+            else if (ServiceOrder.ServiceOrderStatus == EServiceOrderStatus.OrderPart &&
+                     ServiceOrder.RepairStatus == ERepairStatus.Approved)
+            {
+                <div class="py-3 flex flex-col gap-2">
+                    <MudText Typo="Typo.h6" Color="Color.Primary" Class="uppercase font-bold mb-4">
+                        Marcar Como Consertado
+                    </MudText>
+                    @if (_isProcessing)
+                    {
+                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                    }
+                    else
+                    {
+                        <MudButton
+                            @onclick="Repaired"
+                            EndIcon="@Icons.Material.Filled.Done"
+                            Variant="Variant.Filled"
+                            Color="Color.Primary">
+                            Consertado
+                        </MudButton>
+                    }
+                </div>
+            }
+            else if (ServiceOrder.ServiceOrderStatus == EServiceOrderStatus.Repaired ||
+                     ServiceOrder.RepairStatus == ERepairStatus.Disapproved ||
+                     ServiceOrder.RepairResult == ERepairResult.Unrepaired ||
+                     ServiceOrder.RepairResult == ERepairResult.NoDefectFound)
+            {
+                <div class="py-3 flex flex-col gap-2">
+                    <MudText Typo="Typo.h6" Color="Color.Primary" Class="uppercase font-bold mb-4">
+                        Marcar Como Entregue
+                    </MudText>
+                    <DeliveryServiceOrderButton
+                        OnDeliveryAdded="OnDeliveryAdded"
+                        Command="_getServiceOrderByIdCommand" />
+                </div>
+            }
+        </div>
+
     </DialogContent>
 </MudDialog>
 
@@ -147,9 +325,9 @@
 
 
 @code {
-    private EditServiceOrderCommand _command;
-    private AddServiceOrderEstimateCommand AddEstimateCommand = new();
-    private GetServiceOrderByIdCommand GetServiceOrderByIdCommand = new();
+    private EditServiceOrderCommand _command = null!;
+    private AddServiceOrderEstimateCommand _addEstimateCommand = new();
+    private GetServiceOrderByIdCommand _getServiceOrderByIdCommand = new();
     [Parameter] public EventCallback OnRepairAdded { get; set; }
     private bool _isProcessing;
     
@@ -160,13 +338,13 @@
     [Inject] public CustomerHandler CustomerHandler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         try
         {
             _command = new EditServiceOrderCommand
             {
-                Customer = ServiceOrder.Customer,
+                Customer = CustomerMapper.MapToDto(ServiceOrder.Customer),
                 Brand = ServiceOrder.Product.Brand,
                 Model = ServiceOrder.Product.Model,
                 SerialNumber = ServiceOrder.Product.SerialNumber,
@@ -187,8 +365,8 @@
                 Location = ServiceOrder.Product.Location
             };
 
-            AddEstimateCommand.ServiceOrderId = ServiceOrder.Id;
-            GetServiceOrderByIdCommand.Id = ServiceOrder.Id;
+            _addEstimateCommand.ServiceOrderId = ServiceOrder.Id;
+            _getServiceOrderByIdCommand.Id = ServiceOrder.Id;
         }
         catch (Exception e)
         {
@@ -198,7 +376,16 @@
 
     public async Task EditServiceOrder()
     {
-        ServiceOrder.EditCustomer(_command.Customer);
+        var customer = await CustomerHandler.
+            GetCustomerByIdAsync(new GetCustomerByIdCommand { Id = _command.Customer.Id});
+
+        if (!customer.IsSuccess || customer.Data == null)
+        {
+            Snackbar.Add(customer.Message ?? "Ocorreu um erro ao tentar obter o cliente", Severity.Error);
+            return;
+        }
+        
+        ServiceOrder.EditCustomer(CustomerMapper.MapToEntity(customer.Data));
         ServiceOrder.EditEnterprise(_command.Enterprise);
         ServiceOrder.EditGuarantee(new Guarantee(_command.Guarantee ?? ""));
         ServiceOrder.EditProduct(new Product(_command.Brand, _command.Model, _command.SerialNumber, _command.Defect, _command.Accessories, _command.Type));
@@ -245,7 +432,7 @@
         _isProcessing = true;
         try
         {
-            var result = await ServiceOrderHandler.AddServiceOrderEstimate(AddEstimateCommand);
+            var result = await ServiceOrderHandler.AddServiceOrderEstimate(_addEstimateCommand);
             if (result.IsSuccess)
             {
                 Snackbar.Add(result.Message ?? "Orçamento adicionado com sucesso!", Severity.Success);
@@ -270,7 +457,7 @@
         _isProcessing = true;
         try
         {
-            var result = await ServiceOrderHandler.AddServiceOrderApproveEstimate(GetServiceOrderByIdCommand);
+            var result = await ServiceOrderHandler.AddServiceOrderApproveEstimate(_getServiceOrderByIdCommand);
             if (result.IsSuccess)
             {
                 Snackbar.Add(result.Message ?? "Resposta adicionada com sucesso!", Severity.Success);
@@ -295,7 +482,7 @@
         _isProcessing = true;
         try
         {
-            var result = await ServiceOrderHandler.AddServiceOrderRejectEstimate(GetServiceOrderByIdCommand);
+            var result = await ServiceOrderHandler.AddServiceOrderRejectEstimate(_getServiceOrderByIdCommand);
             if (result.IsSuccess)
             {
                 Snackbar.Add(result.Message ?? "Resposta adicionada com sucesso!", Severity.Success);
@@ -319,7 +506,7 @@
     {
         try
         {
-            var result = await ServiceOrderHandler.AddServiceOrderRepair(GetServiceOrderByIdCommand);
+            var result = await ServiceOrderHandler.AddServiceOrderRepair(_getServiceOrderByIdCommand);
 
             if (result.IsSuccess)
             {
@@ -336,10 +523,10 @@
         }
     }
     
-    private async Task<IEnumerable<Customer>> SearchCustomers(string? searchTerm, CancellationToken cancellationToken)
+    private async Task<IEnumerable<CustomerDto>> SearchCustomers(string? searchTerm, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Length < 3)
-            return Enumerable.Empty<Customer>();
+            return Enumerable.Empty<CustomerDto>();
 
         try
         {
@@ -348,19 +535,21 @@
             if (!result.IsSuccess || result.Data == null)
             {
                 Snackbar.Add(result.Message ?? "Erro ao buscar clientes", Severity.Error);
-                return Enumerable.Empty<Customer>();
+                return Enumerable.Empty<CustomerDto>();
             }
 
             var normalizedTerm = Normalize(searchTerm);
+            
+            var customers = result.Data;
 
-            return result.Data
-                .Where(c => Normalize(c.Name.CustomerName).Contains(normalizedTerm))
+            return customers
+                .Where(c => Normalize(c.Name).Contains(normalizedTerm))
                 .Take(20);
         }
         catch (Exception e)
         {
             Snackbar.Add($"Erro: {e.Message}", Severity.Error);
-            return Enumerable.Empty<Customer>();
+            return Enumerable.Empty<CustomerDto>();
         }
     }
     

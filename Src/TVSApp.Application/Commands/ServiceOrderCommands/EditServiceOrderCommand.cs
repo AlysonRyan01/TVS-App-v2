@@ -1,3 +1,4 @@
+using TVS_App.Application.DTOs;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.ValueObjects.ServiceOrder;
@@ -8,7 +9,7 @@ public class EditServiceOrderCommand : ICommand
 {
     public long CustomerId { get; set; }
     
-    public Customer Customer { get; set; } = null!;
+    public CustomerDto Customer { get; set; } = null!;
     
     public string Brand { get; set; } = null!;
     public string Model { get; set; } = null!;

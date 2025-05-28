@@ -5,12 +5,8 @@ namespace TVS_App.Domain.ValueObjects.Customer;
 
 public class Cpf : ValueObject
 {
-    public Cpf()
-    {
-        
-    }
+    protected Cpf() { }
     
-    [JsonConstructor]
     public Cpf(string number)
     {
         if (string.IsNullOrWhiteSpace(number))
@@ -24,7 +20,6 @@ public class Cpf : ValueObject
         Number = number;
     }
     
-    [JsonPropertyName("number")]
     public string Number { get; private set; } = string.Empty;
 
     public override string ToString() => Convert.ToUInt64(Number).ToString(@"000\.000\.000\-00");

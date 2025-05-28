@@ -1,6 +1,6 @@
 @using TVS_App.Application.Commands.CustomerCommands
+@using TVS_App.Application.DTOs
 @using TVS_App.Application.Exceptions
-@using TVS_App.Domain.Entities
 @using TVSApp.Web.Handlers
 <MudDialog>
     <TitleContent>
@@ -117,11 +117,9 @@
 @code 
 {
     [Parameter] public long CustomerId { get; set; }
-    public Customer Customer { get; set; } = new();
+    public CustomerDto Customer { get; set; } = null!;
     public UpdateCustomerCommand EditableCustomerCommand { get; set; } = new();
     public GetCustomerByIdCommand Command => new GetCustomerByIdCommand { Id = CustomerId };
-
-    private bool _confirmCustomer;
 
     [Inject] public CustomerHandler CustomerHandler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
@@ -133,24 +131,24 @@
         {
             Command.Validate();
             var customerResult = await CustomerHandler.GetCustomerByIdAsync(Command);
-            if (customerResult.IsSuccess)
+            if (customerResult.IsSuccess && customerResult.Data != null)
             {
-                Customer = customerResult.Data!;
+                Customer = customerResult.Data;
                 
                 EditableCustomerCommand = new UpdateCustomerCommand
                 {
                     Id = Customer.Id,
-                    Name = Customer.Name.CustomerName,
-                    Street = Customer.Address.Street,
-                    Neighborhood = Customer.Address.Neighborhood,
-                    City = Customer.Address.City,
-                    Number = Customer.Address.Number,
-                    ZipCode = Customer.Address.ZipCode,
-                    State = Customer.Address.State,
-                    Phone = Customer.Phone.CustomerPhone,
-                    Phone2 = Customer.Phone2.CustomerPhone,
-                    Email = Customer.Email?.CustomerEmail ?? "",
-                    Cpf = Customer.Cpf.Number
+                    Name = Customer.Name,
+                    Street = Customer.Street,
+                    Neighborhood = Customer.Neighborhood,
+                    City = Customer.City,
+                    Number = Customer.Number,
+                    ZipCode = Customer.ZipCode,
+                    State = Customer.State,
+                    Phone = Customer.Phone,
+                    Phone2 = Customer.Phone2,
+                    Email = Customer.Email ?? "",
+                    Cpf = Customer.Cpf
                 };
             }
             else
@@ -179,10 +177,9 @@
             EditableCustomerCommand.Validate();
 
             var updateResult = await CustomerHandler.UpdateCustomerAsync(EditableCustomerCommand);
-            if (updateResult.IsSuccess)
+            if (updateResult.IsSuccess && updateResult.Data != null)
             {
-                _confirmCustomer = true;
-                MudDialog.Close(DialogResult.Ok(_confirmCustomer));
+                MudDialog.Close(DialogResult.Ok(updateResult.Data));
                 Snackbar.Add("Cliente atualizado com sucesso!", Severity.Success);
             }
             else

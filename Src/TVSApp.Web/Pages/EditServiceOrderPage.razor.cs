@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using TVS_App.Application.Commands.ServiceOrderCommands;
+using TVS_App.Application.DTOs;
 using TVS_App.Domain.Entities;
 using TVSApp.Web.Components.Dialogs;
 using TVSApp.Web.Handlers;
@@ -11,8 +12,7 @@ namespace TVSApp.Web.Pages;
 
 public partial class EditServiceOrderPage : ComponentBase
 {
-    [Inject] public CustomerHandler CustomerHandler { get; set; } = null!;
-    public Customer SelectedCustomer { get; set; } = new();
+    public CustomerDto? SelectedCustomer { get; set; }
     private string _serviceOrderId = string.Empty;
     private GetServiceOrderByIdCommand _printCommand = new();
     private AddProductLocationCommand _locationCommand = new();
@@ -21,6 +21,7 @@ public partial class EditServiceOrderPage : ComponentBase
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
     [Inject] public IDialogService DialogService { get; set; } = null!;
     [Inject] public ServiceOrderHandler ServiceOrderHandler { get; set; } = null!;
+    [Inject] public CustomerHandler CustomerHandler { get; set; } = null!;
     
 
     public async Task OpenEditServiceOrderDialog()
@@ -73,10 +74,10 @@ public partial class EditServiceOrderPage : ComponentBase
         _isBusy = false;
     }
     
-    private async Task<IEnumerable<Customer>> SearchCustomers(string? searchTerm, CancellationToken cancellationToken)
+    private async Task<IEnumerable<CustomerDto>> SearchCustomers(string? searchTerm, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Length < 3)
-            return Enumerable.Empty<Customer>();
+            return Enumerable.Empty<CustomerDto>();
 
         try
         {
@@ -85,25 +86,27 @@ public partial class EditServiceOrderPage : ComponentBase
             if (!result.IsSuccess || result.Data == null)
             {
                 Snackbar.Add(result.Message ?? "Erro ao buscar clientes", Severity.Error);
-                return Enumerable.Empty<Customer>();
+                return Enumerable.Empty<CustomerDto>();
             }
 
             var normalizedTerm = Normalize(searchTerm);
+            
+            var customers = result.Data;
 
-            return result.Data
-                .Where(c => Normalize(c.Name.CustomerName).Contains(normalizedTerm))
+            return customers
+                .Where(c => Normalize(c.Name).Contains(normalizedTerm))
                 .Take(20);
         }
         catch (Exception e)
         {
             Snackbar.Add($"Erro: {e.Message}", Severity.Error);
-            return Enumerable.Empty<Customer>();
+            return Enumerable.Empty<CustomerDto>();
         }
     }
     
     public async Task OnCustomerSelected()
     {
-        if (SelectedCustomer.Id == 0)
+        if (SelectedCustomer == null || SelectedCustomer.Id == 0)
         {
             Snackbar.Add("Nenhum cliente foi selecionado", Severity.Error);
             return;
@@ -136,7 +139,7 @@ public partial class EditServiceOrderPage : ComponentBase
         };
 
         var dialog = await DialogService.ShowAsync<ConfirmCustomerDialog>("Confirmar cliente", parameters, options);
-        var result = await dialog.Result;
+        await dialog.Result;
         _isBusy = false;
     }
 
