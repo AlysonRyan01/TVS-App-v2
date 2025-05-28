@@ -27,7 +27,7 @@ public class RegenerateDocument : QuestPdf
                 page.Margin(8);
 
                 page.Content().Column(column =>
-                {
+                {   
                     column.Item().Element(container =>
                     {
                         container.Row(row =>
@@ -35,18 +35,20 @@ public class RegenerateDocument : QuestPdf
                             row.Spacing(0);
                             row.ConstantItem(400).Text("TVS ELETRÔNICA")
                                 .FontSize(40)
+                                .Underline()
                                 .ExtraBold()
                                 .FontFamily("Arial")
                                 .FontColor(Colors.Red.Darken2);
 
-                            row.RelativeItem();
+                            row.RelativeItem(); 
 
-                            row.ConstantItem(50).Column(col =>
+                            row.ConstantItem(55).Column(col =>
                             {
                                 col.Item().Image(qrCodeBytes);
                                 
-                                col.Item().PaddingTop(2).Text("Consulte pelo QR Code")
+                                col.Item().Text("Consulte pelo QR Code")
                                     .FontSize(6)
+                                    .Italic()
                                     .ExtraBold()
                                     .FontColor(Colors.Red.Darken1)
                                     .AlignCenter();
@@ -58,20 +60,27 @@ public class RegenerateDocument : QuestPdf
                     {
                         container.Row(row =>
                         {
-                            row.Spacing(0);
+                            row.Spacing(5);
                             row.ConstantItem(140).Text("WWW.TVSELETRONICA.COM")
                                 .FontSize(8)
-                                .ExtraBold();
+                                .ExtraBold()
+                                .FontColor(Colors.Red.Darken3)
+                                .Underline(); 
+
                             row.ConstantItem(120).Text("FONE: (41) 3292-3047")
                                 .FontSize(8)
-                                .ExtraBold();
+                                .ExtraBold()
+                                .FontColor(Colors.Red.Darken3);
+                            
                             row.ConstantItem(200).Text("WHATSAPP: (41) 99274-4920")
                                 .FontSize(8)
-                                .ExtraBold();
+                                .ExtraBold()
+                                .FontColor(Colors.Red.Darken3)
+                                .Bold();
                         });
                     });
 
-                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
+                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Darken2);
 
                     column.Item().Element(container =>
                     {
@@ -145,7 +154,7 @@ public class RegenerateDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingTop(20).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
+                    column.Item().PaddingTop(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
 
                     column.Item().Element(container =>
                     {
@@ -160,7 +169,7 @@ public class RegenerateDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
                 });
             });
         }
@@ -179,6 +188,7 @@ public class RegenerateDocument : QuestPdf
                             row.Spacing(0);
                             row.ConstantItem(400).Text("TVS ELETRÔNICA")
                                 .FontSize(40)
+                                .Underline()
                                 .ExtraBold()
                                 .FontFamily("Arial")
                                 .FontColor(Colors.Red.Darken2);
@@ -202,7 +212,7 @@ public class RegenerateDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
+                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Darken2);
 
                     column.Item().Element(container =>
                     {
@@ -276,7 +286,7 @@ public class RegenerateDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
 
                     column.Item().PaddingVertical(10).Element(container =>
                     {
@@ -339,7 +349,7 @@ public class RegenerateDocument : QuestPdf
                             });
                         });
                     });
-                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
                 });
             });
         }
@@ -358,6 +368,7 @@ public class RegenerateDocument : QuestPdf
                             row.Spacing(0);
                             row.ConstantItem(400).Text("TVS ELETRÔNICA")
                                 .FontSize(40)
+                                .Underline()
                                 .ExtraBold()
                                 .FontFamily("Arial")
                                 .FontColor(Colors.Red.Darken2);
@@ -381,7 +392,7 @@ public class RegenerateDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
+                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Darken2);
 
                     column.Item().Element(container =>
                     {
@@ -451,7 +462,7 @@ public class RegenerateDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
 
                     column.Item().PaddingVertical(10).Element(container =>
                     {
@@ -514,7 +525,7 @@ public class RegenerateDocument : QuestPdf
                             });
                         });
                     });
-                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
                 });
             });
         }

@@ -33,6 +33,7 @@ public class GenerateSaleDocument : QuestPdf
                             row.Spacing(0);
                             row.ConstantItem(400).Text("TVS ELETRÔNICA")
                                 .FontSize(40)
+                                .Underline()
                                 .ExtraBold()
                                 .FontFamily("Arial")
                                 .FontColor(Colors.Red.Darken2);
@@ -56,7 +57,7 @@ public class GenerateSaleDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
+                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Darken2);
 
                     column.Item().Element(container =>
                     {
@@ -126,7 +127,7 @@ public class GenerateSaleDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
 
                     column.Item().PaddingVertical(10).Element(container =>
                     {
@@ -189,7 +190,7 @@ public class GenerateSaleDocument : QuestPdf
                             });
                         });
                     });
-                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Lighten3);
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
                 });
             });
         }
