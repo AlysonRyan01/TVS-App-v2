@@ -47,7 +47,8 @@ public class GenerateCheckOutDocument : QuestPdf
                             row.Spacing(0);
                             row.ConstantItem(140).Text("WWW.TVSELETRONICA.COM")
                                 .FontSize(8)
-                                .ExtraBold();
+                                .ExtraBold()
+                                .Underline();
                             row.ConstantItem(120).Text("FONE: (41) 3292-3047")
                                 .FontSize(8)
                                 .ExtraBold();
@@ -57,7 +58,7 @@ public class GenerateCheckOutDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Darken2);
+                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Lighten2);
 
                     column.Item().Element(container =>
                     {
@@ -131,7 +132,7 @@ public class GenerateCheckOutDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Lighten2);
 
                     column.Item().PaddingVertical(10).Element(container =>
                     {
@@ -194,7 +195,7 @@ public class GenerateCheckOutDocument : QuestPdf
                             });
                         });
                     });
-                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Lighten2);
                 });
             });
         }

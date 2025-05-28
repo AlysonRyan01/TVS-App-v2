@@ -64,23 +64,19 @@ public class RegenerateDocument : QuestPdf
                             row.ConstantItem(140).Text("WWW.TVSELETRONICA.COM")
                                 .FontSize(8)
                                 .ExtraBold()
-                                .FontColor(Colors.Red.Darken3)
-                                .Underline(); 
+                                .Underline();
 
                             row.ConstantItem(120).Text("FONE: (41) 3292-3047")
                                 .FontSize(8)
-                                .ExtraBold()
-                                .FontColor(Colors.Red.Darken3);
+                                .ExtraBold();
                             
                             row.ConstantItem(200).Text("WHATSAPP: (41) 99274-4920")
                                 .FontSize(8)
-                                .ExtraBold()
-                                .FontColor(Colors.Red.Darken3)
-                                .Bold();
+                                .ExtraBold();
                         });
                     });
 
-                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Darken2);
+                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Lighten2);
 
                     column.Item().Element(container =>
                     {
@@ -154,7 +150,7 @@ public class RegenerateDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingTop(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
+                    column.Item().PaddingTop(20).LineHorizontal(1).LineColor(Colors.Red.Lighten2);
 
                     column.Item().Element(container =>
                     {
@@ -169,7 +165,7 @@ public class RegenerateDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Lighten2);
                 });
             });
         }
@@ -201,18 +197,19 @@ public class RegenerateDocument : QuestPdf
                         {
                             row.Spacing(0);
                             row.ConstantItem(140).Text("WWW.TVSELETRONICA.COM")
-                                .FontSize(9)
-                                .ExtraBold();
-                            row.ConstantItem(120).Text("FIXO: (41) 3292-3047")
-                                .FontSize(9)
+                                .FontSize(8)
+                                .ExtraBold()
+                                .Underline();
+                            row.ConstantItem(120).Text("FONE: (41) 3292-3047")
+                                .FontSize(8)
                                 .ExtraBold();
                             row.ConstantItem(200).Text("WHATSAPP: (41) 99274-4920")
-                                .FontSize(9)
+                                .FontSize(8)
                                 .ExtraBold();
                         });
                     });
 
-                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Darken2);
+                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Lighten2);
 
                     column.Item().Element(container =>
                     {
@@ -286,7 +283,7 @@ public class RegenerateDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Lighten2);
 
                     column.Item().PaddingVertical(10).Element(container =>
                     {
@@ -349,7 +346,7 @@ public class RegenerateDocument : QuestPdf
                             });
                         });
                     });
-                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Lighten2);
                 });
             });
         }
@@ -392,7 +389,7 @@ public class RegenerateDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Darken2);
+                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Lighten2);
 
                     column.Item().Element(container =>
                     {
@@ -462,7 +459,7 @@ public class RegenerateDocument : QuestPdf
                         });
                     });
 
-                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Lighten2);
 
                     column.Item().PaddingVertical(10).Element(container =>
                     {
@@ -525,7 +522,7 @@ public class RegenerateDocument : QuestPdf
                             });
                         });
                     });
-                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
+                    column.Item().PaddingVertical(20).LineHorizontal(1).LineColor(Colors.Red.Lighten1);
                 });
             });
         }

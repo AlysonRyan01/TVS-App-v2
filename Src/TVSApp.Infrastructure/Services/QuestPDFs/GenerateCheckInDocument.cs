@@ -63,23 +63,19 @@ public class GenerateCheckInDocument : QuestPdf
                             row.ConstantItem(140).Text("WWW.TVSELETRONICA.COM")
                                 .FontSize(8)
                                 .ExtraBold()
-                                .FontColor(Colors.Red.Darken3)
-                                .Underline(); 
+                                .Underline();
 
                             row.ConstantItem(120).Text("FONE: (41) 3292-3047")
                                 .FontSize(8)
-                                .ExtraBold()
-                                .FontColor(Colors.Red.Darken3);
-                            
+                                .ExtraBold();
+
                             row.ConstantItem(200).Text("WHATSAPP: (41) 99274-4920")
                                 .FontSize(8)
-                                .ExtraBold()
-                                .FontColor(Colors.Red.Darken3)
-                                .Bold();
+                                .ExtraBold();
                         });
                     });
 
-                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Darken2);
+                    column.Item().PaddingVertical(15).LineHorizontal(1).LineColor(Colors.Red.Lighten2);
                     
                     column.Item().Element(container =>
                     {
@@ -162,7 +158,7 @@ public class GenerateCheckInDocument : QuestPdf
                         });
                     });
 
-                column.Item().PaddingTop(20).LineHorizontal(1).LineColor(Colors.Red.Darken2);
+                column.Item().PaddingTop(20).LineHorizontal(1).LineColor(Colors.Red.Lighten2);
 
                             column.Item().Element(container =>
                             {
