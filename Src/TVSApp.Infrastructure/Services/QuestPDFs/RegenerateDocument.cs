@@ -44,6 +44,12 @@ public class RegenerateDocument : QuestPdf
                             row.ConstantItem(50).Column(col =>
                             {
                                 col.Item().Image(qrCodeBytes);
+                                
+                                col.Item().PaddingTop(2).Text("Consulte pelo QR Code")
+                                    .FontSize(6)
+                                    .ExtraBold()
+                                    .FontColor(Colors.Red.Darken1)
+                                    .AlignCenter();
                             });
                         });
                     });
