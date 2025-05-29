@@ -39,6 +39,8 @@ public class GenerateCheckOutDocument : QuestPdf
                                 .FontColor(Colors.Red.Darken2);
                         });
                     });
+                    
+                    column.Item().PaddingVertical(3);
 
                     column.Item().Element(container =>
                     {

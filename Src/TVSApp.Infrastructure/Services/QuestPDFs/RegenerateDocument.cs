@@ -190,6 +190,8 @@ public class RegenerateDocument : QuestPdf
                                 .FontColor(Colors.Red.Darken2);
                         });
                     });
+                    
+                    column.Item().PaddingVertical(3);
 
                     column.Item().Element(container =>
                     {
@@ -371,6 +373,8 @@ public class RegenerateDocument : QuestPdf
                                 .FontColor(Colors.Red.Darken2);
                         });
                     });
+                    
+                    column.Item().PaddingVertical(3);
 
                     column.Item().Element(container =>
                     {
