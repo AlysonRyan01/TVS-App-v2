@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.ServiceOrderCommands;
 using TVS_App.Application.DTOs;
+using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Enums;
 using TVSApp.Web.Exceptions;
@@ -82,49 +83,49 @@ public class ServiceOrderHandler
         }
     }
     
-    public async Task<BaseResponse<ServiceOrder?>> EditServiceOrderAsync(ServiceOrder serviceOrder)
+    public async Task<BaseResponse<UpdateServiceOrderResponseDto?>> EditServiceOrderAsync(ServiceOrder serviceOrder)
     {
         try
         {
             if (serviceOrder.Id == 0)
-                return new BaseResponse<ServiceOrder?>(null, 401, "O ID da ordem de serviço nao pode ser 0");
+                return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 401, "O ID da ordem de serviço nao pode ser 0");
                 
             var response = await _httpClient.PutAsJsonAsync("edit-service-order", serviceOrder);
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                return new BaseResponse<ServiceOrder?>(null, (int)response.StatusCode, 
+                return new BaseResponse<UpdateServiceOrderResponseDto?>(null, (int)response.StatusCode, 
                     $"Erro na API: {response.StatusCode}. Detalhes: {errorContent}");
             }
             
-            var content = await response.Content.ReadFromJsonAsync<BaseResponse<ServiceOrder?>>();
+            var content = await response.Content.ReadFromJsonAsync<BaseResponse<UpdateServiceOrderResponseDto?>>();
             if (content == null || !content.IsSuccess)
-                return new BaseResponse<ServiceOrder?>(null, 500, content?.Message);
+                return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 500, content?.Message);
             
             return content;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<ServiceOrder?>(ex);
+            return ExceptionHandler.Handle<UpdateServiceOrderResponseDto?>(ex);
         }
     }
 
-    public async Task<BaseResponse<ServiceOrder?>> GetServiceOrderById(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> GetServiceOrderById(GetServiceOrderByIdCommand command)
     {
         try
         {
             command.Validate();
-            var response = await _httpClient.GetFromJsonAsync<BaseResponse<ServiceOrder?>>(
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<ServiceOrderDto?>>(
                 $"get-service-order-by-id/{command.Id}");
             
             if (response == null || !response.IsSuccess)
-                return new BaseResponse<ServiceOrder?>(null, 500, response?.Message ?? "");
+                return new BaseResponse<ServiceOrderDto?>(null, 500, response?.Message ?? "");
             
             return response;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<ServiceOrder?>(ex);
+            return ExceptionHandler.Handle<ServiceOrderDto?>(ex);
         }
     }
 

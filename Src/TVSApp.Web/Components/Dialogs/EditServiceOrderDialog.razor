@@ -3,6 +3,7 @@
 @using TVS_App.Application.Commands.CustomerCommands
 @using TVS_App.Application.Commands.ServiceOrderCommands
 @using TVS_App.Application.DTOs
+@using TVS_App.Application.DTOs.ServiceOrder
 @using TVS_App.Application.Mappers
 @using TVS_App.Domain.Entities
 @using TVS_App.Domain.Enums
@@ -333,7 +334,7 @@
     
     [Parameter] public EventCallback OnDeliveryAdded { get; set; }
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
-    [Parameter] public ServiceOrder ServiceOrder { get; set; } = null!;
+    [Parameter] public ServiceOrderDto ServiceOrder { get; set; } = null!;
     [Inject] public ServiceOrderHandler ServiceOrderHandler { get; set; } = null!;
     [Inject] public CustomerHandler CustomerHandler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
@@ -345,24 +346,24 @@
             _command = new EditServiceOrderCommand
             {
                 Customer = CustomerMapper.MapToDto(ServiceOrder.Customer),
-                Brand = ServiceOrder.Product.Brand,
-                Model = ServiceOrder.Product.Model,
-                SerialNumber = ServiceOrder.Product.SerialNumber,
-                Defect = ServiceOrder.Product.Defect,
-                Accessories = ServiceOrder.Product.Accessories,
-                Type = ServiceOrder.Product.Type,
+                Brand = ServiceOrder.Brand,
+                Model = ServiceOrder.Model,
+                SerialNumber = ServiceOrder.SerialNumber,
+                Defect = ServiceOrder.Defect,
+                Accessories = ServiceOrder.Accessories,
+                Type = ServiceOrder.Type,
                 CustomerId = ServiceOrder.CustomerId,
                 DeliveryDate = ServiceOrder.DeliveryDate,
-                Solution = ServiceOrder.Solution?.ServiceOrderSolution ?? "",
+                Solution = ServiceOrder.Solution ?? "",
                 Enterprise = ServiceOrder.Enterprise,
-                Guarantee = ServiceOrder.Guarantee?.ServiceOrderGuarantee ?? "",
-                LaborCost = ServiceOrder.LaborCost.ServiceOrderLaborCost,
+                Guarantee = ServiceOrder.Guarantee ?? "",
+                LaborCost = ServiceOrder.LaborCost,
                 ServiceOrderStatus = ServiceOrder.ServiceOrderStatus,
                 RepairStatus = ServiceOrder.RepairStatus,
                 RepairResult = ServiceOrder.RepairResult ?? new ERepairResult(),
-                PartCost = ServiceOrder.PartCost.ServiceOrderPartCost,
+                PartCost = ServiceOrder.PartCost,
                 EstimateMessage = ServiceOrder.EstimateMessage,
-                Location = ServiceOrder.Product.Location
+                Location = ServiceOrder.Location
             };
 
             _addEstimateCommand.ServiceOrderId = ServiceOrder.Id;
@@ -385,36 +386,37 @@
             return;
         }
         
-        ServiceOrder.EditCustomer(CustomerMapper.MapToEntity(customer.Data));
-        ServiceOrder.EditEnterprise(_command.Enterprise);
-        ServiceOrder.EditGuarantee(new Guarantee(_command.Guarantee ?? ""));
-        ServiceOrder.EditProduct(new Product(_command.Brand, _command.Model, _command.SerialNumber, _command.Defect, _command.Accessories, _command.Type));
-        ServiceOrder.EditSolution(new Solution(_command.Solution ?? ""));
-        ServiceOrder.EditLaborCost(new LaborCost(_command.LaborCost));
-        ServiceOrder.EditPartCost(new PartCost(_command.PartCost));
-        ServiceOrder.EditRepairResult(_command.RepairResult);
-        ServiceOrder.EditRepairStatus(_command.RepairStatus);
-        ServiceOrder.EditServiceOrderStatus(_command.ServiceOrderStatus);
-        ServiceOrder.EditDeliveryDate(_command.DeliveryDate);
-        ServiceOrder.EditEstimateMessage(_command.EstimateMessage ?? "");
-        
-        if (_command.RepairStatus == ERepairStatus.Waiting)
-            ServiceOrder.AddEstimate(_command.Solution ?? "", _command.Guarantee, _command.PartCost, _command.LaborCost, _command.RepairResult, _command.EstimateMessage ?? "");
-        
-        if (_command.RepairStatus == ERepairStatus.Approved)
-            ServiceOrder.ApproveEstimate();
-        
-        if (_command.RepairStatus == ERepairStatus.Disapproved)
-            ServiceOrder.RejectEstimate();
-        
-        if (_command.ServiceOrderStatus == EServiceOrderStatus.OrderPart)
-            ServiceOrder.AddPurchasedPart();
-        
-        if (_command.ServiceOrderStatus == EServiceOrderStatus.Repaired)
-            ServiceOrder.ExecuteRepair();
-        
-        if (_command.ServiceOrderStatus == EServiceOrderStatus.Delivered)
-            ServiceOrder.AddDelivery();
+        ServiceOrder = ServiceOrder with
+        {
+            CustomerId = _command.Customer.Id,
+            Name = _command.Customer.Name,
+            Street = _command.Customer.Street,
+            Neighborhood = _command.Customer.Neighborhood,
+            City = _command.Customer.City,
+            Number = _command.Customer.Number,
+            ZipCode = _command.Customer.ZipCode,
+            State = _command.Customer.State,
+            Phone = _command.Customer.Phone,
+            Phone2 = _command.Customer.Phone2,
+            Email = _command.Customer.Email,
+            Cpf = _command.Customer.Cpf,
+    
+            Brand = _command.Brand,
+            Model = _command.Model,
+            SerialNumber = _command.SerialNumber,
+            Defect = _command.Defect,
+            Accessories = _command.Accessories,
+            Type = _command.Type,
+            Guarantee = _command.Guarantee,
+            Solution = _command.Solution,
+            LaborCost = _command.LaborCost,
+            PartCost = _command.PartCost,
+            RepairResult = _command.RepairResult,
+            RepairStatus = _command.RepairStatus,
+            ServiceOrderStatus = _command.ServiceOrderStatus,
+            DeliveryDate = _command.DeliveryDate,
+            EstimateMessage = _command.EstimateMessage
+        };
         
         var result = await ServiceOrderHandler.EditServiceOrderAsync(ServiceOrder);
         if (result.IsSuccess)

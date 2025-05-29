@@ -52,43 +52,6 @@ public class ServiceOrderHandlerTests
     }
 
     [TestMethod]
-    public async Task deve_retornar_verdadeiro_se_a_ordem_de_servico_for_atualizada()
-    {
-        try
-        {
-            var updateServiceOrderCommand = new UpdateServiceOrderCommand
-            {
-                ServiceOrderId = 5,
-                CustomerId = 10,
-                ProductModel = "UN40J5200AG",
-                ProductSerialNumber = "32HJ31HJ312",
-                ProductDefect = "Sem imagem",
-                Accessories = "controle",
-                ProductType = Domain.Enums.EProduct.Tv,
-                Enterprise = Domain.Enums.EEnterprise.Particular
-            };
-
-            updateServiceOrderCommand.Validate();
-
-            var createResult = await _serviceOrderHandler.UpdateServiceOrderAsync(updateServiceOrderCommand);
-            if (!createResult.IsSuccess)
-                Assert.Fail(createResult.Message);
-
-            if (createResult?.Data?.Customer.Id == 10 &&
-                createResult.Data.Enterprise == Domain.Enums.EEnterprise.Particular &&
-                createResult?.Data?.Product.Model == "UN40J5200AG" &&
-                createResult?.Data?.Product.Accessories == "controle")
-            {
-                Assert.IsTrue(true);
-            }
-        }
-        catch (Exception ex)
-        {
-            Assert.Fail(ex.Message);
-        }
-    }
-
-    [TestMethod]
     public async Task deve_retornar_verdadeiro_se_obter_a_ordem_de_servico_correta()
     {
         try

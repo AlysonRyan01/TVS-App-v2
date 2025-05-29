@@ -5,9 +5,8 @@ namespace TVS_App.Domain.ValueObjects.ServiceOrder;
 
 public class Guarantee : ValueObject
 {
-    public Guarantee() {}
-
-    [JsonConstructor]
+    protected Guarantee() {}
+    
     public Guarantee(string serviceOrderGuarantee)
     {
         ServiceOrderGuarantee = serviceOrderGuarantee;

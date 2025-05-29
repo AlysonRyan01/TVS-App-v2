@@ -1,8 +1,10 @@
 using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.ServiceOrderCommands;
 using TVS_App.Application.DTOs;
+using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Exceptions;
 using TVS_App.Application.Interfaces;
+using TVS_App.Application.Mappers;
 using TVS_App.Application.Repositories;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Enums;
@@ -102,7 +104,7 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<ServiceOrder?>> UpdateServiceOrderAsync(UpdateServiceOrderCommand command)
+    public async Task<BaseResponse<UpdateServiceOrderResponseDto?>> UpdateServiceOrderAsync(UpdateServiceOrderCommand command)
     {
         try
         {
@@ -111,13 +113,13 @@ public class ServiceOrderHandler
 
             var existingCustomer = await _customerRepository.GetByIdAsync(command.CustomerId);
             if (existingCustomer.Data == null)
-                return new BaseResponse<ServiceOrder?>(null, 404, $"O cliente com id: {command.CustomerId} não existe");
+                return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 404, $"O cliente com id: {command.CustomerId} não existe");
 
             var customer = existingCustomer.Data;
 
             var existingServiceOrder = await _serviceOrderRepository.GetById(command.ServiceOrderId);
             if (existingServiceOrder.Data == null)
-                return new BaseResponse<ServiceOrder?>(null, 404, $"A ordem de serviço com id: {command.ServiceOrderId} não existe");
+                return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 404, $"A ordem de serviço com id: {command.ServiceOrderId} não existe");
 
             var serviceOrder = existingServiceOrder.Data;
 
@@ -130,34 +132,48 @@ public class ServiceOrderHandler
                 command.ProductType,
                 command.Enterprise);
 
-            return await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            var result = await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            if (!result.IsSuccess || result.Data == null)
+                return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 500, result.Message);
+            
+            var dto = ServiceOrderMapper.MapToUpdateResponseDto(result.Data);
+            
+            return new BaseResponse<UpdateServiceOrderResponseDto?>(dto, 200, result.Message);
         }
         catch (CommandException<UpdateServiceOrderCommand> ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 400, $"Erro de validação: {ex.Message}");
+            return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 400, $"Erro de validação: {ex.Message}");
         }
         catch (Exception ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
     
-    public async Task<BaseResponse<ServiceOrder?>> EditServiceOrderAsync(ServiceOrder serviceOrder)
+    public async Task<BaseResponse<UpdateServiceOrderResponseDto?>> EditServiceOrderAsync(ServiceOrderDto serviceOrder)
     {
         try
         {
             if (serviceOrder.Id == 0)
-                return new BaseResponse<ServiceOrder?>(null, 401, "O ID da ordem de serviço não pode ser 0");
+                return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 401, "O ID da ordem de serviço não pode ser 0");
             
-            return await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            
+            
+            var result = await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            if (!result.IsSuccess || result.Data == null)
+                return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 500, result.Message);
+            
+            var dto = ServiceOrderMapper.MapToUpdateResponseDto(result.Data);
+            
+            return new BaseResponse<UpdateServiceOrderResponseDto?>(dto, 200, result.Message);
         }
         catch (CommandException<UpdateServiceOrderCommand> ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 400, $"Erro de validação: {ex.Message}");
+            return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 400, $"Erro de validação: {ex.Message}");
         }
         catch (Exception ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 
@@ -206,21 +222,28 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<ServiceOrder?>> GetServiceOrderById(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> GetServiceOrderById(GetServiceOrderByIdCommand command)
     {
         try
         {
             command.Validate();
 
-            return await _serviceOrderRepository.GetById(command.Id);
+            var result =  await _serviceOrderRepository.GetById(command.Id);
+            
+            if (!result.IsSuccess || result.Data == null)
+                return new BaseResponse<ServiceOrderDto?>(null, 500, result.Message);
+            
+            var dto = ServiceOrderMapper.MapToServiceOrderDto(result.Data);
+            
+            return new BaseResponse<ServiceOrderDto?>(dto, 200, result.Message);
         }
         catch (CommandException<GetServiceOrderByIdCommand> ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 400, $"Erro de validação: {ex.Message}");
+            return new BaseResponse<ServiceOrderDto?>(null, 400, $"Erro de validação: {ex.Message}");
         }
         catch (Exception ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<ServiceOrderDto?>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
     

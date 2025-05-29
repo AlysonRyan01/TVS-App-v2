@@ -1,5 +1,5 @@
 @using TVS_App.Application.Commands.ServiceOrderCommands
-@using TVS_App.Domain.Entities
+@using TVS_App.Application.DTOs.ServiceOrder
 @using TVSApp.Web.Handlers
 
 
@@ -9,7 +9,7 @@
 
 @code {
     [Parameter] public IMudDialogInstance DialogInstance { get; set; } = null!;
-    [Parameter] public ServiceOrder ServiceOrder { get; set; } = null!;
+    [Parameter] public ServiceOrderDto ServiceOrder { get; set; } = null!;
     [Inject] public ServiceOrderHandler ServiceOrderHandler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
 

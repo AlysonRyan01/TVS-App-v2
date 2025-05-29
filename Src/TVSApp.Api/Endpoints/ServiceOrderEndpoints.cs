@@ -5,6 +5,7 @@ using TVS_App.Api.SignalR;
 using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.ServiceOrderCommands;
 using TVS_App.Application.DTOs;
+using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Handlers;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Enums;
@@ -71,7 +72,7 @@ public static class ServiceOrderEndpoints
             }
             catch (Exception ex)
             {
-                var response = EndpointExceptions.Handle<ServiceOrder>(ex);
+                var response = EndpointExceptions.Handle<UpdateServiceOrderResponseDto>(ex);
                 return Results.Ok(response);
             }
         }).WithTags("ServiceOrder").RequireAuthorization();
@@ -91,7 +92,7 @@ public static class ServiceOrderEndpoints
             }
             catch (Exception ex)
             {
-                var response = EndpointExceptions.Handle<ServiceOrder>(ex);
+                var response = EndpointExceptions.Handle<ServiceOrderDto>(ex);
                 return Results.Ok(response);
             }
         }).WithTags("ServiceOrder").RequireAuthorization();

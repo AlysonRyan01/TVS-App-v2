@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using TVS_App.Domain.Exceptions;
 
 namespace TVS_App.Domain.ValueObjects.ServiceOrder;
@@ -6,8 +5,7 @@ namespace TVS_App.Domain.ValueObjects.ServiceOrder;
 public class LaborCost : ValueObject
 {
     protected LaborCost() { }
-
-    [JsonConstructor]
+    
     public LaborCost(decimal serviceOrderLaborCost)
     {
         if (serviceOrderLaborCost < 0)
