@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using MudBlazor;
 using TVS_App.Application.Commands;
-using TVS_App.Domain.Entities;
+using TVS_App.Application.DTOs.ServiceOrder;
 using TVSApp.Web.Components.Dialogs;
 using TVSApp.Web.Handlers;
 
@@ -10,11 +10,11 @@ namespace TVSApp.Web.Pages;
 
 public partial class Home : ComponentBase
 {
-    public List<ServiceOrder> PendingEstimatesServiceOrders { get; set; } = new();
-    public List<ServiceOrder> WaitingResponseServiceOrders { get; set; } = new();
-    public List<ServiceOrder> PendingPurchaseServiceOrders { get; set; } = new();
-    public List<ServiceOrder> WaitingPartsServiceOrders { get; set; } = new();
-    public List<ServiceOrder> WaitingPickupServiceOrders { get; set; } = new();
+    public List<ServiceOrderDto> PendingEstimatesServiceOrders { get; set; } = new();
+    public List<ServiceOrderDto> WaitingResponseServiceOrders { get; set; } = new();
+    public List<ServiceOrderDto> PendingPurchaseServiceOrders { get; set; } = new();
+    public List<ServiceOrderDto> WaitingPartsServiceOrders { get; set; } = new();
+    public List<ServiceOrderDto> WaitingPickupServiceOrders { get; set; } = new();
     private bool _isBusy;
     private bool _hubHandlerRegistered;
 
@@ -49,7 +49,7 @@ public partial class Home : ComponentBase
             if (pendingEstimatesresult.IsSuccess && pendingEstimatesresult.Data != null)
                 PendingEstimatesServiceOrders = pendingEstimatesresult.Data.Items
                     .Where(item => item is not null)
-                    .Cast<ServiceOrder>()
+                    .Cast<ServiceOrderDto>()
                     .ToList();
             else
                 Snackbar.Add(pendingEstimatesresult.Message ?? "Ocorreu um erro ao carregar os orçamementos pendentes.");
@@ -68,7 +68,7 @@ public partial class Home : ComponentBase
             if (waitingResponseresult.IsSuccess && waitingResponseresult.Data != null)
                 WaitingResponseServiceOrders = waitingResponseresult.Data.Items
                     .Where(item => item is not null)
-                    .Cast<ServiceOrder>()
+                    .Cast<ServiceOrderDto>()
                     .ToList();
             else
                 Snackbar.Add(waitingResponseresult.Message ?? "Ocorreu um erro ao carregar  os serviços com respostas pendentes.");
@@ -87,7 +87,7 @@ public partial class Home : ComponentBase
             if (pendingPurchaseresult.IsSuccess && pendingPurchaseresult.Data != null)
                 PendingPurchaseServiceOrders = pendingPurchaseresult.Data.Items
                     .Where(item => item is not null)
-                    .Cast<ServiceOrder>()
+                    .Cast<ServiceOrderDto>()
                     .ToList();
             else
                 Snackbar.Add(pendingPurchaseresult.Message ?? "Ocorreu um erro ao carregar  os serviços com compra de peças pendentes.");
@@ -106,7 +106,7 @@ public partial class Home : ComponentBase
             if (waitingPartsresult.IsSuccess && waitingPartsresult.Data != null)
                 WaitingPartsServiceOrders = waitingPartsresult.Data.Items
                     .Where(item => item is not null)
-                    .Cast<ServiceOrder>()
+                    .Cast<ServiceOrderDto>()
                     .ToList();
             else
                 Snackbar.Add(waitingPartsresult.Message ?? "Ocorreu um erro ao carregar  os serviços entrega de peças pendentes.");
@@ -125,7 +125,7 @@ public partial class Home : ComponentBase
             if (waitingPickupresult.IsSuccess && waitingPickupresult.Data != null)
                 WaitingPickupServiceOrders = waitingPickupresult.Data.Items
                     .Where(item => item is not null)
-                    .Cast<ServiceOrder>()
+                    .Cast<ServiceOrderDto>()
                     .ToList();
             else
                 Snackbar.Add(waitingPickupresult.Message ?? "Ocorreu um erro ao carregar  os serviços aguardando coleta.");
@@ -160,7 +160,7 @@ public partial class Home : ComponentBase
         }
     }
     
-    private async Task OpenAddEstimateDialog(ServiceOrder order)
+    private async Task OpenAddEstimateDialog(ServiceOrderDto order)
     {
         var parameters = new DialogParameters
         {
@@ -179,7 +179,7 @@ public partial class Home : ComponentBase
         await dialog.Result;
     }
     
-    private async Task OpenAddResponseDialog(ServiceOrder order)
+    private async Task OpenAddResponseDialog(ServiceOrderDto order)
     {
         var parameters = new DialogParameters
         {
@@ -198,7 +198,7 @@ public partial class Home : ComponentBase
         await dialog.Result;
     }
     
-    private async Task OpenAddPerchasePartDialog(ServiceOrder order)
+    private async Task OpenAddPerchasePartDialog(ServiceOrderDto order)
     {
         var parameters = new DialogParameters
         {
@@ -217,7 +217,7 @@ public partial class Home : ComponentBase
         await dialog.Result;
     }
     
-    private async Task OpenAddRepairDialog(ServiceOrder order)
+    private async Task OpenAddRepairDialog(ServiceOrderDto order)
     {
         var parameters = new DialogParameters
         {
@@ -236,7 +236,7 @@ public partial class Home : ComponentBase
         await dialog.Result;
     }
     
-    private async Task OpenAddDeliveryDialog(ServiceOrder order)
+    private async Task OpenAddDeliveryDialog(ServiceOrderDto order)
     {
         var parameters = new DialogParameters
         {

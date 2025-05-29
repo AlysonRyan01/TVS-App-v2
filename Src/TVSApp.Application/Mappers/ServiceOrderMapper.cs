@@ -1,5 +1,7 @@
+using TVS_App.Application.Commands.ServiceOrderCommands;
 using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Domain.Entities;
+using TVS_App.Domain.Enums;
 using TVS_App.Domain.ValueObjects.Customer;
 using TVS_App.Domain.ValueObjects.ServiceOrder;
 
@@ -59,10 +61,14 @@ public static class ServiceOrderMapper
             RepairResult = serviceOrder.RepairResult
         };
     }
+
+    public static List<ServiceOrderDto> MapToServiceOrderDtoList(List<ServiceOrder> serviceOrders)
+    {
+        return serviceOrders.Select(MapToServiceOrderDto).ToList();
+    }
     
     public static ServiceOrder MapToServiceOrder(ServiceOrderDto dto)
     {
-        // 1. Criar Customer e Value Objects
         var customer = new Customer(
             new Name(dto.Name),
             new Address(dto.Street, dto.Neighborhood, dto.City, dto.Number, dto.ZipCode, dto.State),
@@ -71,6 +77,7 @@ public static class ServiceOrderMapper
             string.IsNullOrWhiteSpace(dto.Email) ? null : new Email(dto.Email),
             new Cpf(dto.Cpf)
         );
+        customer.Id = dto.CustomerId;
         
         var product = new Product(
             dto.Brand,
@@ -85,7 +92,55 @@ public static class ServiceOrderMapper
         
         serviceOrder.UpdateCustomer(customer);
         
-
         return serviceOrder;
+    }
+
+    public static void ApplyChanges(ServiceOrder entity, EditServiceOrderCommand dto)
+    {
+        var address = new Address(
+            dto.Street,
+            dto.Number,
+            dto.Neighborhood,
+            dto.City,
+            dto.State,
+            dto.ZipCode
+        );
+
+        var customer = new Customer(
+            new Name(dto.Name), 
+            address, 
+            new Phone(dto.Phone), 
+            new Phone(dto.Phone2),
+            string.IsNullOrEmpty(dto.Email) ? null : new Email(dto.Email),
+            new Cpf(dto.Cpf));
+
+        entity.EditCustomer(customer);
+        
+        var product = new Product(
+            dto.Brand,
+            dto.Model,
+            dto.SerialNumber,
+            dto.Defect,
+            dto.Accessories,
+            dto.Type
+        );
+
+        entity.EditProduct(product);
+        
+        entity.EditEnterprise(dto.Enterprise);
+        entity.EditServiceOrderStatus(dto.ServiceOrderStatus);
+        entity.EditRepairStatus(dto.RepairStatus);
+        if (!string.IsNullOrWhiteSpace(dto.Solution))
+            entity.EditSolution(new Solution(dto.Solution));
+        if (!string.IsNullOrWhiteSpace(dto.EstimateMessage))
+            entity.EditEstimateMessage(dto.EstimateMessage);
+        if (!string.IsNullOrWhiteSpace(dto.Guarantee))
+            entity.EditGuarantee(new Guarantee(dto.Guarantee));
+        entity.EditPartCost(new PartCost(dto.PartCost));
+        entity.EditLaborCost(new LaborCost(dto.LaborCost));
+        if (dto.RepairResult != null && Enum.IsDefined(typeof(ERepairResult), dto.RepairResult.Value))
+            entity.EditRepairResult(dto.RepairResult.Value);
+        if (dto.DeliveryDate != null)
+            entity.EditDeliveryDate(dto.DeliveryDate.Value);
     }
 }

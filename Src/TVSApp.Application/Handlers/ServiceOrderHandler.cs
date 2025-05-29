@@ -150,14 +150,23 @@ public class ServiceOrderHandler
         }
     }
     
-    public async Task<BaseResponse<UpdateServiceOrderResponseDto?>> EditServiceOrderAsync(ServiceOrderDto serviceOrder)
+    public async Task<BaseResponse<UpdateServiceOrderResponseDto?>> EditServiceOrderAsync(EditServiceOrderCommand command)
     {
         try
         {
-            if (serviceOrder.Id == 0)
+            command.Normalize();
+            command.Validate();
+            
+            if (command.Id == 0)
                 return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 401, "O ID da ordem de serviço não pode ser 0");
             
+            var repositoryResult = await _serviceOrderRepository.GetById(command.Id);
+            if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
+                return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 500, repositoryResult.Message);
             
+            var serviceOrder = repositoryResult.Data;
+            
+            ServiceOrderMapper.ApplyChanges(serviceOrder, command);
             
             var result = await _serviceOrderRepository.UpdateAsync(serviceOrder);
             if (!result.IsSuccess || result.Data == null)
@@ -177,7 +186,7 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<ServiceOrder?>> AddProductLocation(AddProductLocationCommand command)
+    public async Task<BaseResponse<string?>> AddProductLocation(AddProductLocationCommand command)
     {
         try
         {
@@ -186,7 +195,7 @@ public class ServiceOrderHandler
 
             var result = await _serviceOrderRepository.GetById(command.ServiceOrderId);
             if (result.Data == null)
-                return new BaseResponse<ServiceOrder?>(null, 404, "Essa ordem de serviço não existe");
+                return new BaseResponse<string?>(null, 404, "Essa ordem de serviço não existe");
 
             var serviceOrder = result.Data;
 
@@ -194,31 +203,35 @@ public class ServiceOrderHandler
 
             await _serviceOrderRepository.UpdateAsync(serviceOrder);
 
-            return new BaseResponse<ServiceOrder?>(serviceOrder, 200, "Localização do produto adicionada com sucesso!");
+            return new BaseResponse<string?>(serviceOrder.Product.Location, 200, "Localização do produto adicionada com sucesso!");
         }
         catch (CommandException<GetServiceOrderByIdCommand> ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 400, $"Erro de validação: {ex.Message}");
+            return new BaseResponse<string?>(null, 400, $"Erro de validação: {ex.Message}");
         }
         catch (Exception ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<string?>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 
-    public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByCustomerName(string customerName)
+    public async Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersByCustomerName(string customerName)
     {
         try
         {
-            return await _serviceOrderRepository.GetServiceOrdersByCustomerName(customerName);
-        }
-        catch (CommandException<GetServiceOrderByIdCommand> ex)
-        {
-            return new BaseResponse<List<ServiceOrder>>(null, 400, $"Erro de validação: {ex.Message}");
+            var repositoryResult = await _serviceOrderRepository.GetServiceOrdersByCustomerName(customerName);
+            if (!repositoryResult.IsSuccess)
+                return new BaseResponse<List<ServiceOrderDto>>(null, 500, repositoryResult.Message);
+            
+            var serviceOrders = repositoryResult.Data;
+            
+            var dto = ServiceOrderMapper.MapToServiceOrderDtoList(serviceOrders ?? new List<ServiceOrder>());
+            
+            return new BaseResponse<List<ServiceOrderDto>>(dto, 200, "Ordens de serviço obtidas com sucesso!");
         }
         catch (Exception ex)
         {
-            return new BaseResponse<List<ServiceOrder>>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<List<ServiceOrderDto>>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 
@@ -247,65 +260,89 @@ public class ServiceOrderHandler
         }
     }
     
-    public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersBySerialNumberAsync(GetServiceOrdersBySerialNumberCommand command)
+    public async Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersBySerialNumberAsync(GetServiceOrdersBySerialNumberCommand command)
     {
         try
         {
             command.Normalize();
             command.Validate();
 
-            return await _serviceOrderRepository.GetServiceOrdersBySerialNumber(command.SerialNumber);
+            var repositoryResult = await _serviceOrderRepository.GetServiceOrdersBySerialNumber(command.SerialNumber);
+            if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
+                return new BaseResponse<List<ServiceOrderDto>>(null, 500, repositoryResult.Message);
+            
+            var dto = ServiceOrderMapper.MapToServiceOrderDtoList(repositoryResult.Data);
+            
+            return new BaseResponse<List<ServiceOrderDto>>(dto, 200, "Ordens de serviço obtidas com sucesso!");
         }
         catch (CommandException<GetServiceOrderByIdCommand> ex)
         {
-            return new BaseResponse<List<ServiceOrder>>(null, 400, $"Erro de validação: {ex.Message}");
+            return new BaseResponse<List<ServiceOrderDto>>(null, 400, $"Erro de validação: {ex.Message}");
         }
         catch (Exception ex)
         {
-            return new BaseResponse<List<ServiceOrder>>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<List<ServiceOrderDto>>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
     
-    public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByModelAsync(GetServiceOrdersByModelCommand command)
+    public async Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersByModelAsync(GetServiceOrdersByModelCommand command)
     {
         try
         {
             command.Normalize();
             command.Validate();
 
-            return await _serviceOrderRepository.GetServiceOrdersByModel(command.Model);
+            var repositoryResult = await _serviceOrderRepository.GetServiceOrdersByModel(command.Model);
+            if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
+                return new BaseResponse<List<ServiceOrderDto>>(null, 500, repositoryResult.Message);
+            
+            var dto = ServiceOrderMapper.MapToServiceOrderDtoList(repositoryResult.Data);
+            
+            return new BaseResponse<List<ServiceOrderDto>>(dto, 200, "Ordens de serviço obtidas com sucesso!");
         }
         catch (CommandException<GetServiceOrderByIdCommand> ex)
         {
-            return new BaseResponse<List<ServiceOrder>>(null, 400, $"Erro de validação: {ex.Message}");
+            return new BaseResponse<List<ServiceOrderDto>>(null, 400, $"Erro de validação: {ex.Message}");
         }
         catch (Exception ex)
         {
-            return new BaseResponse<List<ServiceOrder>>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<List<ServiceOrderDto>>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
     
-    public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByEnterpriseAsync(EEnterprise enterprise)
+    public async Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersByEnterpriseAsync(EEnterprise enterprise)
     {
         try
         {
-            return await _serviceOrderRepository.GetServiceOrdersByEnterprise(enterprise);
+            var repositoryResult = await _serviceOrderRepository.GetServiceOrdersByEnterprise(enterprise);
+            if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
+                return new BaseResponse<List<ServiceOrderDto>>(null, 500, repositoryResult.Message);
+            
+            var dto = ServiceOrderMapper.MapToServiceOrderDtoList(repositoryResult.Data);
+            
+            return new BaseResponse<List<ServiceOrderDto>>(dto, 200, "Ordens de serviço obtidas com sucesso!");
         }
         catch (Exception ex)
         {
-            return new BaseResponse<List<ServiceOrder>>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<List<ServiceOrderDto>>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
     
-    public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByDateAsync(DateTime startDate, DateTime endDate)
+    public async Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersByDateAsync(DateTime startDate, DateTime endDate)
     {
         try
         {
-            return await _serviceOrderRepository.GetServiceOrdersByDate(startDate, endDate);
+            var repositoryResult = await _serviceOrderRepository.GetServiceOrdersByDate(startDate, endDate);
+            if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
+                return new BaseResponse<List<ServiceOrderDto>>(null, 500, repositoryResult.Message);
+            
+            var dto = ServiceOrderMapper.MapToServiceOrderDtoList(repositoryResult.Data);
+            
+            return new BaseResponse<List<ServiceOrderDto>>(dto, 200, "Ordens de serviço obtidas com sucesso!");
         }
         catch (Exception ex)
         {
-            return new BaseResponse<List<ServiceOrder>>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<List<ServiceOrderDto>>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 
@@ -354,112 +391,237 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetAllServiceOrdersAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetAllServiceOrdersAsync(PaginationCommand command)
     {
         try
         {
             command.Validate();
 
-            return await _serviceOrderRepository.GetAllAsync(command.PageNumber, command.PageSize);
+            var repositoryResult = await _serviceOrderRepository.GetAllAsync(command.PageNumber, command.PageSize);
+            if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
+                return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
+            
+            var serviceOrders = repositoryResult.Data.Items
+                .Where(x => x != null)
+                .Select(x => x!)
+                .ToList();
+
+            var dtoList = ServiceOrderMapper.MapToServiceOrderDtoList(serviceOrders);
+
+            var paginatedResult = new PaginatedResult<ServiceOrderDto?>(
+                dtoList,
+                repositoryResult.Data.TotalCount,
+                repositoryResult.Data.PageNumber,
+                repositoryResult.Data.PageSize
+            );
+
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(paginatedResult, 200, "Ordens de serviço obtidas com sucesso!");
         }
         catch (Exception ex)
         {
-
-            return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetPendingEstimatesAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingEstimatesAsync(PaginationCommand command)
     {
         try
         {
             command.Validate();
 
-            return await _serviceOrderRepository.GetPendingEstimatesAsync(command.PageNumber, command.PageSize);
+            var repositoryResult = await _serviceOrderRepository.GetPendingEstimatesAsync(command.PageNumber, command.PageSize);
+            if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
+                return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
+            
+            var serviceOrders = repositoryResult.Data.Items
+                .Where(x => x != null)
+                .Select(x => x!)
+                .ToList();
+
+            var dtoList = ServiceOrderMapper.MapToServiceOrderDtoList(serviceOrders);
+
+            var paginatedResult = new PaginatedResult<ServiceOrderDto?>(
+                dtoList,
+                repositoryResult.Data.TotalCount,
+                repositoryResult.Data.PageNumber,
+                repositoryResult.Data.PageSize
+            );
+
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(paginatedResult, 200, "Ordens de serviço obtidas com sucesso!");
         }
         catch (Exception ex)
         {
 
-            return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetWaitingResponseAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingResponseAsync(PaginationCommand command)
     {
         try
         {
             command.Validate();
 
-            return await _serviceOrderRepository.GetWaitingResponseAsync(command.PageNumber, command.PageSize);
+            var repositoryResult = await _serviceOrderRepository.GetWaitingResponseAsync(command.PageNumber, command.PageSize);
+            if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
+                return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
+            
+            var serviceOrders = repositoryResult.Data.Items
+                .Where(x => x != null)
+                .Select(x => x!)
+                .ToList();
+
+            var dtoList = ServiceOrderMapper.MapToServiceOrderDtoList(serviceOrders);
+
+            var paginatedResult = new PaginatedResult<ServiceOrderDto?>(
+                dtoList,
+                repositoryResult.Data.TotalCount,
+                repositoryResult.Data.PageNumber,
+                repositoryResult.Data.PageSize
+            );
+
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(paginatedResult, 200, "Ordens de serviço obtidas com sucesso!");
         }
         catch (Exception ex)
         {
 
-            return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetPendingPurchasePartAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingPurchasePartAsync(PaginationCommand command)
     {
         try
         {
             command.Validate();
 
-            return await _serviceOrderRepository.GetPendingPartPurchase(command.PageNumber, command.PageSize);
+            var repositoryResult = await _serviceOrderRepository.GetPendingPartPurchase(command.PageNumber, command.PageSize);
+            if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
+                return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
+            
+            var serviceOrders = repositoryResult.Data.Items
+                .Where(x => x != null)
+                .Select(x => x!)
+                .ToList();
+
+            var dtoList = ServiceOrderMapper.MapToServiceOrderDtoList(serviceOrders);
+
+            var paginatedResult = new PaginatedResult<ServiceOrderDto?>(
+                dtoList,
+                repositoryResult.Data.TotalCount,
+                repositoryResult.Data.PageNumber,
+                repositoryResult.Data.PageSize
+            );
+
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(paginatedResult, 200, "Ordens de serviço obtidas com sucesso!");
         }
         catch (Exception ex)
         {
 
-            return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetWaitingPartsAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPartsAsync(PaginationCommand command)
     {
         try
         {
             command.Validate();
 
-            return await _serviceOrderRepository.GetWaitingPartsAsync(command.PageNumber, command.PageSize);
+            var repositoryResult = await _serviceOrderRepository.GetWaitingPartsAsync(command.PageNumber, command.PageSize);
+            if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
+                return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
+            
+            var serviceOrders = repositoryResult.Data.Items
+                .Where(x => x != null)
+                .Select(x => x!)
+                .ToList();
+
+            var dtoList = ServiceOrderMapper.MapToServiceOrderDtoList(serviceOrders);
+
+            var paginatedResult = new PaginatedResult<ServiceOrderDto?>(
+                dtoList,
+                repositoryResult.Data.TotalCount,
+                repositoryResult.Data.PageNumber,
+                repositoryResult.Data.PageSize
+            );
+
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(paginatedResult, 200, "Ordens de serviço obtidas com sucesso!");
         }
         catch (Exception ex)
         {
 
-            return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetWaitingPickupAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPickupAsync(PaginationCommand command)
     {
         try
         {
             command.Validate();
         
-            return await _serviceOrderRepository.GetWaitingPickupAsync(command.PageNumber, command.PageSize);
+            var repositoryResult = await _serviceOrderRepository.GetWaitingPickupAsync(command.PageNumber, command.PageSize);
+            if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
+                return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
+            
+            var serviceOrders = repositoryResult.Data.Items
+                .Where(x => x != null)
+                .Select(x => x!)
+                .ToList();
+
+            var dtoList = ServiceOrderMapper.MapToServiceOrderDtoList(serviceOrders);
+
+            var paginatedResult = new PaginatedResult<ServiceOrderDto?>(
+                dtoList,
+                repositoryResult.Data.TotalCount,
+                repositoryResult.Data.PageNumber,
+                repositoryResult.Data.PageSize
+            );
+
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(paginatedResult, 200, "Ordens de serviço obtidas com sucesso!");
         }
         catch (Exception ex)
         {
 
-            return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetDeliveredAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetDeliveredAsync(PaginationCommand command)
     {
         try
         {
             command.Validate();
 
-            return await _serviceOrderRepository.GetDeliveredAsync(command.PageNumber, command.PageSize);
+            var repositoryResult = await _serviceOrderRepository.GetDeliveredAsync(command.PageNumber, command.PageSize);
+            if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
+                return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
+            
+            var serviceOrders = repositoryResult.Data.Items
+                .Where(x => x != null)
+                .Select(x => x!)
+                .ToList();
+
+            var dtoList = ServiceOrderMapper.MapToServiceOrderDtoList(serviceOrders);
+
+            var paginatedResult = new PaginatedResult<ServiceOrderDto?>(
+                dtoList,
+                repositoryResult.Data.TotalCount,
+                repositoryResult.Data.PageNumber,
+                repositoryResult.Data.PageSize
+            );
+
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(paginatedResult, 200, "Ordens de serviço obtidas com sucesso!");
         }
         catch (Exception ex)
         {
 
-            return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 
-    public async Task<BaseResponse<ServiceOrder?>> AddServiceOrderEstimate(AddServiceOrderEstimateCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderEstimate(AddServiceOrderEstimateCommand command)
     {
         try
         {
@@ -468,27 +630,29 @@ public class ServiceOrderHandler
 
             var result = await _serviceOrderRepository.GetById(command.ServiceOrderId);
             if (result.Data == null)
-                return new BaseResponse<ServiceOrder?>(null, 404, "Essa ordem de serviço não existe");
+                return new BaseResponse<ServiceOrderDto?>(null, 404, "Essa ordem de serviço não existe");
 
             var serviceOrder = result.Data;
 
             serviceOrder.AddEstimate(command.Solution, command.Guarantee, command.PartCost, command.LaborCost, command.RepairResult, command.EstimateMessage);
 
             await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            
+            var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);
 
-            return new BaseResponse<ServiceOrder?>(serviceOrder, 200, "Orçamento adicionado com sucesso!");
+            return new BaseResponse<ServiceOrderDto?>(dto, 200, "Orçamento adicionado com sucesso!");
         }
         catch (CommandException<AddServiceOrderEstimateCommand> ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 400, $"Erro de validação: {ex.Message}");
+            return new BaseResponse<ServiceOrderDto?>(null, 400, $"Erro de validação: {ex.Message}");
         }
         catch (Exception ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<ServiceOrderDto?>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 
-    public async Task<BaseResponse<ServiceOrder?>> AddServiceOrderApproveEstimate(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderApproveEstimate(GetServiceOrderByIdCommand command)
     {
         try
         {
@@ -496,27 +660,29 @@ public class ServiceOrderHandler
 
             var result = await _serviceOrderRepository.GetById(command.Id);
             if (result.Data == null)
-                return new BaseResponse<ServiceOrder?>(null, 404, "Essa ordem de serviço não existe");
+                return new BaseResponse<ServiceOrderDto?>(null, 404, "Essa ordem de serviço não existe");
 
             var serviceOrder = result.Data;
 
             serviceOrder.ApproveEstimate();
 
             await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            
+            var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);
 
-            return new BaseResponse<ServiceOrder?>(serviceOrder, 200, "Orçamento aprovado com sucesso!");
+            return new BaseResponse<ServiceOrderDto?>(dto, 200, "Aprovação adicionada com sucesso!");
         }
         catch (CommandException<GetServiceOrderByIdCommand> ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 400, $"Erro de validação: {ex.Message}");
+            return new BaseResponse<ServiceOrderDto?>(null, 400, $"Erro de validação: {ex.Message}");
         }
         catch (Exception ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<ServiceOrderDto?>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 
-    public async Task<BaseResponse<ServiceOrder?>> AddServiceOrderRejectEstimate(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderRejectEstimate(GetServiceOrderByIdCommand command)
     {
         try
         {
@@ -524,27 +690,29 @@ public class ServiceOrderHandler
 
             var result = await _serviceOrderRepository.GetById(command.Id);
             if (result.Data == null)
-                return new BaseResponse<ServiceOrder?>(null, 404, "Essa ordem de serviço não existe");
+                return new BaseResponse<ServiceOrderDto?>(null, 404, "Essa ordem de serviço não existe");
 
             var serviceOrder = result.Data;
 
             serviceOrder.RejectEstimate();
 
             await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            
+            var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);
 
-            return new BaseResponse<ServiceOrder?>(serviceOrder, 200, "Orçamento reprovado com sucesso!");
+            return new BaseResponse<ServiceOrderDto?>(dto, 200, "Orçamento reprovado com sucesso!");
         }
         catch (CommandException<GetServiceOrderByIdCommand> ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 400, $"Erro de validação: {ex.Message}");
+            return new BaseResponse<ServiceOrderDto?>(null, 400, $"Erro de validação: {ex.Message}");
         }
         catch (Exception ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<ServiceOrderDto?>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 
-    public async Task<BaseResponse<ServiceOrder?>> AddPurchasedPart(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> AddPurchasedPart(GetServiceOrderByIdCommand command)
     {
         try
         {
@@ -552,27 +720,29 @@ public class ServiceOrderHandler
 
             var result = await _serviceOrderRepository.GetById(command.Id);
             if (result.Data == null)
-                return new BaseResponse<ServiceOrder?>(null, 404, "Essa ordem de serviço não existe");
+                return new BaseResponse<ServiceOrderDto?>(null, 404, "Essa ordem de serviço não existe");
 
             var serviceOrder = result.Data;
 
             serviceOrder.AddPurchasedPart();
 
             await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            
+            var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);
 
-            return new BaseResponse<ServiceOrder?>(serviceOrder, 200, "Compra de peça adicionada com sucesso!");
+            return new BaseResponse<ServiceOrderDto?>(dto, 200, "Compra de peça adicionada com sucesso!");
         }
         catch (CommandException<GetServiceOrderByIdCommand> ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 400, $"Erro de validação: {ex.Message}");
+            return new BaseResponse<ServiceOrderDto?>(null, 400, $"Erro de validação: {ex.Message}");
         }
         catch (Exception ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<ServiceOrderDto?>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 
-    public async Task<BaseResponse<ServiceOrder?>> AddServiceOrderRepair(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderRepair(GetServiceOrderByIdCommand command)
     {
         try
         {
@@ -580,23 +750,25 @@ public class ServiceOrderHandler
 
             var result = await _serviceOrderRepository.GetById(command.Id);
             if (result.Data == null)
-                return new BaseResponse<ServiceOrder?>(null, 404, "Essa ordem de serviço não existe");
+                return new BaseResponse<ServiceOrderDto?>(null, 404, "Essa ordem de serviço não existe");
 
             var serviceOrder = result.Data;
 
             serviceOrder.ExecuteRepair();
 
             await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            
+            var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);
 
-            return new BaseResponse<ServiceOrder?>(serviceOrder, 200, "Ordem de serviço marcada como consertada!");
+            return new BaseResponse<ServiceOrderDto?>(dto, 200, "Ordem de serviço marcada como consertada!");
         }
         catch (CommandException<GetServiceOrderByIdCommand> ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 400, $"Erro de validação: {ex.Message}");
+            return new BaseResponse<ServiceOrderDto?>(null, 400, $"Erro de validação: {ex.Message}");
         }
         catch (Exception ex)
         {
-            return new BaseResponse<ServiceOrder?>(null, 500, $"Ocorreu um erro: {ex.Message}");
+            return new BaseResponse<ServiceOrderDto?>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
 

@@ -121,6 +121,7 @@ public class ServiceOrder : Entity
         if (customer.Id == 0 || string.IsNullOrEmpty(customer.Name.CustomerName))
             throw new EntityException<ServiceOrder>("O campo ID e nome do cliente estão vazios");
 
+        CustomerId = customer.Id;
         Customer = customer;
     }
 
@@ -144,6 +145,7 @@ public class ServiceOrder : Entity
         if (customer.Id == 0 || string.IsNullOrEmpty(customer.Name.CustomerName))
             throw new EntityException<ServiceOrder>("O campo ID e nome do cliente estão vazios");
         
+        CustomerId = customer.Id;
         Customer = customer;
     }
 

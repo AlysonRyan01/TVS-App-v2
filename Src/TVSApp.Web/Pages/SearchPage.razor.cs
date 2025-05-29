@@ -5,6 +5,7 @@ using MudBlazor;
 using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.ServiceOrderCommands;
 using TVS_App.Application.DTOs;
+using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Domain.Entities;
 using TVSApp.Web.Components.Dialogs;
 using TVSApp.Web.Handlers;
@@ -13,7 +14,7 @@ namespace TVSApp.Web.Pages;
 
 public partial class SearchPage : ComponentBase
 {
-    public List<ServiceOrder> FilteredServiceOrders { get; set; } = new();
+    public List<ServiceOrderDto> FilteredServiceOrders { get; set; } = new();
     private CustomerDto? _customerFilter;
     private string _numberFilter = String.Empty;
     private string _serialNumberFilter = String.Empty;
@@ -262,7 +263,7 @@ public partial class SearchPage : ComponentBase
         }
     }
 
-    public async Task OnSelectOrder(ServiceOrder order)
+    public async Task OnSelectOrder(ServiceOrderDto order)
     {
         var parameters = new DialogParameters
         {

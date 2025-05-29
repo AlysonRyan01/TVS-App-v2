@@ -4,10 +4,7 @@
 @using TVS_App.Application.Commands.ServiceOrderCommands
 @using TVS_App.Application.DTOs
 @using TVS_App.Application.DTOs.ServiceOrder
-@using TVS_App.Application.Mappers
-@using TVS_App.Domain.Entities
 @using TVS_App.Domain.Enums
-@using TVS_App.Domain.ValueObjects.ServiceOrder
 @using TVSApp.Web.Extensions
 @using TVSApp.Web.Handlers
 
@@ -41,7 +38,8 @@
         <div class="py-3 bg-gray-50">
             <MudText Typo="Typo.h6" Color="Color.Tertiary" Class="font-extrabold uppercase mb-2">CLIENTE</MudText>
             <MudAutocomplete T="CustomerDto"
-                             @bind-Value="_command.Customer"
+                             Value="_selectedCustomer"
+                             ValueChanged="OnCustomerSelected"
                              Variant="Variant.Outlined"
                              SearchFunc="SearchCustomers"
                              ToStringFunc="@(c => c?.Name ?? "")"
@@ -107,7 +105,7 @@
                 <MudNumericField Variant="Variant.Outlined" Label="Valor da mão de obra" @bind-Value="_command.LaborCost" Class="w-full" />
                 <MudTextField Variant="Variant.Outlined" Label="Garantia" @bind-Value="_command.Guarantee" Class="w-full" />
 
-                <MudSelect T="ERepairResult"
+                <MudSelect T="ERepairResult?"
                            Label="Resultado do Reparo"
                            @bind-Value="_command.RepairResult"
                            Variant="Variant.Outlined"
@@ -345,25 +343,36 @@
         {
             _command = new EditServiceOrderCommand
             {
-                Customer = CustomerMapper.MapToDto(ServiceOrder.Customer),
+                Id = ServiceOrder.Id,
+                CustomerId = ServiceOrder.CustomerId,
+                Name = ServiceOrder.Name,
+                Street = ServiceOrder.Street,
+                Neighborhood = ServiceOrder.Neighborhood,
+                City = ServiceOrder.City,
+                Number = ServiceOrder.Number,
+                ZipCode = ServiceOrder.ZipCode,
+                State = ServiceOrder.State,
+                Phone = ServiceOrder.Phone,
+                Phone2 = ServiceOrder.Phone2,
+                Email = ServiceOrder.Email,
+                Cpf = ServiceOrder.Cpf,
                 Brand = ServiceOrder.Brand,
                 Model = ServiceOrder.Model,
                 SerialNumber = ServiceOrder.SerialNumber,
-                Defect = ServiceOrder.Defect,
-                Accessories = ServiceOrder.Accessories,
+                Defect = ServiceOrder.Defect ?? "",
+                Accessories = ServiceOrder.Accessories ?? "",
                 Type = ServiceOrder.Type,
-                CustomerId = ServiceOrder.CustomerId,
-                DeliveryDate = ServiceOrder.DeliveryDate,
-                Solution = ServiceOrder.Solution ?? "",
+                Location = ServiceOrder.Location,
                 Enterprise = ServiceOrder.Enterprise,
-                Guarantee = ServiceOrder.Guarantee ?? "",
+                DeliveryDate = ServiceOrder.DeliveryDate,
+                Solution = ServiceOrder.Solution,
+                Guarantee = ServiceOrder.Guarantee,
+                EstimateMessage = ServiceOrder.EstimateMessage,
+                PartCost = ServiceOrder.PartCost,
                 LaborCost = ServiceOrder.LaborCost,
                 ServiceOrderStatus = ServiceOrder.ServiceOrderStatus,
                 RepairStatus = ServiceOrder.RepairStatus,
-                RepairResult = ServiceOrder.RepairResult ?? new ERepairResult(),
-                PartCost = ServiceOrder.PartCost,
-                EstimateMessage = ServiceOrder.EstimateMessage,
-                Location = ServiceOrder.Location
+                RepairResult = ServiceOrder.RepairResult
             };
 
             _addEstimateCommand.ServiceOrderId = ServiceOrder.Id;
@@ -378,7 +387,7 @@
     public async Task EditServiceOrder()
     {
         var customer = await CustomerHandler.
-            GetCustomerByIdAsync(new GetCustomerByIdCommand { Id = _command.Customer.Id});
+            GetCustomerByIdAsync(new GetCustomerByIdCommand { Id = _command.CustomerId});
 
         if (!customer.IsSuccess || customer.Data == null)
         {
@@ -386,39 +395,7 @@
             return;
         }
         
-        ServiceOrder = ServiceOrder with
-        {
-            CustomerId = _command.Customer.Id,
-            Name = _command.Customer.Name,
-            Street = _command.Customer.Street,
-            Neighborhood = _command.Customer.Neighborhood,
-            City = _command.Customer.City,
-            Number = _command.Customer.Number,
-            ZipCode = _command.Customer.ZipCode,
-            State = _command.Customer.State,
-            Phone = _command.Customer.Phone,
-            Phone2 = _command.Customer.Phone2,
-            Email = _command.Customer.Email,
-            Cpf = _command.Customer.Cpf,
-    
-            Brand = _command.Brand,
-            Model = _command.Model,
-            SerialNumber = _command.SerialNumber,
-            Defect = _command.Defect,
-            Accessories = _command.Accessories,
-            Type = _command.Type,
-            Guarantee = _command.Guarantee,
-            Solution = _command.Solution,
-            LaborCost = _command.LaborCost,
-            PartCost = _command.PartCost,
-            RepairResult = _command.RepairResult,
-            RepairStatus = _command.RepairStatus,
-            ServiceOrderStatus = _command.ServiceOrderStatus,
-            DeliveryDate = _command.DeliveryDate,
-            EstimateMessage = _command.EstimateMessage
-        };
-        
-        var result = await ServiceOrderHandler.EditServiceOrderAsync(ServiceOrder);
+        var result = await ServiceOrderHandler.EditServiceOrderAsync(_command);
         if (result.IsSuccess)
         {
             Snackbar.Add(result.Message ?? "Ordem de serviço alterada com sucesso!", Severity.Success);
@@ -571,7 +548,7 @@
         {
             if (result.Data != null)
             {
-                ServiceOrder.Product.AddLocation(result.Data.Product.Location);
+                ServiceOrder = ServiceOrder with { Location = result.Data.Location };
                 StateHasChanged();
             }
             else
@@ -591,4 +568,28 @@
             _ => value.ToString()
         };
     }
+    
+    private CustomerDto? _selectedCustomer;
+
+    private void OnCustomerSelected(CustomerDto? customer)
+    {
+        _selectedCustomer = customer;
+
+        if (customer != null)
+        {
+            _command.CustomerId = customer.Id;
+            _command.Name = customer.Name;
+            _command.Street = customer.Street;
+            _command.Neighborhood = customer.Neighborhood;
+            _command.City = customer.City;
+            _command.Number = customer.Number;
+            _command.ZipCode = customer.ZipCode;
+            _command.State = customer.State;
+            _command.Phone = customer.Phone;
+            _command.Phone2 = customer.Phone2;
+            _command.Email = customer.Email;
+            _command.Cpf = customer.Cpf;
+        }
+    }
+
 }

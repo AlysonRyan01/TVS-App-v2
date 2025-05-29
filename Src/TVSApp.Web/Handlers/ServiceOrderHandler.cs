@@ -3,7 +3,6 @@ using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.ServiceOrderCommands;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.DTOs.ServiceOrder;
-using TVS_App.Domain.Entities;
 using TVS_App.Domain.Enums;
 using TVSApp.Web.Exceptions;
 
@@ -57,40 +56,15 @@ public class ServiceOrderHandler
             return ExceptionHandler.Handle<byte[]>(e);
         }
     }
-
-    public async Task<BaseResponse<ServiceOrder?>> UpdateServiceOrderAsync(UpdateServiceOrderCommand command)
-    {
-        try
-        {
-            command.Validate();
-            var response = await _httpClient.PutAsJsonAsync("update-service-order-by-id", command);
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                return new BaseResponse<ServiceOrder?>(null, (int)response.StatusCode, 
-                    $"Erro na API: {response.StatusCode}. Detalhes: {errorContent}");
-            }
-            
-            var content = await response.Content.ReadFromJsonAsync<BaseResponse<ServiceOrder?>>();
-            if (content == null || !content.IsSuccess)
-                return new BaseResponse<ServiceOrder?>(null, 500, content?.Message);
-            
-            return content;
-        }
-        catch (Exception ex)
-        {
-            return ExceptionHandler.Handle<ServiceOrder?>(ex);
-        }
-    }
     
-    public async Task<BaseResponse<UpdateServiceOrderResponseDto?>> EditServiceOrderAsync(ServiceOrder serviceOrder)
+    public async Task<BaseResponse<UpdateServiceOrderResponseDto?>> EditServiceOrderAsync(EditServiceOrderCommand command)
     {
         try
         {
-            if (serviceOrder.Id == 0)
+            if (command.Id == 0)
                 return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 401, "O ID da ordem de serviço nao pode ser 0");
                 
-            var response = await _httpClient.PutAsJsonAsync("edit-service-order", serviceOrder);
+            var response = await _httpClient.PutAsJsonAsync("edit-service-order", command);
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
@@ -129,236 +103,236 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByCustomerName(string customerName)
+    public async Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersByCustomerName(string customerName)
     {
         try
         {
             var encodedName = Uri.EscapeDataString(customerName);
-            var response = await _httpClient.GetFromJsonAsync<BaseResponse<List<ServiceOrder>>>(
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<List<ServiceOrderDto>>>(
                 $"get-service-orders-by-customer-name?name={encodedName}");
             
             if (response == null || !response.IsSuccess)
-                return new BaseResponse<List<ServiceOrder>>(null, 500, response?.Message);
+                return new BaseResponse<List<ServiceOrderDto>>(null, 500, response?.Message);
             
             return response;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<List<ServiceOrder>>(ex);
+            return ExceptionHandler.Handle<List<ServiceOrderDto>>(ex);
         }
     }
     
-    public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersBySerialNumber(string serialNumber)
+    public async Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersBySerialNumber(string serialNumber)
     {
         try
         {
             var encodedName = Uri.EscapeDataString(serialNumber);
-            var response = await _httpClient.GetFromJsonAsync<BaseResponse<List<ServiceOrder>>>(
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<List<ServiceOrderDto>>>(
                 $"get-service-orders-by-serial-number?serialNumber={encodedName}");
             
             if (response == null || !response.IsSuccess)
-                return new BaseResponse<List<ServiceOrder>>(null, 500, response?.Message);
+                return new BaseResponse<List<ServiceOrderDto>>(null, 500, response?.Message);
             
             return response;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<List<ServiceOrder>>(ex);
+            return ExceptionHandler.Handle<List<ServiceOrderDto>>(ex);
         }
     }
     
-    public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByModel(string model)
+    public async Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersByModel(string model)
     {
         try
         {
             var encodedName = Uri.EscapeDataString(model);
-            var response = await _httpClient.GetFromJsonAsync<BaseResponse<List<ServiceOrder>>>(
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<List<ServiceOrderDto>>>(
                 $"get-service-orders-by-model?model={encodedName}");
             
             if (response == null || !response.IsSuccess)
-                return new BaseResponse<List<ServiceOrder>>(null, 500, response?.Message);
+                return new BaseResponse<List<ServiceOrderDto>>(null, 500, response?.Message);
             
             return response;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<List<ServiceOrder>>(ex);
+            return ExceptionHandler.Handle<List<ServiceOrderDto>>(ex);
         }
     }
     
-    public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByEnterprise(EEnterprise enterprise)
+    public async Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersByEnterprise(EEnterprise enterprise)
     {
         try
         {
-            var response = await _httpClient.GetFromJsonAsync<BaseResponse<List<ServiceOrder>>>(
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<List<ServiceOrderDto>>>(
                 $"get-service-orders-by-enterprise?enterprise={enterprise}");
             
             if (response == null || !response.IsSuccess)
-                return new BaseResponse<List<ServiceOrder>>(null, 500, response?.Message);
+                return new BaseResponse<List<ServiceOrderDto>>(null, 500, response?.Message);
             
             return response;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<List<ServiceOrder>>(ex);
+            return ExceptionHandler.Handle<List<ServiceOrderDto>>(ex);
         }
     }
     
-    public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByDate(DateTime startDate, DateTime endDate)
+    public async Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersByDate(DateTime startDate, DateTime endDate)
     {
         try
         {
             var start = Uri.EscapeDataString(startDate.ToString("yyyy-MM-dd"));
             var end = Uri.EscapeDataString(endDate.ToString("yyyy-MM-dd"));
             
-            var response = await _httpClient.GetFromJsonAsync<BaseResponse<List<ServiceOrder>>>(
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<List<ServiceOrderDto>>>(
                 $"get-service-orders-by-date?startDate={start}&endDate={end}");
             
             if (response == null || !response.IsSuccess)
-                return new BaseResponse<List<ServiceOrder>>(null, 500, response?.Message);
+                return new BaseResponse<List<ServiceOrderDto>>(null, 500, response?.Message);
             
             return response;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<List<ServiceOrder>>(ex);
+            return ExceptionHandler.Handle<List<ServiceOrderDto>>(ex);
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetAllServiceOrdersAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetAllServiceOrdersAsync(PaginationCommand command)
     {
         try
         {
             command.Validate();
-            var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrder?>>>(
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
                 $"get-all-service-orders/{command.PageNumber}/{command.PageSize}");
             
             if (response == null || !response.IsSuccess)
-                return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 500, response?.Message);
+                return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, response?.Message);
             
             return response;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<PaginatedResult<ServiceOrder?>>(ex);
+            return ExceptionHandler.Handle<PaginatedResult<ServiceOrderDto?>>(ex);
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetPendingEstimatesAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingEstimatesAsync(PaginationCommand command)
     {
         try
         {
             command.Validate();
-            var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrder?>>>(
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
                 $"get-pending-estimates-service-orders/{command.PageNumber}/{command.PageSize}");
             
             if (response == null || !response.IsSuccess)
-                return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 500, response?.Message);
+                return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, response?.Message);
             
             return response;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<PaginatedResult<ServiceOrder?>>(ex);
+            return ExceptionHandler.Handle<PaginatedResult<ServiceOrderDto?>>(ex);
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetWaitingResponseAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingResponseAsync(PaginationCommand command)
     {
         try
         {
             command.Validate();
-            var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrder?>>>(
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
                 $"get-waiting-response-service-orders/{command.PageNumber}/{command.PageSize}");
             
             if (response == null || !response.IsSuccess)
-                return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 500, response?.Message);
+                return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, response?.Message);
             
             return response;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<PaginatedResult<ServiceOrder?>>(ex);
+            return ExceptionHandler.Handle<PaginatedResult<ServiceOrderDto?>>(ex);
         }
     }
     
-    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetPendingPurchasePartAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingPurchasePartAsync(PaginationCommand command)
     {
         try
         {
             command.Validate();
-            var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrder?>>>(
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
                 $"get-pending-purchase-service-orders/{command.PageNumber}/{command.PageSize}");
             
             if (response == null || !response.IsSuccess)
-                return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 500, response?.Message);
+                return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, response?.Message);
             
             return response;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<PaginatedResult<ServiceOrder?>>(ex);
+            return ExceptionHandler.Handle<PaginatedResult<ServiceOrderDto?>>(ex);
         }
     }
     
-    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetWaitingPartsAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPartsAsync(PaginationCommand command)
     {
         try
         {
             command.Validate();
-            var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrder?>>>(
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
                 $"get-waiting-parts-service-orders/{command.PageNumber}/{command.PageSize}");
             
             if (response == null || !response.IsSuccess)
-                return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 500, response?.Message);
+                return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, response?.Message);
             
             return response;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<PaginatedResult<ServiceOrder?>>(ex);
+            return ExceptionHandler.Handle<PaginatedResult<ServiceOrderDto?>>(ex);
         }
     }
     
-    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetWaitingPickupAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPickupAsync(PaginationCommand command)
     {
         try
         {
             command.Validate();
-            var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrder?>>>(
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
                 $"get-waiting-pickup-service-orders/{command.PageNumber}/{command.PageSize}");
             
             if (response == null || !response.IsSuccess)
-                return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 500, response?.Message);
+                return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, response?.Message);
             
             return response;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<PaginatedResult<ServiceOrder?>>(ex);
+            return ExceptionHandler.Handle<PaginatedResult<ServiceOrderDto?>>(ex);
         }
     }
     
-    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetDeliveredAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetDeliveredAsync(PaginationCommand command)
     {
         try
         {
             command.Validate();
-            var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrder?>>>(
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
                 $"get-delivered-service-orders/{command.PageNumber}/{command.PageSize}");
             
             if (response == null || !response.IsSuccess)
-                return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 500, response?.Message);
+                return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, response?.Message);
             
             return response;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<PaginatedResult<ServiceOrder?>>(ex);
+            return ExceptionHandler.Handle<PaginatedResult<ServiceOrderDto?>>(ex);
         }
     }
 
-    public async Task<BaseResponse<ServiceOrder?>> AddProductLocation(AddProductLocationCommand command)
+    public async Task<BaseResponse<string?>> AddProductLocation(AddProductLocationCommand command)
     {
         try
         {
@@ -367,23 +341,23 @@ public class ServiceOrderHandler
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                return new BaseResponse<ServiceOrder?>(null, (int)response.StatusCode, 
+                return new BaseResponse<string?>(null, (int)response.StatusCode, 
                     $"Erro na API: {response.StatusCode}. Detalhes: {errorContent}");
             }
             
-            var content = await response.Content.ReadFromJsonAsync<BaseResponse<ServiceOrder?>>();
+            var content = await response.Content.ReadFromJsonAsync<BaseResponse<string?>>();
             if (content == null || !content.IsSuccess)
-                return new BaseResponse<ServiceOrder?>(null, 500, content?.Message);
+                return new BaseResponse<string?>(null, 500, content?.Message);
             
             return content;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<ServiceOrder?>(ex);
+            return ExceptionHandler.Handle<string?>(ex);
         }
     }
 
-    public async Task<BaseResponse<ServiceOrder?>> AddServiceOrderEstimate(AddServiceOrderEstimateCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderEstimate(AddServiceOrderEstimateCommand command)
     {
         try
         {
@@ -392,23 +366,23 @@ public class ServiceOrderHandler
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                return new BaseResponse<ServiceOrder?>(null, (int)response.StatusCode, 
+                return new BaseResponse<ServiceOrderDto?>(null, (int)response.StatusCode, 
                     $"Erro na API: {response.StatusCode}. Detalhes: {errorContent}");
             }
             
-            var content = await response.Content.ReadFromJsonAsync<BaseResponse<ServiceOrder?>>();
+            var content = await response.Content.ReadFromJsonAsync<BaseResponse<ServiceOrderDto?>>();
             if (content == null || !content.IsSuccess)
-                return new BaseResponse<ServiceOrder?>(null, 500, content?.Message);
+                return new BaseResponse<ServiceOrderDto?>(null, 500, content?.Message);
             
             return content;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<ServiceOrder?>(ex);
+            return ExceptionHandler.Handle<ServiceOrderDto?>(ex);
         }
     }
     
-    public async Task<BaseResponse<ServiceOrder?>> AddServiceOrderApproveEstimate(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderApproveEstimate(GetServiceOrderByIdCommand command)
     {
         try
         {
@@ -417,23 +391,23 @@ public class ServiceOrderHandler
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                return new BaseResponse<ServiceOrder?>(null, (int)response.StatusCode, 
+                return new BaseResponse<ServiceOrderDto?>(null, (int)response.StatusCode, 
                     $"Erro na API: {response.StatusCode}. Detalhes: {errorContent}");
             }
             
-            var content = await response.Content.ReadFromJsonAsync<BaseResponse<ServiceOrder?>>();
+            var content = await response.Content.ReadFromJsonAsync<BaseResponse<ServiceOrderDto?>>();
             if (content == null || !content.IsSuccess)
-                return new BaseResponse<ServiceOrder?>(null, 500, content?.Message);
+                return new BaseResponse<ServiceOrderDto?>(null, 500, content?.Message);
             
             return content;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<ServiceOrder?>(ex);
+            return ExceptionHandler.Handle<ServiceOrderDto?>(ex);
         }
     }
     
-    public async Task<BaseResponse<ServiceOrder?>> AddServiceOrderRejectEstimate(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderRejectEstimate(GetServiceOrderByIdCommand command)
     {
         try
         {
@@ -442,23 +416,23 @@ public class ServiceOrderHandler
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                return new BaseResponse<ServiceOrder?>(null, (int)response.StatusCode, 
+                return new BaseResponse<ServiceOrderDto?>(null, (int)response.StatusCode, 
                     $"Erro na API: {response.StatusCode}. Detalhes: {errorContent}");
             }
             
-            var content = await response.Content.ReadFromJsonAsync<BaseResponse<ServiceOrder?>>();
+            var content = await response.Content.ReadFromJsonAsync<BaseResponse<ServiceOrderDto?>>();
             if (content == null || !content.IsSuccess)
-                return new BaseResponse<ServiceOrder?>(null, 500, content?.Message);
+                return new BaseResponse<ServiceOrderDto?>(null, 500, content?.Message);
             
             return content;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<ServiceOrder?>(ex);
+            return ExceptionHandler.Handle<ServiceOrderDto?>(ex);
         }
     }
 
-    public async Task<BaseResponse<ServiceOrder?>> AddPurchasedPart(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> AddPurchasedPart(GetServiceOrderByIdCommand command)
     {
         try
         {
@@ -467,23 +441,23 @@ public class ServiceOrderHandler
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                return new BaseResponse<ServiceOrder?>(null, (int)response.StatusCode,
+                return new BaseResponse<ServiceOrderDto?>(null, (int)response.StatusCode,
                     $"Erro na API: {response.StatusCode}. Detalhes: {errorContent}");
             }
 
-            var content = await response.Content.ReadFromJsonAsync<BaseResponse<ServiceOrder?>>();
+            var content = await response.Content.ReadFromJsonAsync<BaseResponse<ServiceOrderDto?>>();
             if (content == null || !content.IsSuccess)
-                return new BaseResponse<ServiceOrder?>(null, 500, content?.Message);
+                return new BaseResponse<ServiceOrderDto?>(null, 500, content?.Message);
 
             return content;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<ServiceOrder?>(ex);
+            return ExceptionHandler.Handle<ServiceOrderDto?>(ex);
         }
     }
 
-    public async Task<BaseResponse<ServiceOrder?>> AddServiceOrderRepair(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderRepair(GetServiceOrderByIdCommand command)
     {
         try
         {
@@ -492,19 +466,19 @@ public class ServiceOrderHandler
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                return new BaseResponse<ServiceOrder?>(null, (int)response.StatusCode,
+                return new BaseResponse<ServiceOrderDto?>(null, (int)response.StatusCode,
                     $"Erro na API: {response.StatusCode}. Detalhes: {errorContent}");
             }
 
-            var content = await response.Content.ReadFromJsonAsync<BaseResponse<ServiceOrder?>>();
+            var content = await response.Content.ReadFromJsonAsync<BaseResponse<ServiceOrderDto?>>();
             if (content == null || !content.IsSuccess)
-                return new BaseResponse<ServiceOrder?>(null, 500, content?.Message);
+                return new BaseResponse<ServiceOrderDto?>(null, 500, content?.Message);
 
             return content;
         }
         catch (Exception ex)
         {
-            return ExceptionHandler.Handle<ServiceOrder?>(ex);
+            return ExceptionHandler.Handle<ServiceOrderDto?>(ex);
         }
     }
 

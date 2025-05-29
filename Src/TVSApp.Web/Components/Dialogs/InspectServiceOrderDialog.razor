@@ -1,4 +1,4 @@
-@using TVS_App.Domain.Entities
+@using TVS_App.Application.DTOs.ServiceOrder
 @using TVS_App.Domain.Enums
 @using TVSApp.Web.Extensions
 
@@ -22,19 +22,19 @@
             <MudText Typo="Typo.h6" Color="Color.Primary" Class="font-bold uppercase mb-4">Dados do Cliente</MudText>
             <MudGrid>
                 <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Nome" Value="@ServiceOrder.Customer.Name.CustomerName" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                    <MudTextField T="string" Label="Nome" Value="@ServiceOrder.Name" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Telefone 1" Value="@ServiceOrder.Customer.Phone.CustomerPhone" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                    <MudTextField T="string" Label="Telefone 1" Value="@ServiceOrder.Phone" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Endereço" Value="@ServiceOrder.Customer.Address.ToString().ToUpper()" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                    <MudTextField T="string" Label="Endereço" Value="@ServiceOrder.FormattedAddress" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Telefone 2" Value="@ServiceOrder.Customer.Phone2.CustomerPhone" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                    <MudTextField T="string" Label="Telefone 2" Value="@ServiceOrder.Phone2" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField Mask="@(new PatternMask("000.000.000-00"))" T="string" Label="CPF" Value="@ServiceOrder.Customer.Cpf.Number" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                    <MudTextField Mask="@(new PatternMask("000.000.000-00"))" T="string" Label="CPF" Value="@ServiceOrder.Cpf" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
                 </MudItem>
             </MudGrid>
         </MudPaper>
@@ -44,19 +44,19 @@
             <MudText Typo="Typo.h6" Color="Color.Primary" Class="font-bold uppercase mb-4">Dados do Produto</MudText>
             <MudGrid>
                 <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Tipo" Value="@ServiceOrder.Product.Type.GetDisplayName()" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                    <MudTextField T="string" Label="Tipo" Value="@ServiceOrder.Type.GetDisplayName()" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Marca" Value="@ServiceOrder.Product.Brand" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                    <MudTextField T="string" Label="Marca" Value="@ServiceOrder.Brand" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Modelo" Value="@ServiceOrder.Product.Model" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                    <MudTextField T="string" Label="Modelo" Value="@ServiceOrder.Model" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Série" Value="@ServiceOrder.Product.SerialNumber" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                    <MudTextField T="string" Label="Série" Value="@ServiceOrder.SerialNumber" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
                 </MudItem>
                 <MudItem xs="12">
-                    <MudTextField T="string" Label="Defeito" Value="@ServiceOrder.Product.Defect" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                    <MudTextField T="string" Label="Defeito" Value="@ServiceOrder.Defect" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
                 </MudItem>
                 <MudItem xs="12" md="6">
                     <MudTextField T="string" Label="Data de Entrada" Value="@ServiceOrder.EntryDate.ToString("dd/MM/yyyy")" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
@@ -65,10 +65,10 @@
                     <MudTextField T="string" Label="Data da Compra" Value="@ServiceOrder.PurchasePartDate?.ToString("dd/MM/yyyy")" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Prateleira" Value="@ServiceOrder.Product.Location" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                    <MudTextField T="string" Label="Prateleira" Value="@ServiceOrder.Location" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Acessórios" Value="@ServiceOrder.Product.Accessories" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                    <MudTextField T="string" Label="Acessórios" Value="@ServiceOrder.Accessories" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
                 </MudItem>
             </MudGrid>
         </MudPaper>
@@ -87,7 +87,7 @@
                     <MudTextField T="string" Label="Resultado" Value="@TemConserto" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Solução" Value="@ServiceOrder.Solution?.ServiceOrderSolution" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
+                    <MudTextField T="string" Label="Solução" Value="@ServiceOrder.Solution" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
                 </MudItem>
                 <MudItem xs="12" md="6">
                     <MudTextField T="string" Label="Valor" Value="@ServiceOrder.TotalAmount.ToString("C")" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
@@ -113,7 +113,7 @@
 
 @code {
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
-    [Parameter] public ServiceOrder ServiceOrder { get; set; } = null!;
+    [Parameter] public ServiceOrderDto ServiceOrder { get; set; } = null!;
 
     public string Situacao =>
         ServiceOrder.ServiceOrderStatus switch

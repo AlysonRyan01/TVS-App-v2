@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using TVS_App.Application.Commands.ServiceOrderCommands;
 using TVS_App.Application.DTOs;
-using TVS_App.Domain.Entities;
+using TVS_App.Application.DTOs.ServiceOrder;
 using TVSApp.Web.Components.Dialogs;
 using TVSApp.Web.Handlers;
 
@@ -54,7 +54,7 @@ public partial class EditServiceOrderPage : ComponentBase
         _isBusy = false;
     }
     
-    public async Task OpenEditDialog(ServiceOrder order)
+    public async Task OpenEditDialog(ServiceOrderDto order)
     {
         _isBusy = true;
         var parameters = new DialogParameters

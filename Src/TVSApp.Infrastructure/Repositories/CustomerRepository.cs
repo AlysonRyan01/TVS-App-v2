@@ -74,7 +74,7 @@ public class CustomerRepository : ICustomerRepository
 
             var customers = await _context.Customers
                 .AsNoTracking()
-                .OrderBy(c => c.Name)
+                .OrderBy(c => c.Name.CustomerName)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
