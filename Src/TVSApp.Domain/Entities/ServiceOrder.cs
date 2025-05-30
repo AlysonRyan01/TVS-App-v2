@@ -84,11 +84,7 @@ public class ServiceOrder : Entity
     {
         if (RepairStatus == ERepairStatus.Entered || RepairStatus == ERepairStatus.Waiting)
             throw new EntityException<ServiceOrder>("Não podemos executar o conserto pois a ordem de serviço não tem o status de aprovado");
-
-        if (RepairStatus == ERepairStatus.Waiting)
-            throw new EntityException<ServiceOrder>("Não podemos executar o conserto pois a estamos aguardando a resposta do cliente");
-
-
+        
         ServiceOrderStatus = EServiceOrderStatus.Repaired;
         RepairDate = DateTime.UtcNow;
     }
@@ -148,66 +144,39 @@ public class ServiceOrder : Entity
         CustomerId = customer.Id;
         Customer = customer;
     }
-
-    public void EditProduct(Product product)
-    {
-        Product.UpdateProduct(
-            product.Brand, product.Model, product.SerialNumber, product.Defect ?? "",
-            product.Accessories ?? "", product.Type);
-    }
-
-    public void EditEnterprise(EEnterprise enterprise)
-    {
-        Enterprise = enterprise;
-    }
     
-    public void EditEnterprise(DateTime deliveryDate)
-    {
-        DeliveryDate = deliveryDate;
-    }
+    public void EditEnterprise(EEnterprise enterprise)
+        => Enterprise = enterprise;
 
     public void EditSolution(Solution solution)
-    {
-        Solution = solution;
-    }
-
+        => Solution = solution;
+    
     public void EditGuarantee(Guarantee guarantee)
-    {
-        Guarantee = guarantee;
-    }
-
+        => Guarantee = guarantee;
+    
     public void EditPartCost(PartCost partCost)
-    {
-        PartCost = partCost;
-    }
+        => PartCost = partCost;
 
     public void EditLaborCost(LaborCost laborCost)
-    {
-        LaborCost = laborCost;
-    }
-
+        => LaborCost = laborCost;
+    
     public void EditServiceOrderStatus(EServiceOrderStatus serviceOrderStatus)
-    {
-        ServiceOrderStatus = serviceOrderStatus;
-    }
-
+        => ServiceOrderStatus = serviceOrderStatus;
+    
     public void EditRepairStatus(ERepairStatus repairStatus)
-    {
-        RepairStatus = repairStatus;
-    }
+        => RepairStatus = repairStatus;
 
     public void EditRepairResult(ERepairResult repairResult)
-    {
-        RepairResult = repairResult;
-    }
-
+        => RepairResult = repairResult;
+    
     public void EditDeliveryDate(DateTime? deliveryDate)
-    {
-        DeliveryDate = deliveryDate;
-    }
-
+        => DeliveryDate = deliveryDate;
+    
     public void EditEstimateMessage(string message)
-    {
-        EstimateMessage = message;
-    }
+        => EstimateMessage = message;
+    
+    public void EditProduct(Product product)
+        => Product.UpdateProduct(
+            product.Brand, product.Model, product.SerialNumber, product.Defect ?? "",
+            product.Accessories ?? "", product.Type);
 }
