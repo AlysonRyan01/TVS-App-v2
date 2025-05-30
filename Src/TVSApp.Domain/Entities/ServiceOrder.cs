@@ -33,8 +33,8 @@ public class ServiceOrder : Entity
     public Solution? Solution { get; private set; }
     public string? EstimateMessage { get; private set; }
     public Guarantee? Guarantee { get; private set; }
-    public PartCost PartCost { get; private set; } = new(0);
-    public LaborCost LaborCost { get; private set; } = new(0);
+    public PartCost PartCost { get; private set; } = new(0m);
+    public LaborCost LaborCost { get; private set; } = new(0m);
     public decimal TotalAmount => PartCost.ServiceOrderPartCost + LaborCost.ServiceOrderLaborCost;
     public EServiceOrderStatus ServiceOrderStatus { get; private set; }
     public ERepairStatus RepairStatus { get; private set; }
