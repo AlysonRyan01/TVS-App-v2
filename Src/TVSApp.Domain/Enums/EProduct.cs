@@ -13,5 +13,13 @@ public enum EProduct
     [Display(Name = "CAIXA ACÚSTICA")]
     CaixaAcustica = 10,
     [Display(Name = "MICROONDAS")]
-    Microondas = 18
+    Microondas = 18,
+    [Display(Name = "FONTE")]
+    Fonte = 19,
+    [Display(Name = "BASES")]
+    Bases = 20,
+    [Display(Name = "PLACA FONTE")]
+    PlacaFonte = 21,
+    [Display(Name = "PLACA PRINCIPAL")]
+    PlacaPrincipal = 22
 }

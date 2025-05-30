@@ -99,11 +99,11 @@ public static class ServiceOrderMapper
     {
         var address = new Address(
             dto.Street,
-            dto.Number,
             dto.Neighborhood,
             dto.City,
-            dto.State,
-            dto.ZipCode
+            dto.Number,
+            dto.ZipCode,
+            dto.State
         );
 
         var customer = new Customer(
@@ -113,6 +113,8 @@ public static class ServiceOrderMapper
             new Phone(dto.Phone2),
             string.IsNullOrEmpty(dto.Email) ? null : new Email(dto.Email),
             new Cpf(dto.Cpf));
+        
+        customer.Id = dto.CustomerId;
 
         entity.EditCustomer(customer);
         

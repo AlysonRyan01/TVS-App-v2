@@ -135,13 +135,14 @@ public partial class CreateSelesServiceOrderPage : ComponentBase
 
         var dialog = await DialogService.ShowAsync<ConfirmCustomerDialog>("Confirmar cliente", parameters, options);
         var result = await dialog.Result;
-    
-        if (!result!.Canceled && SelectedCustomer != null)
+
+        if (!result!.Canceled)
         {
-            var confirmed = (bool)result.Data!;
-        
-            if (confirmed)
+            var confirmedCustomer = (CustomerDto)result.Data!;
+
+            if (SelectedCustomer != null)
             {
+                SelectedCustomer = confirmedCustomer;
                 CreateSalesServiceOrderCommand.CustomerId = SelectedCustomer.Id;
                 _serviceOrderTime = true;
                 _customerSideCompleted = true;

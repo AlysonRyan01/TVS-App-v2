@@ -37,7 +37,7 @@
         <!-- CLIENTE -->
         <div class="py-3 bg-gray-50">
             <MudText Typo="Typo.h6" Color="Color.Tertiary" Class="font-extrabold uppercase mb-2">CLIENTE</MudText>
-            <MudAutocomplete T="CustomerDto"
+            <MudAutocomplete T="CustomerDto?"
                              Value="_selectedCustomer"
                              ValueChanged="OnCustomerSelected"
                              Variant="Variant.Outlined"
@@ -112,7 +112,7 @@
                            Class="w-full">
                     @foreach (var result in Enum.GetValues(typeof(ERepairResult)).Cast<ERepairResult>())
                     {
-                        <MudSelectItem Value="@result">@result.GetDisplayName()</MudSelectItem>
+                        <MudSelectItem Value="@(result as ERepairResult?)">@result.GetDisplayName()</MudSelectItem>
                     }
                 </MudSelect>
 
@@ -168,18 +168,20 @@
                                     Variant="Variant.Outlined" />
                             </MudItem>
                             <MudItem xs="12" md="6">
-                                <MudTextField
-                                    Label="Valor da peça"
-                                    @bind-Value="_addEstimateCommand.PartCost"
-                                    For="@(() => _addEstimateCommand.PartCost)"
-                                    Variant="Variant.Outlined" />
+                                <MudTextField T="decimal"
+                                              Label="Valor da peça"
+                                              Bind-Value="@_addEstimateCommand.PartCost"
+                                              Format="0.00"
+                                              Culture="CultureInfo.InvariantCulture"
+                                              Variant="Variant.Outlined" />
                             </MudItem>
                             <MudItem xs="12" md="6">
-                                <MudTextField
-                                    Label="Valor da mão de obra"
-                                    @bind-Value="_addEstimateCommand.LaborCost"
-                                    For="@(() => _addEstimateCommand.LaborCost)"
-                                    Variant="Variant.Outlined" />
+                                <MudTextField T="decimal"
+                                              Label="Valor da mão de obra"
+                                              Bind-Value="@_addEstimateCommand.LaborCost"
+                                              Format="0.00"
+                                              Culture="CultureInfo.InvariantCulture"
+                                              Variant="Variant.Outlined" />
                             </MudItem>
                             <MudItem xs="12" md="6">
                                 <MudTextField
@@ -377,6 +379,22 @@
 
             _addEstimateCommand.ServiceOrderId = ServiceOrder.Id;
             _getServiceOrderByIdCommand.Id = ServiceOrder.Id;
+
+            _selectedCustomer = new CustomerDto
+            {
+                Id = ServiceOrder.CustomerId,
+                Name = ServiceOrder.Name,
+                Street = ServiceOrder.Street,
+                Neighborhood = ServiceOrder.Neighborhood,
+                City = ServiceOrder.City,
+                Number = ServiceOrder.Number,
+                ZipCode = ServiceOrder.ZipCode,
+                State = ServiceOrder.State,
+                Phone = ServiceOrder.Phone,
+                Phone2 = ServiceOrder.Phone2,
+                Email = ServiceOrder.Email,
+                Cpf = ServiceOrder.Cpf
+            };
         }
         catch (Exception e)
         {
@@ -386,8 +404,14 @@
 
     public async Task EditServiceOrder()
     {
+        if (_selectedCustomer == null || _selectedCustomer.Id == 0)
+        {
+            Snackbar.Add("Selecione algum cliente", Severity.Error);
+            return;
+        }
+        
         var customer = await CustomerHandler.
-            GetCustomerByIdAsync(new GetCustomerByIdCommand { Id = _command.CustomerId});
+            GetCustomerByIdAsync(new GetCustomerByIdCommand { Id = _selectedCustomer.Id});
 
         if (!customer.IsSuccess || customer.Data == null)
         {

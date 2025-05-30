@@ -22,6 +22,8 @@ else
 @code {
     [Parameter] public GetServiceOrderByIdCommand Command { get; set; } = null!;
 
+    [Parameter]
+    public EventCallback OnDeliveryAdded { get; set; }
     [Inject] public ServiceOrderHandler Handler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
     [Inject] public IJSRuntime Js { get; set; } = null!;

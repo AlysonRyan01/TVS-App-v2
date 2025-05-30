@@ -91,7 +91,7 @@ public class RegenerateDocument : QuestPdf
                                     .FontFamily("Arial")
                                     .FontColor(Colors.Red.Darken2);
 
-                                col.Item().Text($"EMPRESA:  {_serviceOrder.Enterprise.GetDisplayName() ?? "-"}")
+                                col.Item().Text($"EMPRESA:  {_serviceOrder.Enterprise.GetDisplayName()}")
                                     .FontSize(12)
                                     .ExtraBold()
                                     .FontFamily("Arial")
