@@ -101,8 +101,14 @@
 
                 <MudTextField Variant="Variant.Outlined" Label="Solução" @bind-Value="_command.Solution" Lines="3" Class="w-full" />
                 <MudTextField Variant="Variant.Outlined" Label="Mensagem de orçamento" @bind-Value="_command.EstimateMessage" Class="w-full" />
-                <MudNumericField Variant="Variant.Outlined" Label="Valor da peça" @bind-Value="_command.PartCost" Class="w-full" />
-                <MudNumericField Variant="Variant.Outlined" Label="Valor da mão de obra" @bind-Value="_command.LaborCost" Class="w-full" />
+                <div class="w-full">
+                    <label class="block text-[#767676] font-medium">Valor da peça</label>
+                    <input type="number" class="w-full text-lg border border-[#BDBDBD] rounded-md p-4 focus:outline-none focus:ring-1 focus:ring-[#BE0405] focus:border-[#BE0405] transition" @bind="_command.PartCost" placeholder="Valor da peça" />
+                </div>
+                <div class="w-full">
+                    <label class="block text-[#767676] font-medium">Valor da mão de obra</label>
+                    <input type="number" class="w-full text-lg border border-[#BDBDBD] rounded-md p-4 focus:outline-none focus:ring-1 focus:ring-[#BE0405] focus:border-[#BE0405] transition" @bind="_command.LaborCost" placeholder="Valor da mão de obra" />
+                </div>
                 <MudTextField Variant="Variant.Outlined" Label="Garantia" @bind-Value="_command.Guarantee" Class="w-full" />
 
                 <MudSelect T="ERepairResult?"
