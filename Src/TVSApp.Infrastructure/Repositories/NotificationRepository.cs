@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using TVS_App.Application.DTOs;
 using TVS_App.Application.Repositories;
 using TVS_App.Domain.Entities;
+using TVS_App.Domain.Shared;
 using TVS_App.Infrastructure.Data;
 using TVS_App.Infrastructure.Exceptions;
 

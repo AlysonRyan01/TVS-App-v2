@@ -1,6 +1,7 @@
 using TVS_App.Application.DTOs;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Enums;
+using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Repositories;
 

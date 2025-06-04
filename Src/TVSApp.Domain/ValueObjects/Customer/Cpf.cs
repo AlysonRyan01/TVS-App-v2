@@ -1,4 +1,3 @@
-using System.Text.Json.Serialization;
 using TVS_App.Domain.Exceptions;
 
 namespace TVS_App.Domain.ValueObjects.Customer;

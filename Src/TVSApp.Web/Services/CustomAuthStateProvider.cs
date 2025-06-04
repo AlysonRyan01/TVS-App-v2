@@ -6,8 +6,8 @@ using System.Security.Claims;
 using System.Text.Json;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
-using TVS_App.Application.DTOs;
 using TVS_App.Application.Requests.AuthRequests;
+using TVS_App.Domain.Shared;
 
 namespace TVSApp.Web.Services;
 
@@ -28,7 +28,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         }
     }
 
-    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         var token = _localStorage.GetItem<string>("jwtToken");
         
@@ -38,7 +38,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         {
             _localStorage.RemoveItem("jwtToken");
             _httpClient.DefaultRequestHeaders.Authorization = null;
-            return new AuthenticationState(anonymous);
+            return Task.FromResult(new AuthenticationState(anonymous));
         }
         
         var handler = new JwtSecurityTokenHandler();
@@ -47,7 +47,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         var identity = new ClaimsIdentity(jwtToken.Claims, "jwt");
         var user = new ClaimsPrincipal(identity);
 
-        return new AuthenticationState(user);
+        return Task.FromResult(new AuthenticationState(user));
     }
 
     public async Task<BaseResponse<string>> Login(LoginRequest request)

@@ -4,11 +4,11 @@ using TVS_App.Api.Exceptions;
 using TVS_App.Api.SignalR;
 using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.ServiceOrderCommands;
-using TVS_App.Application.DTOs;
 using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Handlers;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Enums;
+using TVS_App.Domain.Shared;
 
 namespace TVS_App.Api.Endpoints;
 

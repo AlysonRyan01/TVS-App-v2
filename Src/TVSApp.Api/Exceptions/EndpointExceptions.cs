@@ -3,10 +3,10 @@ using System.Data.Common;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using TVS_App.Application.Commands;
-using TVS_App.Application.DTOs;
 using TVS_App.Application.Exceptions;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Exceptions;
+using TVS_App.Domain.Shared;
 using TVS_App.Domain.ValueObjects;
 
 namespace TVS_App.Api.Exceptions;

@@ -1,4 +1,4 @@
-namespace TVS_App.Application.DTOs;
+namespace TVS_App.Domain.Shared;
 
 public class PaginatedResult<T>
 {

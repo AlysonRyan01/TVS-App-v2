@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
-using TVS_App.Application.DTOs;
 using TVS_App.Domain.Entities;
+using TVS_App.Domain.Shared;
 
 namespace TVSApp.Web.Handlers;
 

@@ -4,6 +4,7 @@ using TVS_App.Application.Commands.ServiceOrderCommands;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Domain.Enums;
+using TVS_App.Domain.Shared;
 using TVSApp.Web.Exceptions;
 
 namespace TVSApp.Web.Handlers;

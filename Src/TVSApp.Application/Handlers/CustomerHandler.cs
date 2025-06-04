@@ -5,6 +5,7 @@ using TVS_App.Application.Exceptions;
 using TVS_App.Application.Mappers;
 using TVS_App.Application.Repositories;
 using TVS_App.Domain.Entities;
+using TVS_App.Domain.Shared;
 using TVS_App.Domain.ValueObjects.Customer;
 
 namespace TVS_App.Application.Handlers;

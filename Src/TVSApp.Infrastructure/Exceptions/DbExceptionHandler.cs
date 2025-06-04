@@ -2,7 +2,7 @@ using System.Data;
 using System.Data.Common;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using TVS_App.Application.DTOs;
+using TVS_App.Domain.Shared;
 
 namespace TVS_App.Infrastructure.Exceptions;
 

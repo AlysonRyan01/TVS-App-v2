@@ -1,7 +1,7 @@
 using System.Data;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
-using TVS_App.Application.DTOs;
+using TVS_App.Domain.Shared;
 
 namespace TVSApp.Web.Exceptions;
 

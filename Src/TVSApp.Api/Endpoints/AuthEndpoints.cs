@@ -1,7 +1,6 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
-using TVS_App.Application.DTOs;
+using TVS_App.Domain.Shared;
 using TVS_App.Infrastructure.Models;
 using TVS_App.Infrastructure.Security;
 
