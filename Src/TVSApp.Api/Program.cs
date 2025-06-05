@@ -12,8 +12,11 @@ builder.AddAuthentication();
 builder.AddJwtService();
 builder.ConfigureJsonSerializer();
 builder.AddDependencies();
-builder.AddSwagger();
 builder.Services.AddSignalR();
+
+if (builder.Environment.IsDevelopment())
+    builder.AddSwagger();
+
 
 var app = builder.Build();
 
@@ -24,7 +27,9 @@ app.AddMigrations();
 app.MapHub<ServiceOrderHub>("/osHub");
 app.AddAuthorization();
 app.AddEndpoints();
-app.AddSwagger();
+
+if (app.Environment.IsDevelopment())
+    app.AddSwagger();
 
 app.MapGet("/", () => "API RODANDO");
 
