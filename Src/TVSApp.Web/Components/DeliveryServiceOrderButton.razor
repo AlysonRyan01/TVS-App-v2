@@ -21,9 +21,8 @@ else
 
 @code {
     [Parameter] public GetServiceOrderByIdCommand Command { get; set; } = null!;
-
-    [Parameter]
-    public EventCallback OnDeliveryAdded { get; set; }
+    [Parameter] public IMudDialogInstance DialogInstance { get; set; } = null!;
+    [Parameter] public EventCallback OnDeliveryAdded { get; set; }
     [Inject] public ServiceOrderHandler Handler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
     [Inject] public IJSRuntime Js { get; set; } = null!;
@@ -50,6 +49,7 @@ else
                 await Js.InvokeVoidAsync("GeneratePdf", base64, "ordem_servico.pdf");
             }
             
+            DialogInstance.Close(DialogResult.Ok(true));
             Snackbar.Add("Ordem de serviço entregue com sucesso!", Severity.Success);
         }
         catch (Exception e)

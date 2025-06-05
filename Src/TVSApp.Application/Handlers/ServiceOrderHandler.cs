@@ -5,9 +5,10 @@ using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Exceptions;
 using TVS_App.Application.Interfaces;
 using TVS_App.Application.Mappers;
-using TVS_App.Application.Repositories;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Enums;
+using TVS_App.Domain.Repositories.Customers;
+using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Domain.Shared;
 using TVS_App.Domain.ValueObjects.ServiceOrder;
 
@@ -15,16 +16,20 @@ namespace TVS_App.Application.Handlers;
 
 public class ServiceOrderHandler
 {
-    private readonly IServiceOrderRepository _serviceOrderRepository;
-    private readonly ICustomerRepository _customerRepository;
+    private readonly IServiceOrderCommandRepository _serviceOrderCommandRepository;
+    private readonly IServiceOrderQueryRepository _serviceOrderQueryRepository;
+    private readonly ICustomerQueryRepository _customerQueryRepository;
     private readonly IGenerateServiceOrderPdf _generateServiceOrderPdf;
-
-
-    public ServiceOrderHandler(IServiceOrderRepository serviceOrderRepository, ICustomerRepository customerRepository,
-    IGenerateServiceOrderPdf generateServiceOrderPdf)
+    
+    public ServiceOrderHandler(
+        IServiceOrderCommandRepository serviceOrderCommandRepository,
+        IServiceOrderQueryRepository serviceOrderQueryRepository,
+        ICustomerQueryRepository customerQueryRepository,
+        IGenerateServiceOrderPdf generateServiceOrderPdf)
     {
-        _serviceOrderRepository = serviceOrderRepository;
-        _customerRepository = customerRepository;
+        _serviceOrderCommandRepository = serviceOrderCommandRepository;
+        _serviceOrderQueryRepository = serviceOrderQueryRepository;
+        _customerQueryRepository = customerQueryRepository;
         _generateServiceOrderPdf = generateServiceOrderPdf;
     }
 
@@ -40,7 +45,7 @@ public class ServiceOrderHandler
 
             var serviceOrder = new ServiceOrder(command.Enterprise, command.CustomerId, product);
 
-            var createServiceOrder = await _serviceOrderRepository.CreateAsync(serviceOrder);
+            var createServiceOrder = await _serviceOrderCommandRepository.CreateAsync(serviceOrder);
             if (!createServiceOrder.IsSuccess)
                 return new BaseResponse<byte[]>(null, 500, createServiceOrder.Message);
 
@@ -82,7 +87,7 @@ public class ServiceOrderHandler
             serviceOrder.EditRepairStatus(ERepairStatus.Approved);
             serviceOrder.EditDeliveryDate(DateTime.UtcNow);
 
-            var createServiceOrder = await _serviceOrderRepository.CreateAsync(serviceOrder);
+            var createServiceOrder = await _serviceOrderCommandRepository.CreateAsync(serviceOrder);
             if (!createServiceOrder.IsSuccess)
                 return new BaseResponse<byte[]>(null, 500, createServiceOrder.Message);
 
@@ -112,13 +117,13 @@ public class ServiceOrderHandler
             command.Normalize();
             command.Validate();
 
-            var existingCustomer = await _customerRepository.GetByIdAsync(command.CustomerId);
+            var existingCustomer = await _customerQueryRepository.GetByIdAsync(command.CustomerId);
             if (existingCustomer.Data == null)
                 return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 404, $"O cliente com id: {command.CustomerId} não existe");
 
             var customer = existingCustomer.Data;
 
-            var existingServiceOrder = await _serviceOrderRepository.GetById(command.ServiceOrderId);
+            var existingServiceOrder = await _serviceOrderQueryRepository.GetById(command.ServiceOrderId);
             if (existingServiceOrder.Data == null)
                 return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 404, $"A ordem de serviço com id: {command.ServiceOrderId} não existe");
 
@@ -133,7 +138,7 @@ public class ServiceOrderHandler
                 command.ProductType,
                 command.Enterprise);
 
-            var result = await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            var result = await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);
             if (!result.IsSuccess || result.Data == null)
                 return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 500, result.Message);
             
@@ -161,7 +166,7 @@ public class ServiceOrderHandler
             if (command.Id == 0)
                 return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 401, "O ID da ordem de serviço não pode ser 0");
             
-            var repositoryResult = await _serviceOrderRepository.GetById(command.Id);
+            var repositoryResult = await _serviceOrderQueryRepository.GetById(command.Id);
             if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
                 return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 500, repositoryResult.Message);
             
@@ -169,7 +174,7 @@ public class ServiceOrderHandler
             
             ServiceOrderMapper.ApplyChanges(serviceOrder, command);
             
-            var result = await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            var result = await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);
             if (!result.IsSuccess || result.Data == null)
                 return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 500, result.Message);
             
@@ -194,7 +199,7 @@ public class ServiceOrderHandler
             command.Normalize();
             command.Validate();
 
-            var result = await _serviceOrderRepository.GetById(command.ServiceOrderId);
+            var result = await _serviceOrderQueryRepository.GetById(command.ServiceOrderId);
             if (result.Data == null)
                 return new BaseResponse<string?>(null, 404, "Essa ordem de serviço não existe");
 
@@ -202,7 +207,7 @@ public class ServiceOrderHandler
 
             serviceOrder.Product.AddLocation(command.Location);
 
-            await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);
 
             return new BaseResponse<string?>(serviceOrder.Product.Location, 200, "Localização do produto adicionada com sucesso!");
         }
@@ -220,7 +225,7 @@ public class ServiceOrderHandler
     {
         try
         {
-            var repositoryResult = await _serviceOrderRepository.GetServiceOrdersByCustomerName(customerName);
+            var repositoryResult = await _serviceOrderQueryRepository.GetServiceOrdersByCustomerName(customerName);
             if (!repositoryResult.IsSuccess)
                 return new BaseResponse<List<ServiceOrderDto>>(null, 500, repositoryResult.Message);
             
@@ -242,7 +247,7 @@ public class ServiceOrderHandler
         {
             command.Validate();
 
-            var result =  await _serviceOrderRepository.GetById(command.Id);
+            var result =  await _serviceOrderQueryRepository.GetById(command.Id);
             
             if (!result.IsSuccess || result.Data == null)
                 return new BaseResponse<ServiceOrderDto?>(null, 500, result.Message);
@@ -268,7 +273,7 @@ public class ServiceOrderHandler
             command.Normalize();
             command.Validate();
 
-            var repositoryResult = await _serviceOrderRepository.GetServiceOrdersBySerialNumber(command.SerialNumber);
+            var repositoryResult = await _serviceOrderQueryRepository.GetServiceOrdersBySerialNumber(command.SerialNumber);
             if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
                 return new BaseResponse<List<ServiceOrderDto>>(null, 500, repositoryResult.Message);
             
@@ -293,7 +298,7 @@ public class ServiceOrderHandler
             command.Normalize();
             command.Validate();
 
-            var repositoryResult = await _serviceOrderRepository.GetServiceOrdersByModel(command.Model);
+            var repositoryResult = await _serviceOrderQueryRepository.GetServiceOrdersByModel(command.Model);
             if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
                 return new BaseResponse<List<ServiceOrderDto>>(null, 500, repositoryResult.Message);
             
@@ -315,7 +320,7 @@ public class ServiceOrderHandler
     {
         try
         {
-            var repositoryResult = await _serviceOrderRepository.GetServiceOrdersByEnterprise(enterprise);
+            var repositoryResult = await _serviceOrderQueryRepository.GetServiceOrdersByEnterprise(enterprise);
             if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
                 return new BaseResponse<List<ServiceOrderDto>>(null, 500, repositoryResult.Message);
             
@@ -333,7 +338,7 @@ public class ServiceOrderHandler
     {
         try
         {
-            var repositoryResult = await _serviceOrderRepository.GetServiceOrdersByDate(startDate, endDate);
+            var repositoryResult = await _serviceOrderQueryRepository.GetServiceOrdersByDate(startDate, endDate);
             if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
                 return new BaseResponse<List<ServiceOrderDto>>(null, 500, repositoryResult.Message);
             
@@ -354,7 +359,7 @@ public class ServiceOrderHandler
             command.Normalize();
             command.Validate();
 
-            var orderResult = await _serviceOrderRepository.GetById(command.ServiceOrderId);
+            var orderResult = await _serviceOrderQueryRepository.GetById(command.ServiceOrderId);
             if (!orderResult.IsSuccess)
                 return new BaseResponse<EstimateServiceOrder>(null, 404, "Nenhuma ordem de serviço encontrada");
 
@@ -398,7 +403,7 @@ public class ServiceOrderHandler
         {
             command.Validate();
 
-            var repositoryResult = await _serviceOrderRepository.GetAllAsync(command.PageNumber, command.PageSize);
+            var repositoryResult = await _serviceOrderQueryRepository.GetAllAsync(command.PageNumber, command.PageSize);
             if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
                 return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
             
@@ -430,7 +435,7 @@ public class ServiceOrderHandler
         {
             command.Validate();
 
-            var repositoryResult = await _serviceOrderRepository.GetPendingEstimatesAsync(command.PageNumber, command.PageSize);
+            var repositoryResult = await _serviceOrderQueryRepository.GetPendingEstimatesAsync(command.PageNumber, command.PageSize);
             if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
                 return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
             
@@ -463,7 +468,7 @@ public class ServiceOrderHandler
         {
             command.Validate();
 
-            var repositoryResult = await _serviceOrderRepository.GetWaitingResponseAsync(command.PageNumber, command.PageSize);
+            var repositoryResult = await _serviceOrderQueryRepository.GetWaitingResponseAsync(command.PageNumber, command.PageSize);
             if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
                 return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
             
@@ -496,7 +501,7 @@ public class ServiceOrderHandler
         {
             command.Validate();
 
-            var repositoryResult = await _serviceOrderRepository.GetPendingPartPurchase(command.PageNumber, command.PageSize);
+            var repositoryResult = await _serviceOrderQueryRepository.GetPendingPartPurchase(command.PageNumber, command.PageSize);
             if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
                 return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
             
@@ -529,7 +534,7 @@ public class ServiceOrderHandler
         {
             command.Validate();
 
-            var repositoryResult = await _serviceOrderRepository.GetWaitingPartsAsync(command.PageNumber, command.PageSize);
+            var repositoryResult = await _serviceOrderQueryRepository.GetWaitingPartsAsync(command.PageNumber, command.PageSize);
             if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
                 return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
             
@@ -562,7 +567,7 @@ public class ServiceOrderHandler
         {
             command.Validate();
         
-            var repositoryResult = await _serviceOrderRepository.GetWaitingPickupAsync(command.PageNumber, command.PageSize);
+            var repositoryResult = await _serviceOrderQueryRepository.GetWaitingPickupAsync(command.PageNumber, command.PageSize);
             if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
                 return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
             
@@ -595,7 +600,7 @@ public class ServiceOrderHandler
         {
             command.Validate();
 
-            var repositoryResult = await _serviceOrderRepository.GetDeliveredAsync(command.PageNumber, command.PageSize);
+            var repositoryResult = await _serviceOrderQueryRepository.GetDeliveredAsync(command.PageNumber, command.PageSize);
             if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
                 return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
             
@@ -629,7 +634,7 @@ public class ServiceOrderHandler
             command.Normalize();
             command.Validate();
 
-            var result = await _serviceOrderRepository.GetById(command.ServiceOrderId);
+            var result = await _serviceOrderQueryRepository.GetById(command.ServiceOrderId);
             if (result.Data == null)
                 return new BaseResponse<ServiceOrderDto?>(null, 404, "Essa ordem de serviço não existe");
 
@@ -637,7 +642,7 @@ public class ServiceOrderHandler
 
             serviceOrder.AddEstimate(command.Solution, command.Guarantee, command.PartCost, command.LaborCost, command.RepairResult, command.EstimateMessage);
 
-            await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);
             
             var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);
 
@@ -659,7 +664,7 @@ public class ServiceOrderHandler
         {
             command.Validate();
 
-            var result = await _serviceOrderRepository.GetById(command.Id);
+            var result = await _serviceOrderQueryRepository.GetById(command.Id);
             if (result.Data == null)
                 return new BaseResponse<ServiceOrderDto?>(null, 404, "Essa ordem de serviço não existe");
 
@@ -667,7 +672,7 @@ public class ServiceOrderHandler
 
             serviceOrder.ApproveEstimate();
 
-            await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);
             
             var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);
 
@@ -689,7 +694,7 @@ public class ServiceOrderHandler
         {
             command.Validate();
 
-            var result = await _serviceOrderRepository.GetById(command.Id);
+            var result = await _serviceOrderQueryRepository.GetById(command.Id);
             if (result.Data == null)
                 return new BaseResponse<ServiceOrderDto?>(null, 404, "Essa ordem de serviço não existe");
 
@@ -697,7 +702,7 @@ public class ServiceOrderHandler
 
             serviceOrder.RejectEstimate();
 
-            await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);
             
             var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);
 
@@ -719,7 +724,7 @@ public class ServiceOrderHandler
         {
             command.Validate();
 
-            var result = await _serviceOrderRepository.GetById(command.Id);
+            var result = await _serviceOrderQueryRepository.GetById(command.Id);
             if (result.Data == null)
                 return new BaseResponse<ServiceOrderDto?>(null, 404, "Essa ordem de serviço não existe");
 
@@ -727,7 +732,7 @@ public class ServiceOrderHandler
 
             serviceOrder.AddPurchasedPart();
 
-            await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);
             
             var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);
 
@@ -749,7 +754,7 @@ public class ServiceOrderHandler
         {
             command.Validate();
 
-            var result = await _serviceOrderRepository.GetById(command.Id);
+            var result = await _serviceOrderQueryRepository.GetById(command.Id);
             if (result.Data == null)
                 return new BaseResponse<ServiceOrderDto?>(null, 404, "Essa ordem de serviço não existe");
 
@@ -757,7 +762,7 @@ public class ServiceOrderHandler
 
             serviceOrder.ExecuteRepair();
 
-            await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);
             
             var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);
 
@@ -779,7 +784,7 @@ public class ServiceOrderHandler
         {
             command.Validate();
 
-            var result = await _serviceOrderRepository.GetById(command.Id);
+            var result = await _serviceOrderQueryRepository.GetById(command.Id);
             if (result.Data == null)
                 return new BaseResponse<byte[]>(null, 404, "Essa ordem de serviço não existe");
 
@@ -787,7 +792,7 @@ public class ServiceOrderHandler
 
             serviceOrder.AddDelivery();
 
-            await _serviceOrderRepository.UpdateAsync(serviceOrder);
+            await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);
 
             if (serviceOrder.RepairStatus == ERepairStatus.Approved &&
                 serviceOrder.RepairResult == ERepairResult.Repair)
@@ -817,7 +822,7 @@ public class ServiceOrderHandler
         {
             command.Validate();
 
-            var result = await _serviceOrderRepository.GetById(command.Id);
+            var result = await _serviceOrderQueryRepository.GetById(command.Id);
             if (result.Data == null)
                 return new BaseResponse<byte[]>(null, 404, "Essa ordem de serviço não existe");
 

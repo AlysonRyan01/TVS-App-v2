@@ -1,30 +1,34 @@
-using TVS_App.Application.Repositories;
 using TVS_App.Domain.Entities;
+using TVS_App.Domain.Repositories.Notifications;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Handlers;
 
 public class NotificationHandler
 {
-    private readonly INotificationRepository _notificationRepository;
+    private readonly INotificationCommandRepository _notificationCommandRepository;
+    private readonly INotificationQueryRepository _notificationQueryRepository;
 
-    public NotificationHandler(INotificationRepository notificationRepository)
+    public NotificationHandler(
+        INotificationCommandRepository notificationCommandRepository,
+        INotificationQueryRepository notificationQueryRepository)
     {
-        _notificationRepository = notificationRepository;
+        _notificationCommandRepository = notificationCommandRepository;
+        _notificationQueryRepository = notificationQueryRepository;
     }
     
     public async Task<BaseResponse<Notification>> CreateNotification(string title, string message)
     {
-        return await _notificationRepository.Create(title, message);
+        return await _notificationCommandRepository.Create(title, message);
     }
 
     public async Task<BaseResponse<List<Notification>>> GetUnreadNotifications()
     {
-        return await _notificationRepository.GetUnread();
+        return await _notificationQueryRepository.GetUnread();
     }
 
     public async Task<BaseResponse<Notification>> MarkNotificationAsRead(long id)
     {
-        return await _notificationRepository.MarkAsRead(id);
+        return await _notificationCommandRepository.MarkAsRead(id);
     }
 }

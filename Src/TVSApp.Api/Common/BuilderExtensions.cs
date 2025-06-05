@@ -8,10 +8,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TVS_App.Application.Handlers;
 using TVS_App.Application.Interfaces;
-using TVS_App.Application.Repositories;
+using TVS_App.Domain.Repositories.Customers;
+using TVS_App.Domain.Repositories.Notifications;
+using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Infrastructure.Data;
 using TVS_App.Infrastructure.Models;
-using TVS_App.Infrastructure.Repositories;
+using TVS_App.Infrastructure.Repositories.Customers;
+using TVS_App.Infrastructure.Repositories.Notifications;
+using TVS_App.Infrastructure.Repositories.ServiceOrders;
 using TVS_App.Infrastructure.Security;
 using TVS_App.Infrastructure.Services;
 
@@ -48,9 +52,12 @@ public static class BuilderExtensions
 
     public static void AddDependencies(this WebApplicationBuilder builder)
     {
-        builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
-        builder.Services.AddScoped<IServiceOrderRepository, ServiceOrderRepository>();
-        builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+        builder.Services.AddScoped<ICustomerCommandRepository, CustomerCommandRepository>();
+        builder.Services.AddScoped<ICustomerQueryRepository, CustomerQueryRepository>();
+        builder.Services.AddScoped<IServiceOrderCommandRepository, ServiceOrderCommandRepository>();
+        builder.Services.AddScoped<IServiceOrderQueryRepository, ServiceOrderQueryRepository>();
+        builder.Services.AddScoped<INotificationCommandRepository, NotificationCommandRepository>();
+        builder.Services.AddScoped<INotificationQueryRepository, NotificationQueryRepository>();
         builder.Services.AddTransient<IGenerateServiceOrderPdf, GenerateServiceOrderPdfService>();
         builder.Services.AddScoped<CustomerHandler>();
         builder.Services.AddScoped<ServiceOrderHandler>();

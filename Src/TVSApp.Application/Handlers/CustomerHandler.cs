@@ -3,8 +3,8 @@ using TVS_App.Application.Commands.CustomerCommands;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.Exceptions;
 using TVS_App.Application.Mappers;
-using TVS_App.Application.Repositories;
 using TVS_App.Domain.Entities;
+using TVS_App.Domain.Repositories.Customers;
 using TVS_App.Domain.Shared;
 using TVS_App.Domain.ValueObjects.Customer;
 
@@ -12,11 +12,15 @@ namespace TVS_App.Application.Handlers;
 
 public class CustomerHandler
 {
-    private readonly ICustomerRepository _customerRepository;
+    private readonly ICustomerCommandRepository _customerCommandRepository;
+    private readonly ICustomerQueryRepository _customerQueryRepository;
 
-    public CustomerHandler(ICustomerRepository customerRepository)
+    public CustomerHandler(
+        ICustomerCommandRepository customerCommandRepository, 
+        ICustomerQueryRepository customerQueryRepository)
     {
-        _customerRepository = customerRepository;
+        _customerCommandRepository = customerCommandRepository;
+        _customerQueryRepository = customerQueryRepository;
     }
 
     public async Task<BaseResponse<CustomerDto?>> CreateCustomerAsync(CreateCustomerCommand command)
@@ -41,7 +45,7 @@ public class CustomerHandler
 
             var customer = new Customer(name, address, phone, phone2, email, cpf);
 
-            await _customerRepository.CreateAsync(customer);
+            await _customerCommandRepository.CreateAsync(customer);
             
             var dto = CustomerMapper.MapToDto(customer);
             
@@ -60,7 +64,7 @@ public class CustomerHandler
             command.Normalize();
             command.Validate();
 
-            var existingCustomer = await _customerRepository.GetByIdAsync(command.Id);
+            var existingCustomer = await _customerQueryRepository.GetByIdAsync(command.Id);
 
             if (!existingCustomer.IsSuccess || existingCustomer.Data is null)
                 return new BaseResponse<CustomerDto?>(null, 404, "Cliente não encontrado.");
@@ -78,7 +82,7 @@ public class CustomerHandler
             customer.UpdateEmail(command.Email);
             customer.UpdateCpf(command.Cpf);
 
-            await _customerRepository.UpdateAsync(customer);
+            await _customerCommandRepository.UpdateAsync(customer);
             
             var dto = CustomerMapper.MapToDto(customer);
             
@@ -96,7 +100,7 @@ public class CustomerHandler
         {
             command.Validate();
 
-            var response = await _customerRepository.GetByIdAsync(command.Id);
+            var response = await _customerQueryRepository.GetByIdAsync(command.Id);
             
             if (!response.IsSuccess || response.Data == null)
                 return new BaseResponse<CustomerDto?>(null, response.Code, response.Message);
@@ -113,7 +117,7 @@ public class CustomerHandler
     
     public async Task<BaseResponse<List<CustomerDto>>> GetCustomerByNameAsync(string name)
     {
-        var customersResponse = await _customerRepository.GetCustomerByName(name);
+        var customersResponse = await _customerQueryRepository.GetCustomerByName(name);
         
         if (!customersResponse.IsSuccess || customersResponse.Data == null)
             return new BaseResponse<List<CustomerDto>>(null, 404, customersResponse.Message);
@@ -129,7 +133,7 @@ public class CustomerHandler
         {
             command.Validate();
 
-            var response = await _customerRepository.GetAllAsync(command.PageNumber, command.PageSize);
+            var response = await _customerQueryRepository.GetAllAsync(command.PageNumber, command.PageSize);
             
             if (!response.IsSuccess || response.Data == null || !response.Data.Items.Any())
                 return new BaseResponse<PaginatedResult<CustomerDto?>>(null, 404, response.Message);
