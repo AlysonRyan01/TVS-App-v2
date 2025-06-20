@@ -20,17 +20,20 @@ public class ServiceOrderHandler
     private readonly IServiceOrderQueryRepository _serviceOrderQueryRepository;
     private readonly ICustomerQueryRepository _customerQueryRepository;
     private readonly IGenerateServiceOrderPdf _generateServiceOrderPdf;
+    private readonly IWhatsappService _whatsappService;
     
     public ServiceOrderHandler(
         IServiceOrderCommandRepository serviceOrderCommandRepository,
         IServiceOrderQueryRepository serviceOrderQueryRepository,
         ICustomerQueryRepository customerQueryRepository,
-        IGenerateServiceOrderPdf generateServiceOrderPdf)
+        IGenerateServiceOrderPdf generateServiceOrderPdf,
+        IWhatsappService whatsappService)
     {
         _serviceOrderCommandRepository = serviceOrderCommandRepository;
         _serviceOrderQueryRepository = serviceOrderQueryRepository;
         _customerQueryRepository = customerQueryRepository;
         _generateServiceOrderPdf = generateServiceOrderPdf;
+        _whatsappService = whatsappService;
     }
 
     public async Task<BaseResponse<byte[]>> CreateServiceOrderAndReturnPdfAsync(CreateServiceOrderCommand command)
@@ -55,6 +58,11 @@ public class ServiceOrderHandler
             var createPdf = await _generateServiceOrderPdf.GenerateCheckInDocumentAsync(serviceOrder);
             if (!createPdf.IsSuccess)
                 return new BaseResponse<byte[]>(null, 500, createPdf.Message);
+            
+            await _whatsappService.SendWelcomeMessage(
+                serviceOrder.Id.ToString(), 
+                serviceOrder.Customer.Name.CustomerName, 
+                serviceOrder.Customer.Phone.CustomerPhone);
 
             return createPdf;
         }
@@ -97,6 +105,13 @@ public class ServiceOrderHandler
             var createPdf = await _generateServiceOrderPdf.GenerateSaleDocumentAsync(serviceOrder);
             if (!createPdf.IsSuccess)
                 return new BaseResponse<byte[]>(null, 500, createPdf.Message);
+            
+            await _whatsappService.SendProductSaleMessage(
+                serviceOrder.Customer.Name.CustomerName, 
+                serviceOrder.Customer.Phone.CustomerPhone, 
+                serviceOrder.PartCost.ServiceOrderPartCost, 
+                serviceOrder.Guarantee!.ServiceOrderGuarantee, 
+                serviceOrder.Product.Type);
 
             return createPdf;
         }
@@ -643,10 +658,28 @@ public class ServiceOrderHandler
             serviceOrder.AddEstimate(command.Solution, command.Guarantee, command.PartCost, command.LaborCost, command.RepairResult, command.EstimateMessage);
 
             await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);
+
+            var message = "Orçamento adicionado com sucesso!";
+
+            if (serviceOrder.Enterprise != EEnterprise.PhilcoBritania)
+            {
+                var whatsappResult = await _whatsappService.SendEstimateMessage(
+                    serviceOrder.Id.ToString(),
+                    serviceOrder.RepairResult!.Value,
+                    serviceOrder.Customer.Name.CustomerName, 
+                    command.EstimateMessage.ToUpper(),
+                    serviceOrder.TotalAmount,
+                    serviceOrder.Guarantee!.ServiceOrderGuarantee,
+                    serviceOrder.Customer.Phone.CustomerPhone);
+            
+                message = whatsappResult.IsSuccess
+                    ? "Orçamento adicionado e mensagem enviada com sucesso!"
+                    : $"Orçamento adicionado, mas falha ao enviar mensagem";
+            }
             
             var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);
 
-            return new BaseResponse<ServiceOrderDto?>(dto, 200, "Orçamento adicionado com sucesso!");
+            return new BaseResponse<ServiceOrderDto?>(dto, 200, message);
         }
         catch (CommandException<AddServiceOrderEstimateCommand> ex)
         {
@@ -766,7 +799,16 @@ public class ServiceOrderHandler
             
             var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);
 
-            return new BaseResponse<ServiceOrderDto?>(dto, 200, "Ordem de serviço marcada como consertada!");
+            var messageResult = await _whatsappService.SendDeviceReadyMessage(
+                serviceOrder.Id.ToString(),
+                serviceOrder.Customer.Name.CustomerName,
+                serviceOrder.Customer.Phone.CustomerPhone);
+            
+            var message = messageResult.IsSuccess
+                ? "Ordem marcada como consertada e mensagem enviada com sucesso!"
+                : $"Ordem marcada como consertada, mas falha ao enviar mensagem";
+
+            return new BaseResponse<ServiceOrderDto?>(dto, 200, message);
         }
         catch (CommandException<GetServiceOrderByIdCommand> ex)
         {

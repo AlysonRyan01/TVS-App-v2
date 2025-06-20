@@ -11,6 +11,7 @@ using TVS_App.Application.Interfaces;
 using TVS_App.Domain.Repositories.Customers;
 using TVS_App.Domain.Repositories.Notifications;
 using TVS_App.Domain.Repositories.ServiceOrders;
+using TVS_App.Infrastructure.Configurations;
 using TVS_App.Infrastructure.Data;
 using TVS_App.Infrastructure.Models;
 using TVS_App.Infrastructure.Repositories.Customers;
@@ -18,6 +19,7 @@ using TVS_App.Infrastructure.Repositories.Notifications;
 using TVS_App.Infrastructure.Repositories.ServiceOrders;
 using TVS_App.Infrastructure.Security;
 using TVS_App.Infrastructure.Services;
+using TVS_App.Infrastructure.Services.Whatsapp;
 
 namespace TVS_App.Api.Common;
 
@@ -62,6 +64,8 @@ public static class BuilderExtensions
         builder.Services.AddScoped<CustomerHandler>();
         builder.Services.AddScoped<ServiceOrderHandler>();
         builder.Services.AddScoped<NotificationHandler>();
+        builder.Services.AddHttpClient<IWhatsappService, WhatsappService>();
+        builder.Services.Configure<EvolutionApiSettings>(builder.Configuration.GetSection("EvolutionApiSettings"));
     }
 
     public static void AddJwtService(this WebApplicationBuilder builder)
