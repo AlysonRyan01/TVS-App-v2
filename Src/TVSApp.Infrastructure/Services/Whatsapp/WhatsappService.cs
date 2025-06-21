@@ -35,10 +35,11 @@ public class WhatsappService : IWhatsappService
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return new BaseResponse<string>(null, 404, "Número de telefone vazio");
 
-            var text = $"Olá {customerName}, seja bem-vindo(a) à TVS Eletrônica! 👋\n\n" +
-                       $"Recebemos sua ordem de serviço nº {serviceOrder} com sucesso ✅.\n" +
-                       $"Nossa equipe já está analisando seu aparelho e em breve entraremos em contato com mais informações.\n\n" +
-                       $"Agradecemos a confiança!\nEquipe TVS Eletrônica 📺🔧";
+            var text = $"Olá {customerName}, seja bem-vindo(a) à TVS Eletrônica! 👋😊\n\n" +
+                       $"📄 Recebemos sua ordem de serviço nº {serviceOrder} com sucesso ✅.\n\n" +
+                       $"🔍 Nossa equipe já está analisando seu aparelho 🛠️ e em breve entraremos em contato com mais informações.\n\n" +
+                       $"🙏 Agradecemos a confiança!\n\n" +
+                       $"Atenciosamente,\nEquipe TVS Eletrônica 📺🔧✨";
 
             var url = $"{_settings.BaseUrl}/message/sendText/{_settings.Instance}";
             
@@ -111,7 +112,8 @@ public class WhatsappService : IWhatsappService
             {
                 var text = $"Olá {customerName}, tudo bem? 👋\n\n" +
                            $"Sobre a ordem de serviço nº {serviceOrder}, informamos:\n\n" +
-                           $"🛠️ Situação: {result.GetDisplayName()} porque {solution}\n" +
+                           $"🛠️ Situação: {result.GetDisplayName()}.\n" +
+                           $"🔎 Detalhes: {solution}\n\n" +
                            $"Em caso de dúvidas, estamos à disposição.\n\n" +
                            $"Atenciosamente,\nTVS Eletrônica 📺🔧";
 
@@ -200,11 +202,11 @@ public class WhatsappService : IWhatsappService
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return new BaseResponse<string>(null, 404, "Número de telefone vazio");
 
-            var text = $"Olá {customerName}, tudo bem? 👋\n\n" +
-                       $"Sua ordem de serviço nº {serviceOrder} está pronta para retirada! 🎉\n" +
-                       $"O seu aparelho já passou por todos os testes e consertos necessários.\n\n" +
-                       $"Agradecemos por confiar na TVS Eletrônica. Estamos à disposição para qualquer dúvida.\n\n" +
-                       $"Atenciosamente,\nEquipe TVS Eletrônica 📺🔧";
+            var text = $"Olá {customerName}, tudo bem? 👋😊\n\n" +
+                       $"📦 Sua ordem de serviço nº {serviceOrder} está pronta para retirada! 🎉✅\n" +
+                       $"🧪 O seu aparelho já passou por todos os testes e consertos necessários 🛠️🔍.\n\n" +
+                       $"🙏 Agradecemos por confiar na TVS Eletrônica. Estamos à disposição para qualquer dúvida! 💬\n\n" +
+                       $"Atenciosamente,\nEquipe TVS Eletrônica 📺🔧✨";
 
             var url = $"{_settings.BaseUrl}/message/sendText/{_settings.Instance}";
             
@@ -248,17 +250,34 @@ public class WhatsappService : IWhatsappService
         }
     }
 
-    public async Task<BaseResponse<string>> SendGenericMessage(string message, string phoneNumber)
+    public async Task<BaseResponse<string>> SendGuaranteeMessage(string serviceOrder, string customerName, string guarantee, string phoneNumber)
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(message))
-                return new BaseResponse<string>(null, 404, "Mensagem vazia");
+            if (string.IsNullOrWhiteSpace(serviceOrder))
+                return new BaseResponse<string>(null, 404, "Ordem de serviço vazia");
+            
+            if (string.IsNullOrWhiteSpace(customerName))
+                return new BaseResponse<string>(null, 404, "Nome do cliente vazio");
+            
+            if (string.IsNullOrWhiteSpace(guarantee))
+                return new BaseResponse<string>(null, 404, "Garantia vazia");
             
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return new BaseResponse<string>(null, 404, "Número de telefone vazio");
 
-            var text = message;
+            var text = $"""
+                        Olá {customerName}, tudo bem? 👋😊
+
+                        Aqui é da TVS Eletrônica 📺🔧. Informamos que sua ordem de serviço nº {serviceOrder} foi finalizada ✅ e o produto já foi entregue 📬.
+
+                        🛡️ Garantia: {guarantee}
+
+                        🙏 Agradecemos pela confiança em nossos serviços! Qualquer dúvida ou necessidade, estamos à disposição 💬.
+
+                        Atenciosamente,  
+                        Equipe TVS Eletrônica ✨
+                        """;
 
             var url = $"{_settings.BaseUrl}/message/sendText/{_settings.Instance}";
             

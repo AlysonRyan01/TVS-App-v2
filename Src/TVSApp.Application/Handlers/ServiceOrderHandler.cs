@@ -843,6 +843,12 @@ public class ServiceOrderHandler
                 if (!createPdf.IsSuccess)
                     return new BaseResponse<byte[]>(null, 500, createPdf.Message);
 
+                await _whatsappService.SendGuaranteeMessage(
+                    serviceOrder.Id.ToString(), 
+                    serviceOrder.Customer.Name.CustomerName, 
+                    serviceOrder.Guarantee!.ServiceOrderGuarantee, 
+                    serviceOrder.Customer.Phone.CustomerPhone);
+                
                 return createPdf;
             }
 
