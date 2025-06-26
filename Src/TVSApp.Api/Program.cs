@@ -1,10 +1,7 @@
-using QuestPDF.Infrastructure;
 using TVS_App.Api.Common;
-using TVS_App.Api.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
-
-QuestPDF.Settings.License = LicenseType.Community;
+builder.AddQuestPdfConfiguration();
 builder.AddCorsConfiguration();
 builder.AddSqlServer();
 builder.AddIdentity();
@@ -12,24 +9,17 @@ builder.AddAuthentication();
 builder.AddJwtService();
 builder.ConfigureJsonSerializer();
 builder.AddDependencies();
-builder.Services.AddSignalR();
-
-if (builder.Environment.IsDevelopment())
-    builder.AddSwagger();
-
+builder.AddSignalR();
+builder.AddSwagger();
 
 var app = builder.Build();
-
+app.AddExceptionMiddleware();
 app.UseCors(builder.Configuration["Cors:PolicyName"]!);
-
+app.AddSwagger();
 app.AddMigrations();
-
-app.MapHub<ServiceOrderHub>("/osHub");
+app.AddSignalR();
 app.AddAuthorization();
 app.AddEndpoints();
-
-if (app.Environment.IsDevelopment())
-    app.AddSwagger();
 
 app.MapGet("/", () => "API RODANDO");
 
