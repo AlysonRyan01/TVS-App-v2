@@ -35,7 +35,6 @@
                                              @bind-Value="_customerFilter"
                                              SearchFunc="SearchCustomers"
                                              ToStringFunc="@(c => c?.Name ?? "")"
-                                             MinCharacters="2"
                                              ResetValueOnEmptyText="true"
                                              Clearable="true"
                                              Loading="@_isLoading"

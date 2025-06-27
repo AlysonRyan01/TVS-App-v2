@@ -83,10 +83,7 @@
                         <MudTextField Label="Mensagem de orçamento" Lines="2" @bind-Value="Request.EstimateMessage" For="@(() => Request.EstimateMessage)" Variant="Variant.Outlined" />
                     </MudItem>
                     <MudItem xs="12" md="6">
-                        <MudTextField Label="Valor da peça" @bind-Value="Request.PartCost" For="@(() => Request.PartCost)" Variant="Variant.Outlined" />
-                    </MudItem>
-                    <MudItem xs="12" md="6">
-                        <MudTextField Label="Valor da mão de obra" @bind-Value="Request.LaborCost" For="@(() => Request.LaborCost)" Variant="Variant.Outlined" />
+                        <MudTextField Label="Valor total" @bind-Value="Request.LaborCost" For="@(() => Request.LaborCost)" Variant="Variant.Outlined" />
                     </MudItem>
                     <MudItem xs="12" md="6">
                         <MudTextField Label="Garantia" @bind-Value="Request.Guarantee" For="@(() => Request.Guarantee)" Variant="Variant.Outlined" />

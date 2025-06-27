@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.SignalR.Client;
+using MudBlazor;
+using MudBlazor.Services;
 using TVSApp.Web.Handlers;
 using TVSApp.Web.Services;
 using ServiceOrderHandler = TVSApp.Web.Handlers.ServiceOrderHandler;
@@ -32,6 +34,14 @@ public static class BuilderExtension
                 })
                 .WithAutomaticReconnect()
                 .Build();
+        });
+        builder.Services.AddMudServices(config =>
+        {
+            config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.TopRight;
+            config.SnackbarConfiguration.HideTransitionDuration = 100;
+            config.SnackbarConfiguration.ShowTransitionDuration = 100;
+            config.SnackbarConfiguration.VisibleStateDuration = 1000;
+            config.SnackbarConfiguration.ShowCloseIcon = true;
         });
     }
     

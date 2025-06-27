@@ -50,7 +50,7 @@ public partial class SearchPage : ComponentBase
 
     private async Task<IEnumerable<CustomerDto>> SearchCustomers(string? searchTerm, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrWhiteSpace(searchTerm) || searchTerm.Length < 3)
+        if (string.IsNullOrWhiteSpace(searchTerm))
             return Enumerable.Empty<CustomerDto>();
 
         try
