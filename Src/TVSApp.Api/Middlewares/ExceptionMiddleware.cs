@@ -1,6 +1,6 @@
 using System.Text.Json;
-using TVS_App.Application.Commands.CustomerCommands;
 using TVS_App.Application.Exceptions;
+using TVS_App.Domain.Exceptions;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Api.Middlewares;
@@ -30,28 +30,24 @@ public class ExceptionMiddleware
             _logger.LogError(ex, "Ocorreu uma exceção: {Message}", ex.Message);
 
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = 200; // manter 200 para manter o contrato com o frontend
 
-            int code = 500;
+            int code;
             string message;
 
             switch (ex)
             {
-                case CommandException<CreateCustomerCommand> e:
+                case var _ when ex is CommandException:
+                case var _ when ex is ValueObjectException:
+                case var _ when ex is EntityException:
                     code = 400;
-                    message = e.Message;
-                    break;
-
-                case CommandException<UpdateCustomerCommand> e:
-                    code = 400;
-                    message = e.Message;
+                    message = ex.Message;
                     break;
 
                 default:
                     code = 500;
                     message = _env.IsDevelopment()
-                        ? $"{ex.Message}\n{ex.StackTrace}"
-                        : "Ocorreu um erro inesperado.";
+                        ? $"Erro inesperado: {ex.Message}\n{ex.StackTrace}"
+                        : ex.Message;
                     break;
             }
 

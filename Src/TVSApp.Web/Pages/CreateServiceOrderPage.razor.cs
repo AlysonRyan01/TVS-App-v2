@@ -92,13 +92,9 @@ public partial class CreateServiceOrderPage : ComponentBase
                 Snackbar.Add($"Erro: {createResult.Message}", Severity.Error);
             }
         }
-        catch (CommandException<CreateCustomerCommand> ex)
-        {
-            Snackbar.Add($"Validação: {ex.Message}", Severity.Warning);
-        }
         catch (Exception e)
         {
-            Snackbar.Add($"Erro: {e.Message}", Severity.Error);
+            Snackbar.Add(e.Message, Severity.Error);
         }
         finally
         {

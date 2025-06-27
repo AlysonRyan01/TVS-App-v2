@@ -3,7 +3,6 @@ using TVS_App.Domain.Entities;
 using TVS_App.Domain.Repositories.Notifications;
 using TVS_App.Domain.Shared;
 using TVS_App.Infrastructure.Data;
-using TVS_App.Infrastructure.Exceptions;
 
 namespace TVS_App.Infrastructure.Repositories.Notifications;
 
@@ -18,21 +17,14 @@ public class NotificationQueryRepository : INotificationQueryRepository
     
     public async Task<BaseResponse<List<Notification>>> GetUnread()
     {
-        try
-        {
-            var fiveDaysAgo = DateTime.Now.AddDays(-5);
+        var fiveDaysAgo = DateTime.Now.AddDays(-5);
 
-            var unread = await _context.Notifications
-                .AsNoTracking()
-                .Where(n => !n.IsRead && n.CreatedAt >= fiveDaysAgo)
-                .OrderByDescending(n => n.CreatedAt)
-                .ToListAsync();
+        var unread = await _context.Notifications
+            .AsNoTracking()
+            .Where(n => !n.IsRead && n.CreatedAt >= fiveDaysAgo)
+            .OrderByDescending(n => n.CreatedAt)
+            .ToListAsync();
 
-            return new BaseResponse<List<Notification>>(unread, 200, "Notificações não lidas obtidas com sucesso");
-        }
-        catch (Exception ex)
-        {
-            return DbExceptionHandler.Handle<List<Notification>>(ex);
-        }
+        return new BaseResponse<List<Notification>>(unread, 200, "Notificações não lidas obtidas com sucesso");
     }
 }

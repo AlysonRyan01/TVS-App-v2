@@ -1,11 +1,9 @@
 using System.Net.Http.Json;
 using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.ServiceOrderCommands;
-using TVS_App.Application.DTOs;
 using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Shared;
-using TVSApp.Web.Exceptions;
 
 namespace TVSApp.Web.Handlers;
 
@@ -32,9 +30,9 @@ public class ServiceOrderHandler
             var pdfBytes = await response.Content.ReadAsByteArrayAsync();
             return new BaseResponse<byte[]>(pdfBytes, 200, "PDF gerado com sucesso");
         }
-        catch (Exception e)
+        catch
         {
-            return ExceptionHandler.Handle<byte[]>(e);
+            return new BaseResponse<byte[]>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 
@@ -52,9 +50,9 @@ public class ServiceOrderHandler
             var pdfBytes = await response.Content.ReadAsByteArrayAsync();
             return new BaseResponse<byte[]>(pdfBytes, 200, "PDF gerado com sucesso");
         }
-        catch (Exception e)
+        catch
         {
-            return ExceptionHandler.Handle<byte[]>(e);
+            return new BaseResponse<byte[]>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
     
@@ -79,9 +77,9 @@ public class ServiceOrderHandler
             
             return content;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<UpdateServiceOrderResponseDto?>(ex);
+            return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 
@@ -89,7 +87,6 @@ public class ServiceOrderHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<ServiceOrderDto?>>(
                 $"get-service-order-by-id/{command.Id}");
             
@@ -98,9 +95,9 @@ public class ServiceOrderHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<ServiceOrderDto?>(ex);
+            return new BaseResponse<ServiceOrderDto?>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 
@@ -117,9 +114,9 @@ public class ServiceOrderHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<List<ServiceOrderDto>>(ex);
+            return new BaseResponse<List<ServiceOrderDto>>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
     
@@ -136,9 +133,9 @@ public class ServiceOrderHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<List<ServiceOrderDto>>(ex);
+            return new BaseResponse<List<ServiceOrderDto>>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
     
@@ -155,9 +152,9 @@ public class ServiceOrderHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<List<ServiceOrderDto>>(ex);
+            return new BaseResponse<List<ServiceOrderDto>>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
     
@@ -173,9 +170,9 @@ public class ServiceOrderHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<List<ServiceOrderDto>>(ex);
+            return new BaseResponse<List<ServiceOrderDto>>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
     
@@ -194,9 +191,9 @@ public class ServiceOrderHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<List<ServiceOrderDto>>(ex);
+            return new BaseResponse<List<ServiceOrderDto>>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 
@@ -204,7 +201,6 @@ public class ServiceOrderHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
                 $"get-all-service-orders/{command.PageNumber}/{command.PageSize}");
             
@@ -213,9 +209,9 @@ public class ServiceOrderHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<PaginatedResult<ServiceOrderDto?>>(ex);
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 
@@ -223,7 +219,6 @@ public class ServiceOrderHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
                 $"get-pending-estimates-service-orders/{command.PageNumber}/{command.PageSize}");
             
@@ -232,9 +227,9 @@ public class ServiceOrderHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<PaginatedResult<ServiceOrderDto?>>(ex);
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 
@@ -242,7 +237,6 @@ public class ServiceOrderHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
                 $"get-waiting-response-service-orders/{command.PageNumber}/{command.PageSize}");
             
@@ -251,9 +245,9 @@ public class ServiceOrderHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<PaginatedResult<ServiceOrderDto?>>(ex);
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
     
@@ -261,7 +255,6 @@ public class ServiceOrderHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
                 $"get-pending-purchase-service-orders/{command.PageNumber}/{command.PageSize}");
             
@@ -270,9 +263,9 @@ public class ServiceOrderHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<PaginatedResult<ServiceOrderDto?>>(ex);
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
     
@@ -280,7 +273,6 @@ public class ServiceOrderHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
                 $"get-waiting-parts-service-orders/{command.PageNumber}/{command.PageSize}");
             
@@ -289,9 +281,9 @@ public class ServiceOrderHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<PaginatedResult<ServiceOrderDto?>>(ex);
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
     
@@ -299,7 +291,6 @@ public class ServiceOrderHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
                 $"get-waiting-pickup-service-orders/{command.PageNumber}/{command.PageSize}");
             
@@ -308,9 +299,9 @@ public class ServiceOrderHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<PaginatedResult<ServiceOrderDto?>>(ex);
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
     
@@ -318,7 +309,6 @@ public class ServiceOrderHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
                 $"get-delivered-service-orders/{command.PageNumber}/{command.PageSize}");
             
@@ -327,9 +317,9 @@ public class ServiceOrderHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<PaginatedResult<ServiceOrderDto?>>(ex);
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 
@@ -337,7 +327,6 @@ public class ServiceOrderHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.PutAsJsonAsync("add-product-location", command);
             if (!response.IsSuccessStatusCode)
             {
@@ -352,9 +341,9 @@ public class ServiceOrderHandler
             
             return content;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<string?>(ex);
+            return new BaseResponse<string?>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 
@@ -362,7 +351,6 @@ public class ServiceOrderHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.PutAsJsonAsync("add-service-order-estimate", command);
             if (!response.IsSuccessStatusCode)
             {
@@ -377,9 +365,9 @@ public class ServiceOrderHandler
             
             return content;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<ServiceOrderDto?>(ex);
+            return new BaseResponse<ServiceOrderDto?>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
     
@@ -387,7 +375,6 @@ public class ServiceOrderHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.PutAsJsonAsync("add-service-order-approve-estimate", command);
             if (!response.IsSuccessStatusCode)
             {
@@ -402,9 +389,9 @@ public class ServiceOrderHandler
             
             return content;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<ServiceOrderDto?>(ex);
+            return new BaseResponse<ServiceOrderDto?>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
     
@@ -412,7 +399,6 @@ public class ServiceOrderHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.PutAsJsonAsync("add-service-order-reject-estimate", command);
             if (!response.IsSuccessStatusCode)
             {
@@ -427,9 +413,9 @@ public class ServiceOrderHandler
             
             return content;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<ServiceOrderDto?>(ex);
+            return new BaseResponse<ServiceOrderDto?>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 
@@ -437,7 +423,6 @@ public class ServiceOrderHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.PutAsJsonAsync("add-service-order-purchased-part", command);
             if (!response.IsSuccessStatusCode)
             {
@@ -452,9 +437,9 @@ public class ServiceOrderHandler
 
             return content;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<ServiceOrderDto?>(ex);
+            return new BaseResponse<ServiceOrderDto?>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 
@@ -462,7 +447,6 @@ public class ServiceOrderHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.PutAsJsonAsync("add-service-order-repair", command);
             if (!response.IsSuccessStatusCode)
             {
@@ -477,9 +461,9 @@ public class ServiceOrderHandler
 
             return content;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<ServiceOrderDto?>(ex);
+            return new BaseResponse<ServiceOrderDto?>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 
@@ -500,9 +484,9 @@ public class ServiceOrderHandler
 
             return new BaseResponse<byte[]?>(null, 200, "Ordem de serviço entregue com sucesso");
         }
-        catch (Exception e)
+        catch
         {
-            return ExceptionHandler.Handle<byte[]?>(e);
+            return new BaseResponse<byte[]?>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 
@@ -520,9 +504,9 @@ public class ServiceOrderHandler
             var pdfBytes = await response.Content.ReadAsByteArrayAsync();
             return new BaseResponse<byte[]>(pdfBytes, 200, "PDF gerado com sucesso");
         }
-        catch (Exception e)
+        catch
         {
-            return ExceptionHandler.Handle<byte[]>(e);
+            return new BaseResponse<byte[]>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 }
