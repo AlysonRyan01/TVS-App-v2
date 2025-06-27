@@ -37,9 +37,9 @@ public class NotificationHandler
 
             return contentEndpoint;
         }
-        catch (Exception e)
+        catch
         {
-            return new BaseResponse<Notification>(null, 500, e.Message);
+            return new BaseResponse<Notification>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 
@@ -54,9 +54,9 @@ public class NotificationHandler
 
             return response;
         }
-        catch (Exception e)
+        catch
         {
-            return new BaseResponse<List<Notification>>(null, 500, e.Message);
+            return new BaseResponse<List<Notification>>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 
@@ -78,9 +78,9 @@ public class NotificationHandler
             
             return content;
         }
-        catch (Exception e)
+        catch
         {
-            return new BaseResponse<Notification>(null, 500, e.Message);
+            return new BaseResponse<Notification>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 }

@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TVS_App.Api.Endpoints;
+using TVS_App.Api.Middlewares;
+using TVS_App.Api.SignalR;
 using TVS_App.Infrastructure.Data;
 
 namespace TVS_App.Api.Common;
@@ -19,11 +21,19 @@ public static class AppExtensions
         app.MapServiceOrderEndpoints();
         app.MapNotificationEndpoints();
     }
+    
+    public static void AddSignalR(this WebApplication app)
+    {
+        app.MapHub<ServiceOrderHub>("/osHub");
+    }
 
     public static void AddSwagger(this WebApplication app)
     {
-        app.UseSwagger();
-        app.UseSwaggerUI();
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
     }
 
     public static void AddMigrations(this WebApplication app)
@@ -33,5 +43,10 @@ public static class AppExtensions
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDataContext>();
             db.Database.Migrate();
         }
+    }
+
+    public static void AddExceptionMiddleware(this WebApplication app)
+    {
+        app.UseMiddleware<ExceptionMiddleware>();
     }
 }

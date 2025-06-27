@@ -16,7 +16,7 @@ public static class AuthEndpoints
 
             if (user == null || !await userManager.CheckPasswordAsync(user, login.Password))
             {
-                return Results.Unauthorized();
+                return Results.Ok(new BaseResponse<string>(null, 401, "Email ou senha inválidos"));
             }
 
             var token = await jwtService.Generate(user);

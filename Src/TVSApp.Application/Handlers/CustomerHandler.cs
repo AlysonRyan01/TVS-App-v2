@@ -1,7 +1,6 @@
 using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.CustomerCommands;
 using TVS_App.Application.DTOs;
-using TVS_App.Application.Exceptions;
 using TVS_App.Application.Mappers;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Repositories.Customers;
@@ -25,94 +24,74 @@ public class CustomerHandler
 
     public async Task<BaseResponse<CustomerDto?>> CreateCustomerAsync(CreateCustomerCommand command)
     {
-        try
-        {
-            command.Normalize();
-            command.Validate();
+        command.Normalize();
+        command.Validate();
 
-            var name = new Name(command.Name);
-            var address = new Address(
-                command.Street,
-                command.Neighborhood,
-                command.City,
-                command.Number,
-                command.ZipCode,
-                command.State);
-            var phone = new Phone(command.Phone);
-            var phone2 = new Phone(command.Phone2);
-            Email? email = string.IsNullOrWhiteSpace(command.Email) ? null : new Email(command.Email);
-            var cpf = new Cpf(command.Cpf);
+        var name = new Name(command.Name);
+        var address = new Address(
+            command.Street,
+            command.Neighborhood,
+            command.City,
+            command.Number,
+            command.ZipCode,
+            command.State);
+        var phone = new Phone(command.Phone);
+        var phone2 = new Phone(command.Phone2);
+        Email? email = string.IsNullOrWhiteSpace(command.Email) ? null : new Email(command.Email);
+        var cpf = new Cpf(command.Cpf);
 
-            var customer = new Customer(name, address, phone, phone2, email, cpf);
+        var customer = new Customer(name, address, phone, phone2, email, cpf);
 
-            await _customerCommandRepository.CreateAsync(customer);
+        await _customerCommandRepository.CreateAsync(customer);
             
-            var dto = CustomerMapper.MapToDto(customer);
+        var dto = CustomerMapper.MapToDto(customer);
             
-            return new BaseResponse<CustomerDto?>(dto, 200, "Cliente cadastrado com sucesso");
-        }
-        catch (CommandException<CreateCustomerCommand> ex)
-        {
-            return new BaseResponse<CustomerDto?>(null, 400, $"Erro de validação: {ex.Message}");
-        }
+        return new BaseResponse<CustomerDto?>(dto, 200, "Cliente cadastrado com sucesso");
     }
 
     public async Task<BaseResponse<CustomerDto?>> UpdateCustomerAsync(UpdateCustomerCommand command)
     {
-        try
-        {
-            command.Normalize();
-            command.Validate();
+        command.Normalize();
+        command.Validate();
 
-            var existingCustomer = await _customerQueryRepository.GetByIdAsync(command.Id);
+        var existingCustomer = await _customerQueryRepository.GetByIdAsync(command.Id);
 
-            if (!existingCustomer.IsSuccess || existingCustomer.Data is null)
-                return new BaseResponse<CustomerDto?>(null, 404, "Cliente não encontrado.");
+        if (!existingCustomer.IsSuccess || existingCustomer.Data is null)
+            return new BaseResponse<CustomerDto?>(null, 404, "Cliente não encontrado.");
 
-            var customer = existingCustomer.Data;
+        var customer = existingCustomer.Data;
 
-            customer.UpdateName(command.Name);
-            customer.UpdateAdress(command.Street,
-                command.Neighborhood,
-                command.City,
-                command.Number,
-                command.ZipCode,
-                command.State);
-            customer.UpdatePhone(command.Phone, command.Phone2);
-            customer.UpdateEmail(command.Email);
-            customer.UpdateCpf(command.Cpf);
+        customer.UpdateName(command.Name);
+        customer.UpdateAdress(
+            command.Street,
+            command.Neighborhood,
+            command.City,
+            command.Number,
+            command.ZipCode,
+            command.State);
+        customer.UpdatePhone(command.Phone, command.Phone2);
+        customer.UpdateEmail(command.Email);
+        customer.UpdateCpf(command.Cpf);
 
-            await _customerCommandRepository.UpdateAsync(customer);
+        await _customerCommandRepository.UpdateAsync(customer);
             
-            var dto = CustomerMapper.MapToDto(customer);
+        var dto = CustomerMapper.MapToDto(customer);
             
-            return new BaseResponse<CustomerDto?>(dto, 200, "Cliente atualizado com sucesso");
-        }
-        catch (CommandException<UpdateCustomerCommand> ex)
-        {
-            return new BaseResponse<CustomerDto?>(null, 400, $"Erro de validação: {ex.Message}");
-        }
+        return new BaseResponse<CustomerDto?>(dto, 200, "Cliente atualizado com sucesso");
     }
 
     public async Task<BaseResponse<CustomerDto?>> GetCustomerByIdAsync(GetCustomerByIdCommand command)
     {
-        try
-        {
-            command.Validate();
+        command.Validate();
 
-            var response = await _customerQueryRepository.GetByIdAsync(command.Id);
+        var response = await _customerQueryRepository.GetByIdAsync(command.Id);
             
-            if (!response.IsSuccess || response.Data == null)
-                return new BaseResponse<CustomerDto?>(null, response.Code, response.Message);
+        if (!response.IsSuccess || response.Data == null)
+            return new BaseResponse<CustomerDto?>(null, response.Code, response.Message);
             
-            var dto = CustomerMapper.MapToDto(response.Data);
+        var dto = CustomerMapper.MapToDto(response.Data);
             
-            return new BaseResponse<CustomerDto?>(dto, 200, "Cliente obtido com sucesso!");
-        }
-        catch (CommandException<GetCustomerByIdCommand> ex)
-        {
-            return new BaseResponse<CustomerDto?>(null, 400, $"Erro de validação: {ex.Message}");
-        }
+        return new BaseResponse<CustomerDto?>(dto, 200, "Cliente obtido com sucesso!");
     }
     
     public async Task<BaseResponse<List<CustomerDto>>> GetCustomerByNameAsync(string name)
@@ -129,31 +108,23 @@ public class CustomerHandler
 
     public async Task<BaseResponse<PaginatedResult<CustomerDto?>>> GetAllCustomersAsync(PaginationCommand command)
     {
-        try
-        {
-            command.Validate();
+        command.Validate();
 
-            var response = await _customerQueryRepository.GetAllAsync(command.PageNumber, command.PageSize);
+        var response = await _customerQueryRepository.GetAllAsync(command.PageNumber, command.PageSize);
             
-            if (!response.IsSuccess || response.Data == null || !response.Data.Items.Any())
-                return new BaseResponse<PaginatedResult<CustomerDto?>>(null, 404, response.Message);
+        if (!response.IsSuccess || response.Data == null || !response.Data.Items.Any())
+            return new BaseResponse<PaginatedResult<CustomerDto?>>(null, 404, response.Message);
             
-            var dto = CustomerMapper.MapToDtoList(response.Data.Items!);
+        var dto = CustomerMapper.MapToDtoList(response.Data.Items!);
             
-            var paginatedResult = new PaginatedResult<CustomerDto?>(
-                dto,
-                response.Data.TotalCount,
-                response.Data.PageNumber,
-                response.Data.PageSize,
-                response.Data.TotalPages);
+        var paginatedResult = new PaginatedResult<CustomerDto?>(
+            dto,
+            response.Data.TotalCount,
+            response.Data.PageNumber,
+            response.Data.PageSize,
+            response.Data.TotalPages);
             
-            return new BaseResponse<PaginatedResult<CustomerDto?>>(paginatedResult, 200, "Clientes obtidos com sucesso!");
-
-        }
-        catch (CommandException<PaginationCommand> ex)
-        {
-            return new BaseResponse<PaginatedResult<CustomerDto?>>(null, 400, $"Erro de validação: {ex.Message}");
-        }
+        return new BaseResponse<PaginatedResult<CustomerDto?>>(paginatedResult, 200, "Clientes obtidos com sucesso!");
     }
 }
 

@@ -41,22 +41,24 @@ else
                     AdornmentIcon="@Icons.Material.Filled.Lock"
                     Margin="Margin.Dense"/>
 
-                <div class="flex mt-15 mb-17">
+                <div class="flex justify-center mt-15 mb-17">
                     @if (LoginIsBusy)
                     {
                         <MudProgressCircular Color="Color.Info" Class="align-self-center" Indeterminate="true"/>
                     }
                     else
                     {
-                        <MudButton
-                            ButtonType="ButtonType.Submit"
-                            Variant="Variant.Filled"
-                            Color="Color.Primary"
-                            FullWidth="true"
-                            StartIcon="@Icons.Material.Outlined.Login"
-                            IconColor="Color.Secondary"
-                            Size="Size.Large"
-                            Style="width: 250px;"><span style="color: white;">Entrar</span></MudButton>
+                        <div class="flex items-center w-full mt-6">
+                            <MudButton
+                                ButtonType="ButtonType.Submit"
+                                Variant="Variant.Filled"
+                                Color="Color.Primary"
+                                StartIcon="@Icons.Material.Outlined.Login"
+                                Size="Size.Large"
+                                Class="w-full max-w-[250px]">
+                                <span class="text-white">Entrar</span>
+                            </MudButton>
+                        </div>
                     }
                 </div>
             </EditForm>

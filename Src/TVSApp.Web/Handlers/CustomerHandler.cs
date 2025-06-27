@@ -3,8 +3,6 @@ using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.CustomerCommands;
 using TVS_App.Application.DTOs;
 using TVS_App.Domain.Shared;
-using TVSApp.Web.Exceptions;
-using Exception = System.Exception;
 
 namespace TVSApp.Web.Handlers;
 
@@ -21,7 +19,6 @@ public class CustomerHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.PostAsJsonAsync("create-customer", command);
             if (!response.IsSuccessStatusCode)
             {
@@ -36,9 +33,9 @@ public class CustomerHandler
 
             return content;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<CustomerDto?>(ex);
+            return new BaseResponse<CustomerDto?>(null, 500, "Erro ao se conectar com o servidor.");
         }
     }
 
@@ -46,7 +43,6 @@ public class CustomerHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.PutAsJsonAsync("update-customer", command);
             if (!response.IsSuccessStatusCode)
             {
@@ -61,9 +57,9 @@ public class CustomerHandler
             
             return content;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<CustomerDto?>(ex);
+            return new BaseResponse<CustomerDto?>(null, 500, "Erro ao se conectar com o servidor.");
         }
     }
 
@@ -71,7 +67,6 @@ public class CustomerHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<CustomerDto?>>(
                 $"get-customer-by-id/{command.Id}");
             
@@ -80,9 +75,9 @@ public class CustomerHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<CustomerDto?>(ex);
+            return new BaseResponse<CustomerDto?>(null, 500, "Erro ao se conectar com o servidor.");
         }
     }
     
@@ -101,9 +96,9 @@ public class CustomerHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<List<CustomerDto>>(ex);
+            return new BaseResponse<List<CustomerDto>>(null, 500, "Erro ao se conectar com o servidor.");
         }
     }
 
@@ -111,7 +106,6 @@ public class CustomerHandler
     {
         try
         {
-            command.Validate();
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<CustomerDto?>>>(
                 $"get-all-customers/{command.PageSize}/{command.PageNumber}");
             
@@ -120,9 +114,9 @@ public class CustomerHandler
             
             return response;
         }
-        catch (Exception ex)
+        catch
         {
-            return ExceptionHandler.Handle<PaginatedResult<CustomerDto?>>(ex);
+            return new BaseResponse<PaginatedResult<CustomerDto?>>(null, 500, "Erro ao se conectar com o servidor.");
         }
     }
 }

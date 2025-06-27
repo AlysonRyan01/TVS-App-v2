@@ -65,7 +65,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
             var baseResponse = await response.Content.ReadFromJsonAsync<BaseResponse<string>>();
             if (baseResponse == null || string.IsNullOrWhiteSpace(baseResponse.Data))
-                return new BaseResponse<string>("Token inválido", 500, "Resposta de login inválida");
+                return new BaseResponse<string>("Token inválido", 500, baseResponse?.Message ?? "Falha no login");
 
             var jwtToken = baseResponse.Data;
             
