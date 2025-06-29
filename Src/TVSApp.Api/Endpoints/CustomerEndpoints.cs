@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.SignalR;
 using TVS_App.Api.SignalR;
 using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.CustomerCommands;
+using TVS_App.Application.DTOs;
 using TVS_App.Application.Handlers;
+using TVS_App.Domain.Shared;
 
 namespace TVS_App.Api.Endpoints;
 
@@ -23,7 +25,14 @@ public static class CustomerEndpoints
             await hubContext.Clients.All.SendAsync("Atualizar", createResult.Message);
 
             return Results.Ok(createResult);
-        }).WithTags("Customer").RequireAuthorization();
+        })
+        .WithTags("Customer")
+        .WithName("CreateCustomer")
+        .WithSummary("Cria um novo cliente no sistema.")
+        .WithDescription("Recebe os dados do cliente via comando (CreateCustomerCommand), " + "valida, normaliza e envia para o handler.")
+        .Produces<BaseResponse<string>>(StatusCodes.Status200OK, "application/json")
+        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
+        .RequireAuthorization();
 
         app.MapPut("/update-customer", async (CustomerHandler handler, UpdateCustomerCommand command, IHubContext<ServiceOrderHub> hubContext) =>
         {
@@ -37,7 +46,14 @@ public static class CustomerEndpoints
             await hubContext.Clients.All.SendAsync("Atualizar", updateResult.Message);
 
             return Results.Ok(updateResult);
-        }).WithTags("Customer").RequireAuthorization();
+        })
+        .WithTags("Customer")
+        .WithName("UpdateCustomer")
+        .WithSummary("Atualiza os dados de um cliente existente.")
+        .WithDescription("Recebe um comando do tipo UpdateCustomerCommand, valida e normaliza os dados")
+        .Produces<BaseResponse<string>>(StatusCodes.Status200OK, "application/json")
+        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
+        .RequireAuthorization();
 
         app.MapGet("/get-customer-by-id/{id}", async (CustomerHandler handler, [FromRoute] long id) =>
         {
@@ -49,7 +65,15 @@ public static class CustomerEndpoints
                 return Results.Ok(getResult);
 
             return Results.Ok(getResult);
-        }).WithTags("Customer").RequireAuthorization();
+        })
+        .WithTags("Customer")
+        .WithName("GetCustomerById")
+        .WithSummary("Busca os dados de um cliente por ID.")
+        .WithDescription("Recebe o ID do cliente via rota, cria um comando de consulta, valida o comando e retorna os dados do cliente. "
+                         + "Caso não encontre, retorna uma resposta genérica informando o motivo.")
+        .Produces<BaseResponse<CustomerDto>>(StatusCodes.Status200OK, "application/json")
+        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
+        .RequireAuthorization();
         
         app.MapGet("/get-customer-by-name", async (CustomerHandler handler, string name) =>
         {
@@ -58,7 +82,14 @@ public static class CustomerEndpoints
                 
             var customers = await handler.GetCustomerByNameAsync(name);
             return Results.Ok(customers);
-        }).WithTags("Customer").RequireAuthorization();
+        })
+        .WithTags("Customer")
+        .WithName("GetCustomerByName")
+        .WithSummary("Busca clientes pelo nome.")
+        .WithDescription("Recebe o nome como parâmetro de query string, e retorna uma lista de clientes com nomes semelhantes. "
+                         + "Caso o nome não seja informado, retorna uma resposta vazia.")
+        .Produces<IEnumerable<CustomerDto>>(StatusCodes.Status200OK, "application/json")
+        .RequireAuthorization();
         
         app.MapGet("/get-all-customers/{pageSize}/{pageNumber}", async (
             CustomerHandler handler,
@@ -73,6 +104,14 @@ public static class CustomerEndpoints
                 return Results.Ok(getAllResult);
 
             return Results.Ok(getAllResult);
-        }).WithTags("Customer").RequireAuthorization();
+        })
+        .WithTags("Customer")
+        .WithName("GetAllCustomers")
+        .WithSummary("Busca todos os clientes com paginação.")
+        .WithDescription("Recebe o número da página e a quantidade de itens por página na URL. "
+                         + "Valida os dados e retorna uma lista paginada de clientes.")
+        .Produces<BaseResponse<IEnumerable<CustomerDto>>>(StatusCodes.Status200OK, "application/json")
+        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
+        .RequireAuthorization();
     }
 }

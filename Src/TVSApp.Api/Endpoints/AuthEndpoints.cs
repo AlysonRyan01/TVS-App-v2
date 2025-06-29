@@ -22,7 +22,11 @@ public static class AuthEndpoints
             var token = await jwtService.Generate(user);
 
             return Results.Ok(new BaseResponse<string>(token, 200, "Token enviado com sucesso!"));
-        }).WithTags("Auth");
+        }).WithTags("Auth")
+        .WithSummary("Autentica um usuário e gera um token JWT.")
+        .WithDescription("Recebe email e senha, verifica as credenciais e retorna um token JWT para autenticação.")
+        .Produces<BaseResponse<string>>(StatusCodes.Status200OK)
+        .Produces<BaseResponse<string>>(StatusCodes.Status401Unauthorized);
 
         app.MapPost("/register", async (LoginRequest login, JwtService jwtService, UserManager<User> userManager) =>
         {
@@ -49,7 +53,14 @@ public static class AuthEndpoints
             var token = await jwtService.Generate(user);
 
             return Results.Ok(new BaseResponse<string>(token, 200, "Usuário criado com sucesso!"));
-        }).WithTags("Auth").RequireAuthorization();
+        }).WithTags("Auth")
+        .WithSummary("Registra um novo usuário e retorna um token JWT ( Utilizado apenas por internos da empresa, por isso requer autorização ).")
+        .WithDescription("Cria uma nova conta de usuário com base no email e senha fornecidos. "
+                         + "Se o usuário já existir ou ocorrer erro na criação, retorna uma mensagem de erro.")
+        .Produces<BaseResponse<string>>(StatusCodes.Status200OK, "application/json")
+        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
+        .Produces<BaseResponse<IEnumerable<string>>>(StatusCodes.Status500InternalServerError, "application/json")
+        .RequireAuthorization();
     }
 }
     

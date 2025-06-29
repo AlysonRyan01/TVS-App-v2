@@ -20,6 +20,9 @@
     <RootNamespace>TVS_App.Api</RootNamespace>
     <PublishSingleFile>false</PublishSingleFile>
     <PackageId>TVSApp.Api</PackageId>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
-
+  
 </Project>
