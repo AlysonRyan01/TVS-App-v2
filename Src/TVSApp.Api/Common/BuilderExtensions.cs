@@ -10,7 +10,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuestPDF.Infrastructure;
 using TVS_App.Application.Handlers;
-using TVS_App.Application.Interfaces;
+using TVS_App.Application.Interfaces.Handlers;
+using TVS_App.Application.Interfaces.Services;
 using TVS_App.Domain.Repositories.Customers;
 using TVS_App.Domain.Repositories.Notifications;
 using TVS_App.Domain.Repositories.ServiceOrders;
@@ -64,9 +65,9 @@ public static class BuilderExtensions
         builder.Services.AddScoped<INotificationCommandRepository, NotificationCommandRepository>();
         builder.Services.AddScoped<INotificationQueryRepository, NotificationQueryRepository>();
         builder.Services.AddTransient<IGenerateServiceOrderPdf, GenerateServiceOrderPdfService>();
-        builder.Services.AddScoped<CustomerHandler>();
-        builder.Services.AddScoped<ServiceOrderHandler>();
-        builder.Services.AddScoped<NotificationHandler>();
+        builder.Services.AddScoped<ICustomerHandler, CustomerHandler>();
+        builder.Services.AddScoped<IServiceOrderHandler, ServiceOrderHandler>();
+        builder.Services.AddScoped<INotificationHandler, NotificationHandler>();
         builder.Services.AddHttpClient<IWhatsappService, WhatsappService>();
         builder.Services.Configure<EvolutionApiSettings>(builder.Configuration.GetSection("EvolutionApiSettings"));
     }

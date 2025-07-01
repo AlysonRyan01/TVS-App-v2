@@ -1,7 +1,7 @@
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Shared;
 
-namespace TVS_App.Application.Interfaces;
+namespace TVS_App.Application.Interfaces.Services;
 
 public interface IGenerateServiceOrderPdf
 {

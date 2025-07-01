@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.SignalR;
 using TVS_App.Api.SignalR;
 using TVS_App.Application.DTOs;
-using TVS_App.Application.Handlers;
+using TVS_App.Application.Interfaces.Handlers;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Shared;
 
@@ -11,7 +11,7 @@ public static class NotificationEndpoints
 {
     public static void MapNotificationEndpoints(this WebApplication app)
     {
-        app.MapPost("/notifications", async (NotificationHandler handler, CreateNotification dto, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPost("/notifications", async (INotificationHandler handler, CreateNotification dto, IHubContext<ServiceOrderHub> hubContext) =>
         {
             var result = await handler.CreateNotification(dto.Title, dto.Message);
             
@@ -26,7 +26,7 @@ public static class NotificationEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status200OK, "application/json")
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json");
 
-        app.MapGet("/notifications/unread", async (NotificationHandler handler) =>
+        app.MapGet("/notifications/unread", async (INotificationHandler handler) =>
         {
             var result = await handler.GetUnreadNotifications();
             return Results.Ok(result);
@@ -37,7 +37,7 @@ public static class NotificationEndpoints
         .WithDescription("Retorna uma lista de notificações que ainda não foram marcadas como lidas pelo usuário.")
         .Produces<BaseResponse<IEnumerable<Notification>>>(StatusCodes.Status200OK, "application/json");
 
-        app.MapPut("/notifications/{id}/read", async (NotificationHandler handler, long id, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/notifications/{id}/read", async (INotificationHandler handler, long id, IHubContext<ServiceOrderHub> hubContext) =>
         {
             var result = await handler.MarkNotificationAsRead(id);
             

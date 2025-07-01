@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using TVS_App.Application.Interfaces;
+using TVS_App.Application.Interfaces.Services;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Shared;
 using TVS_App.Infrastructure.Configurations;

@@ -1,6 +1,7 @@
 using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.CustomerCommands;
 using TVS_App.Application.DTOs;
+using TVS_App.Application.Interfaces.Handlers;
 using TVS_App.Application.Mappers;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Repositories.Customers;
@@ -9,7 +10,7 @@ using TVS_App.Domain.ValueObjects.Customer;
 
 namespace TVS_App.Application.Handlers;
 
-public class CustomerHandler
+public class CustomerHandler : ICustomerHandler
 {
     private readonly ICustomerCommandRepository _customerCommandRepository;
     private readonly ICustomerQueryRepository _customerQueryRepository;

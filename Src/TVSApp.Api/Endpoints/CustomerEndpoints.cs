@@ -4,7 +4,7 @@ using TVS_App.Api.SignalR;
 using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.CustomerCommands;
 using TVS_App.Application.DTOs;
-using TVS_App.Application.Handlers;
+using TVS_App.Application.Interfaces.Handlers;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Api.Endpoints;
@@ -13,7 +13,7 @@ public static class CustomerEndpoints
 {
     public static void MapCustomerEndpoints(this WebApplication app)
     {
-        app.MapPost("/create-customer", async (CustomerHandler handler, CreateCustomerCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPost("/create-customer", async (ICustomerHandler handler, CreateCustomerCommand command, IHubContext<ServiceOrderHub> hubContext) =>
         {
             command.Normalize();
             command.Validate();
@@ -34,7 +34,7 @@ public static class CustomerEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/update-customer", async (CustomerHandler handler, UpdateCustomerCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/update-customer", async (ICustomerHandler handler, UpdateCustomerCommand command, IHubContext<ServiceOrderHub> hubContext) =>
         {
             command.Normalize();
             command.Validate();
@@ -55,7 +55,7 @@ public static class CustomerEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-customer-by-id/{id}", async (CustomerHandler handler, [FromRoute] long id) =>
+        app.MapGet("/get-customer-by-id/{id}", async (ICustomerHandler handler, [FromRoute] long id) =>
         {
             var command = new GetCustomerByIdCommand { Id = id };
             command.Validate();
@@ -75,7 +75,7 @@ public static class CustomerEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
         
-        app.MapGet("/get-customer-by-name", async (CustomerHandler handler, string name) =>
+        app.MapGet("/get-customer-by-name", async (ICustomerHandler handler, string name) =>
         {
             if (string.IsNullOrEmpty(name))
                 return Results.Ok();
@@ -92,9 +92,9 @@ public static class CustomerEndpoints
         .RequireAuthorization();
         
         app.MapGet("/get-all-customers/{pageSize}/{pageNumber}", async (
-            CustomerHandler handler,
-            [FromRoute] int pageSize,
-            [FromRoute] int pageNumber) =>
+                ICustomerHandler handler,
+                [FromRoute] int pageSize,
+                [FromRoute] int pageNumber) =>
         {
             var command = new PaginationCommand{PageNumber = pageNumber,  PageSize = pageSize};
             command.Validate();

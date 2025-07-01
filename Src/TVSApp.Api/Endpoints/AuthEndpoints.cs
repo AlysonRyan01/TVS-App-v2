@@ -25,7 +25,7 @@ public static class AuthEndpoints
         }).WithTags("Auth")
         .WithSummary("Autentica um usuário e gera um token JWT.")
         .WithDescription("Recebe email e senha, verifica as credenciais e retorna um token JWT para autenticação.")
-        .Produces<BaseResponse<string>>(StatusCodes.Status200OK)
+        .Produces<BaseResponse<string>>()
         .Produces<BaseResponse<string>>(StatusCodes.Status401Unauthorized);
 
         app.MapPost("/register", async (LoginRequest login, JwtService jwtService, UserManager<User> userManager) =>

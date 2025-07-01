@@ -4,7 +4,7 @@ using TVS_App.Api.SignalR;
 using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.ServiceOrderCommands;
 using TVS_App.Application.DTOs.ServiceOrder;
-using TVS_App.Application.Handlers;
+using TVS_App.Application.Interfaces.Handlers;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Shared;
 
@@ -14,7 +14,7 @@ public static class ServiceOrderEndpoints
 {
     public static void MapServiceOrderEndpoints(this WebApplication app)
     {
-        app.MapPost("/create-service-order", async (ServiceOrderHandler handler, CreateServiceOrderCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPost("/create-service-order", async (IServiceOrderHandler handler, CreateServiceOrderCommand command, IHubContext<ServiceOrderHub> hubContext) =>
         {
             command.Validate();
 
@@ -36,7 +36,7 @@ public static class ServiceOrderEndpoints
         .Produces<FileResult>(StatusCodes.Status200OK, "application/pdf")
         .RequireAuthorization();
         
-        app.MapPost("/create-sales-service-order", async (ServiceOrderHandler handler, CreateSalesServiceOrderCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPost("/create-sales-service-order", async (IServiceOrderHandler handler, CreateSalesServiceOrderCommand command, IHubContext<ServiceOrderHub> hubContext) =>
         {
             command.Validate();
 
@@ -57,7 +57,7 @@ public static class ServiceOrderEndpoints
         .Produces<FileResult>(StatusCodes.Status200OK, "application/pdf")
         .RequireAuthorization();
 
-        app.MapPut("/edit-service-order", async ([FromServices]ServiceOrderHandler handler, [FromBody]EditServiceOrderCommand command, [FromServices]IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/edit-service-order", async ([FromServices]IServiceOrderHandler handler, [FromBody]EditServiceOrderCommand command, [FromServices]IHubContext<ServiceOrderHub> hubContext) =>
         {
             var editOrderResult = await handler.EditServiceOrderAsync(command);
             if (!editOrderResult.IsSuccess)
@@ -76,7 +76,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-service-order-by-id/{id}", async (ServiceOrderHandler handler, long id) =>
+        app.MapGet("/get-service-order-by-id/{id}", async (IServiceOrderHandler handler, long id) =>
         {
             var command = new GetServiceOrderByIdCommand { Id = id };
             command.Validate();
@@ -96,7 +96,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-service-orders-by-customer-name", async (ServiceOrderHandler handler, [FromQuery] string name) =>
+        app.MapGet("/get-service-orders-by-customer-name", async (IServiceOrderHandler handler, [FromQuery] string name) =>
         {
             var getOrderResult = await handler.GetServiceOrdersByCustomerName(name);
             if (!getOrderResult.IsSuccess)
@@ -112,7 +112,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
         
-        app.MapGet("/get-service-orders-by-serial-number", async (ServiceOrderHandler handler, [FromQuery] string serialNumber) =>
+        app.MapGet("/get-service-orders-by-serial-number", async (IServiceOrderHandler handler, [FromQuery] string serialNumber) =>
         {
             var getOrderResult = await handler
                 .GetServiceOrdersBySerialNumberAsync(
@@ -130,7 +130,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
         
-        app.MapGet("/get-service-orders-by-model", async (ServiceOrderHandler handler, [FromQuery] string model) =>
+        app.MapGet("/get-service-orders-by-model", async (IServiceOrderHandler handler, [FromQuery] string model) =>
         {
             var getOrderResult = await handler
                 .GetServiceOrdersByModelAsync(
@@ -149,7 +149,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
         
-        app.MapGet("/get-service-orders-by-enterprise", async (ServiceOrderHandler handler, [FromQuery] EEnterprise enterprise) =>
+        app.MapGet("/get-service-orders-by-enterprise", async (IServiceOrderHandler handler, [FromQuery] EEnterprise enterprise) =>
         {
             var getOrderResult = await handler
                 .GetServiceOrdersByEnterpriseAsync(enterprise);
@@ -168,7 +168,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
         
-        app.MapGet("/get-service-orders-by-date", async (ServiceOrderHandler handler, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate) =>
+        app.MapGet("/get-service-orders-by-date", async (IServiceOrderHandler handler, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate) =>
         {
             var getOrderResult = await handler
                 .GetServiceOrdersByDateAsync(startDate, endDate);
@@ -186,7 +186,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-service-order-for-customer/{id}/{code}", async (ServiceOrderHandler handler, long id, string code) =>
+        app.MapGet("/get-service-order-for-customer/{id}/{code}", async (IServiceOrderHandler handler, long id, string code) =>
         {
             var command = new GetServiceOrdersForCustomerCommand { ServiceOrderId = id, SecurityCode = code };
             command.Validate();
@@ -204,7 +204,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<ServiceOrderDto>>(StatusCodes.Status200OK, "application/json")
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json");
 
-        app.MapGet("/get-all-service-orders/{pageNumber}/{pageSize}", async (ServiceOrderHandler handler, int pageNumber, int pageSize) =>
+        app.MapGet("/get-all-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
         {
             var command = new PaginationCommand { PageNumber = pageNumber, PageSize = pageSize };
             command.Validate();
@@ -223,7 +223,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-pending-estimates-service-orders/{pageNumber}/{pageSize}", async (ServiceOrderHandler handler, int pageNumber, int pageSize) =>
+        app.MapGet("/get-pending-estimates-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
         {
             var command = new PaginationCommand { PageNumber = pageNumber, PageSize = pageSize };
             command.Validate();
@@ -242,7 +242,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-waiting-response-service-orders/{pageNumber}/{pageSize}", async (ServiceOrderHandler handler, int pageNumber, int pageSize) =>
+        app.MapGet("/get-waiting-response-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
         {
             var command = new PaginationCommand { PageNumber = pageNumber, PageSize = pageSize };
             command.Validate();
@@ -261,7 +261,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-pending-purchase-service-orders/{pageNumber}/{pageSize}", async (ServiceOrderHandler handler, int pageNumber, int pageSize) =>
+        app.MapGet("/get-pending-purchase-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
         {
             var command = new PaginationCommand { PageNumber = pageNumber, PageSize = pageSize };
             command.Validate();
@@ -280,7 +280,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-waiting-parts-service-orders/{pageNumber}/{pageSize}", async (ServiceOrderHandler handler, int pageNumber, int pageSize) =>
+        app.MapGet("/get-waiting-parts-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
         {
             var command = new PaginationCommand { PageNumber = pageNumber, PageSize = pageSize };
             command.Validate();
@@ -299,7 +299,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-waiting-pickup-service-orders/{pageNumber}/{pageSize}", async (ServiceOrderHandler handler, int pageNumber, int pageSize) =>
+        app.MapGet("/get-waiting-pickup-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
         {
             var command = new PaginationCommand { PageNumber = pageNumber, PageSize = pageSize };
             command.Validate();
@@ -318,7 +318,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-delivered-service-orders/{pageNumber}/{pageSize}", async (ServiceOrderHandler handler, int pageNumber, int pageSize) =>
+        app.MapGet("/get-delivered-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
         {
             var command = new PaginationCommand { PageNumber = pageNumber, PageSize = pageSize };
             command.Validate();
@@ -337,7 +337,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/add-product-location", async (ServiceOrderHandler handler, AddProductLocationCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-product-location", async (IServiceOrderHandler handler, AddProductLocationCommand command, IHubContext<ServiceOrderHub> hubContext) =>
         {
             command.Validate();
 
@@ -357,7 +357,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/add-service-order-estimate", async (ServiceOrderHandler handler,NotificationHandler notificationhandler,AddServiceOrderEstimateCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-service-order-estimate", async (IServiceOrderHandler handler, INotificationHandler notificationhandler,AddServiceOrderEstimateCommand command, IHubContext<ServiceOrderHub> hubContext) =>
         {
             command.Validate();
 
@@ -379,7 +379,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/add-service-order-approve-estimate", async (ServiceOrderHandler handler, GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-service-order-approve-estimate", async (IServiceOrderHandler handler, GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
         {
             command.Validate();
 
@@ -399,7 +399,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/add-service-order-reject-estimate", async (ServiceOrderHandler handler, GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-service-order-reject-estimate", async (IServiceOrderHandler handler, GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
         {
             command.Validate();
 
@@ -419,7 +419,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/add-service-order-purchased-part", async (ServiceOrderHandler handler, GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-service-order-purchased-part", async (IServiceOrderHandler handler, GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
         {
             command.Validate();
 
@@ -439,7 +439,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/add-service-order-repair", async (ServiceOrderHandler handler,NotificationHandler notificationhandler ,GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-service-order-repair", async (IServiceOrderHandler handler,INotificationHandler notificationhandler ,GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
         {
             command.Validate();
 
@@ -461,7 +461,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/add-service-order-delivery", async (ServiceOrderHandler handler, GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-service-order-delivery", async (IServiceOrderHandler handler, GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
         {
             command.Validate();
 
@@ -485,7 +485,7 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/regenerate-service-order-pdf", async (ServiceOrderHandler handler, GetServiceOrderByIdCommand command) =>
+        app.MapPut("/regenerate-service-order-pdf", async (IServiceOrderHandler handler, GetServiceOrderByIdCommand command) =>
         {
             command.Validate();
 

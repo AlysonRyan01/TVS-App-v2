@@ -2,7 +2,8 @@ using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.ServiceOrderCommands;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.DTOs.ServiceOrder;
-using TVS_App.Application.Interfaces;
+using TVS_App.Application.Interfaces.Handlers;
+using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Mappers;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Enums;
@@ -13,7 +14,7 @@ using TVS_App.Domain.ValueObjects.ServiceOrder;
 
 namespace TVS_App.Application.Handlers;
 
-public class ServiceOrderHandler
+public class ServiceOrderHandler : IServiceOrderHandler
 {
     private readonly IServiceOrderCommandRepository _serviceOrderCommandRepository;
     private readonly IServiceOrderQueryRepository _serviceOrderQueryRepository;

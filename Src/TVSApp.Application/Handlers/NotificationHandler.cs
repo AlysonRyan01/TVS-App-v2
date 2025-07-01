@@ -1,10 +1,11 @@
+using TVS_App.Application.Interfaces.Handlers;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Repositories.Notifications;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Handlers;
 
-public class NotificationHandler
+public class NotificationHandler : INotificationHandler
 {
     private readonly INotificationCommandRepository _notificationCommandRepository;
     private readonly INotificationQueryRepository _notificationQueryRepository;
