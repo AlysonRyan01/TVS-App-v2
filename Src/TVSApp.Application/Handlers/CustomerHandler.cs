@@ -3,6 +3,8 @@ using TVS_App.Application.Commands.CustomerCommands;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.Interfaces.Handlers;
 using TVS_App.Application.Mappers;
+using TVS_App.Application.Queries;
+using TVS_App.Application.Queries.CustomersQueries;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Repositories.Customers;
 using TVS_App.Domain.Shared;
@@ -81,11 +83,11 @@ public class CustomerHandler : ICustomerHandler
         return new BaseResponse<CustomerDto?>(dto, 200, "Cliente atualizado com sucesso");
     }
 
-    public async Task<BaseResponse<CustomerDto?>> GetCustomerByIdAsync(GetCustomerByIdCommand command)
+    public async Task<BaseResponse<CustomerDto?>> GetCustomerByIdAsync(GetCustomerByIdQuery query)
     {
-        command.Validate();
+        query.Validate();
 
-        var response = await _customerQueryRepository.GetByIdAsync(command.Id);
+        var response = await _customerQueryRepository.GetByIdAsync(query.Id);
             
         if (!response.IsSuccess || response.Data == null)
             return new BaseResponse<CustomerDto?>(null, response.Code, response.Message);
@@ -107,11 +109,11 @@ public class CustomerHandler : ICustomerHandler
         return new BaseResponse<List<CustomerDto>>(dto, 200, customersResponse.Message);
     }
 
-    public async Task<BaseResponse<PaginatedResult<CustomerDto?>>> GetAllCustomersAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<CustomerDto?>>> GetAllCustomersAsync(PaginationQuery query)
     {
-        command.Validate();
+        query.Validate();
 
-        var response = await _customerQueryRepository.GetAllAsync(command.PageNumber, command.PageSize);
+        var response = await _customerQueryRepository.GetAllAsync(query.PageNumber, query.PageSize);
             
         if (!response.IsSuccess || response.Data == null || !response.Data.Items.Any())
             return new BaseResponse<PaginatedResult<CustomerDto?>>(null, 404, response.Message);

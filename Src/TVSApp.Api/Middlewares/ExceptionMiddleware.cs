@@ -37,6 +37,7 @@ public class ExceptionMiddleware
             switch (ex)
             {
                 case var _ when ex is CommandException:
+                case var _ when ex is QueryException:
                 case var _ when ex is ValueObjectException:
                 case var _ when ex is EntityException:
                     code = 400;

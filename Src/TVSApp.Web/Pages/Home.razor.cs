@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using MudBlazor;
 using TVS_App.Application.Commands;
 using TVS_App.Application.DTOs.ServiceOrder;
+using TVS_App.Application.Queries;
 using TVSApp.Web.Components.Dialogs;
 using TVSApp.Web.Handlers;
 
@@ -45,7 +46,7 @@ public partial class Home : ComponentBase
     {
         try
         {
-            var pendingEstimatesresult = await Handler.GetPendingEstimatesAsync(new PaginationCommand{PageNumber = 1, PageSize = 500});
+            var pendingEstimatesresult = await Handler.GetPendingEstimatesAsync(new PaginationQuery{PageNumber = 1, PageSize = 500});
             if (pendingEstimatesresult.IsSuccess && pendingEstimatesresult.Data != null)
                 PendingEstimatesServiceOrders = pendingEstimatesresult.Data.Items
                     .Where(item => item is not null)
@@ -64,7 +65,7 @@ public partial class Home : ComponentBase
     {
         try
         {
-            var waitingResponseresult = await Handler.GetWaitingResponseAsync(new PaginationCommand{PageNumber = 1, PageSize = 500});
+            var waitingResponseresult = await Handler.GetWaitingResponseAsync(new PaginationQuery{PageNumber = 1, PageSize = 500});
             if (waitingResponseresult.IsSuccess && waitingResponseresult.Data != null)
                 WaitingResponseServiceOrders = waitingResponseresult.Data.Items
                     .Where(item => item is not null)
@@ -83,7 +84,7 @@ public partial class Home : ComponentBase
     {
         try
         {
-            var pendingPurchaseresult = await Handler.GetPendingPurchasePartAsync(new PaginationCommand{PageNumber = 1, PageSize = 500});
+            var pendingPurchaseresult = await Handler.GetPendingPurchasePartAsync(new PaginationQuery{PageNumber = 1, PageSize = 500});
             if (pendingPurchaseresult.IsSuccess && pendingPurchaseresult.Data != null)
                 PendingPurchaseServiceOrders = pendingPurchaseresult.Data.Items
                     .Where(item => item is not null)
@@ -102,7 +103,7 @@ public partial class Home : ComponentBase
     {
         try
         {
-            var waitingPartsresult = await Handler.GetWaitingPartsAsync(new PaginationCommand{PageNumber = 1, PageSize = 500});
+            var waitingPartsresult = await Handler.GetWaitingPartsAsync(new PaginationQuery{PageNumber = 1, PageSize = 500});
             if (waitingPartsresult.IsSuccess && waitingPartsresult.Data != null)
                 WaitingPartsServiceOrders = waitingPartsresult.Data.Items
                     .Where(item => item is not null)
@@ -121,7 +122,7 @@ public partial class Home : ComponentBase
     {
         try
         {
-            var waitingPickupresult = await Handler.GetWaitingPickupAsync(new PaginationCommand{PageNumber = 1, PageSize = 500});
+            var waitingPickupresult = await Handler.GetWaitingPickupAsync(new PaginationQuery{PageNumber = 1, PageSize = 500});
             if (waitingPickupresult.IsSuccess && waitingPickupresult.Data != null)
                 WaitingPickupServiceOrders = waitingPickupresult.Data.Items
                     .Where(item => item is not null)

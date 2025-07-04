@@ -1,6 +1,7 @@
 @using TVS_App.Application.Commands.CustomerCommands
 @using TVS_App.Application.DTOs
 @using TVS_App.Application.Exceptions
+@using TVS_App.Application.Queries.CustomersQueries
 @using TVSApp.Web.Handlers
 <MudDialog>
     <TitleContent>
@@ -119,7 +120,7 @@
     [Parameter] public long CustomerId { get; set; }
     public CustomerDto Customer { get; set; } = null!;
     public UpdateCustomerCommand EditableCustomerCommand { get; set; } = new();
-    public GetCustomerByIdCommand Command => new GetCustomerByIdCommand { Id = CustomerId };
+    public GetCustomerByIdQuery Query => new GetCustomerByIdQuery { Id = CustomerId };
 
     [Inject] public CustomerHandler CustomerHandler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
@@ -129,8 +130,8 @@
     {
         try
         {
-            Command.Validate();
-            var customerResult = await CustomerHandler.GetCustomerByIdAsync(Command);
+            Query.Validate();
+            var customerResult = await CustomerHandler.GetCustomerByIdAsync(Query);
             if (customerResult.IsSuccess && customerResult.Data != null)
             {
                 Customer = customerResult.Data;
@@ -156,7 +157,7 @@
                 Snackbar.Add(customerResult.Message ?? "Ocorreu um erro ao buscar o cliente", Severity.Error);
             }
         }
-        catch (CommandException<GetCustomerByIdCommand> ex)
+        catch (CommandException<GetCustomerByIdQuery> ex)
         {
             Snackbar.Add(ex.Message, Severity.Error);
         }

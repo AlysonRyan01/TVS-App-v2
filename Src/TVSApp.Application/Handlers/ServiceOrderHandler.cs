@@ -5,6 +5,8 @@ using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Interfaces.Handlers;
 using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Mappers;
+using TVS_App.Application.Queries;
+using TVS_App.Application.Queries.ServiceOrdersQueries;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Repositories.Customers;
@@ -208,12 +210,12 @@ public class ServiceOrderHandler : IServiceOrderHandler
         return new BaseResponse<ServiceOrderDto?>(dto, 200, result.Message);
     }
     
-    public async Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersBySerialNumberAsync(GetServiceOrdersBySerialNumberCommand command)
+    public async Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersBySerialNumberAsync(GetServiceOrdersBySerialNumberQuery query)
     {
-        command.Normalize();
-        command.Validate();
+        query.Normalize();
+        query.Validate();
 
-        var repositoryResult = await _serviceOrderQueryRepository.GetServiceOrdersBySerialNumber(command.SerialNumber);
+        var repositoryResult = await _serviceOrderQueryRepository.GetServiceOrdersBySerialNumber(query.SerialNumber);
         if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
             return new BaseResponse<List<ServiceOrderDto>>(null, 500, repositoryResult.Message);
             
@@ -222,12 +224,12 @@ public class ServiceOrderHandler : IServiceOrderHandler
         return new BaseResponse<List<ServiceOrderDto>>(dto, 200, "Ordens de serviço obtidas com sucesso!");
     }
     
-    public async Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersByModelAsync(GetServiceOrdersByModelCommand command)
+    public async Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersByModelAsync(GetServiceOrdersByModelQuery query)
     {
-        command.Normalize();
-        command.Validate();
+        query.Normalize();
+        query.Validate();
 
-        var repositoryResult = await _serviceOrderQueryRepository.GetServiceOrdersByModel(command.Model);
+        var repositoryResult = await _serviceOrderQueryRepository.GetServiceOrdersByModel(query.Model);
         if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
             return new BaseResponse<List<ServiceOrderDto>>(null, 500, repositoryResult.Message);
             
@@ -292,11 +294,11 @@ public class ServiceOrderHandler : IServiceOrderHandler
         return new BaseResponse<EstimateServiceOrder>(dto, 200, "Ordem de serviço obtida com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetAllServiceOrdersAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetAllServiceOrdersAsync(PaginationQuery query)
     {
-        command.Validate();
+        query.Validate();
 
-        var repositoryResult = await _serviceOrderQueryRepository.GetAllAsync(command.PageNumber, command.PageSize);
+        var repositoryResult = await _serviceOrderQueryRepository.GetAllAsync(query.PageNumber, query.PageSize);
         if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
             return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
             
@@ -317,11 +319,11 @@ public class ServiceOrderHandler : IServiceOrderHandler
         return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(paginatedResult, 200, "Ordens de serviço obtidas com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingEstimatesAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingEstimatesAsync(PaginationQuery query)
     {
-        command.Validate();
+        query.Validate();
 
-        var repositoryResult = await _serviceOrderQueryRepository.GetPendingEstimatesAsync(command.PageNumber, command.PageSize);
+        var repositoryResult = await _serviceOrderQueryRepository.GetPendingEstimatesAsync(query.PageNumber, query.PageSize);
         if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
             return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
             
@@ -342,11 +344,11 @@ public class ServiceOrderHandler : IServiceOrderHandler
         return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(paginatedResult, 200, "Ordens de serviço obtidas com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingResponseAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingResponseAsync(PaginationQuery query)
     {
-        command.Validate();
+        query.Validate();
 
-        var repositoryResult = await _serviceOrderQueryRepository.GetWaitingResponseAsync(command.PageNumber, command.PageSize);
+        var repositoryResult = await _serviceOrderQueryRepository.GetWaitingResponseAsync(query.PageNumber, query.PageSize);
         if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
             return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
             
@@ -367,11 +369,11 @@ public class ServiceOrderHandler : IServiceOrderHandler
         return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(paginatedResult, 200, "Ordens de serviço obtidas com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingPurchasePartAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingPurchasePartAsync(PaginationQuery query)
     {
-        command.Validate();
+        query.Validate();
 
-        var repositoryResult = await _serviceOrderQueryRepository.GetPendingPartPurchase(command.PageNumber, command.PageSize);
+        var repositoryResult = await _serviceOrderQueryRepository.GetPendingPartPurchase(query.PageNumber, query.PageSize);
         if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
             return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
             
@@ -392,11 +394,11 @@ public class ServiceOrderHandler : IServiceOrderHandler
         return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(paginatedResult, 200, "Ordens de serviço obtidas com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPartsAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPartsAsync(PaginationQuery query)
     {
-        command.Validate();
+        query.Validate();
 
-        var repositoryResult = await _serviceOrderQueryRepository.GetWaitingPartsAsync(command.PageNumber, command.PageSize);
+        var repositoryResult = await _serviceOrderQueryRepository.GetWaitingPartsAsync(query.PageNumber, query.PageSize);
         if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
             return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
             
@@ -417,11 +419,11 @@ public class ServiceOrderHandler : IServiceOrderHandler
         return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(paginatedResult, 200, "Ordens de serviço obtidas com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPickupAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPickupAsync(PaginationQuery query)
     {
-        command.Validate();
+        query.Validate();
         
-        var repositoryResult = await _serviceOrderQueryRepository.GetWaitingPickupAsync(command.PageNumber, command.PageSize);
+        var repositoryResult = await _serviceOrderQueryRepository.GetWaitingPickupAsync(query.PageNumber, query.PageSize);
         if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
             return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
             
@@ -442,11 +444,11 @@ public class ServiceOrderHandler : IServiceOrderHandler
         return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(paginatedResult, 200, "Ordens de serviço obtidas com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetDeliveredAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetDeliveredAsync(PaginationQuery query)
     {
-        command.Validate();
+        query.Validate();
 
-        var repositoryResult = await _serviceOrderQueryRepository.GetDeliveredAsync(command.PageNumber, command.PageSize);
+        var repositoryResult = await _serviceOrderQueryRepository.GetDeliveredAsync(query.PageNumber, query.PageSize);
         if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
             return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, repositoryResult.Message);
             

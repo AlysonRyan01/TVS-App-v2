@@ -4,6 +4,10 @@
     <ProjectReference Include="..\TVSApp.Domain\TVSApp.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Handlers\ServiceOrders\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>TVS_App.Application</RootNamespace>

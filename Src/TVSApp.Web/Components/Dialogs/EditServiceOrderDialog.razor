@@ -4,6 +4,8 @@
 @using TVS_App.Application.Commands.ServiceOrderCommands
 @using TVS_App.Application.DTOs
 @using TVS_App.Application.DTOs.ServiceOrder
+@using TVS_App.Application.Queries.CustomersQueries
+@using TVS_App.Application.Queries.ServiceOrdersQueries
 @using TVS_App.Domain.Enums
 @using TVSApp.Web.Extensions
 @using TVSApp.Web.Handlers
@@ -416,7 +418,7 @@
         }
         
         var customer = await CustomerHandler.
-            GetCustomerByIdAsync(new GetCustomerByIdCommand { Id = _selectedCustomer.Id});
+            GetCustomerByIdAsync(new GetCustomerByIdQuery { Id = _selectedCustomer.Id});
 
         if (!customer.IsSuccess || customer.Data == null)
         {

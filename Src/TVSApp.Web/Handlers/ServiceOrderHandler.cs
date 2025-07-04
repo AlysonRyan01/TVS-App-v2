@@ -2,6 +2,8 @@ using System.Net.Http.Json;
 using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.ServiceOrderCommands;
 using TVS_App.Application.DTOs.ServiceOrder;
+using TVS_App.Application.Queries;
+using TVS_App.Application.Queries.ServiceOrdersQueries;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Shared;
 
@@ -197,12 +199,12 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetAllServiceOrdersAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetAllServiceOrdersAsync(PaginationQuery query)
     {
         try
         {
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
-                $"get-all-service-orders/{command.PageNumber}/{command.PageSize}");
+                $"get-all-service-orders/{query.PageNumber}/{query.PageSize}");
             
             if (response == null || !response.IsSuccess)
                 return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, response?.Message);
@@ -215,12 +217,12 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingEstimatesAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingEstimatesAsync(PaginationQuery query)
     {
         try
         {
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
-                $"get-pending-estimates-service-orders/{command.PageNumber}/{command.PageSize}");
+                $"get-pending-estimates-service-orders/{query.PageNumber}/{query.PageSize}");
             
             if (response == null || !response.IsSuccess)
                 return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, response?.Message);
@@ -233,12 +235,12 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingResponseAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingResponseAsync(PaginationQuery query)
     {
         try
         {
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
-                $"get-waiting-response-service-orders/{command.PageNumber}/{command.PageSize}");
+                $"get-waiting-response-service-orders/{query.PageNumber}/{query.PageSize}");
             
             if (response == null || !response.IsSuccess)
                 return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, response?.Message);
@@ -251,12 +253,12 @@ public class ServiceOrderHandler
         }
     }
     
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingPurchasePartAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingPurchasePartAsync(PaginationQuery query)
     {
         try
         {
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
-                $"get-pending-purchase-service-orders/{command.PageNumber}/{command.PageSize}");
+                $"get-pending-purchase-service-orders/{query.PageNumber}/{query.PageSize}");
             
             if (response == null || !response.IsSuccess)
                 return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, response?.Message);
@@ -269,12 +271,12 @@ public class ServiceOrderHandler
         }
     }
     
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPartsAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPartsAsync(PaginationQuery query)
     {
         try
         {
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
-                $"get-waiting-parts-service-orders/{command.PageNumber}/{command.PageSize}");
+                $"get-waiting-parts-service-orders/{query.PageNumber}/{query.PageSize}");
             
             if (response == null || !response.IsSuccess)
                 return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, response?.Message);
@@ -287,12 +289,12 @@ public class ServiceOrderHandler
         }
     }
     
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPickupAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPickupAsync(PaginationQuery query)
     {
         try
         {
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
-                $"get-waiting-pickup-service-orders/{command.PageNumber}/{command.PageSize}");
+                $"get-waiting-pickup-service-orders/{query.PageNumber}/{query.PageSize}");
             
             if (response == null || !response.IsSuccess)
                 return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, response?.Message);
@@ -305,12 +307,12 @@ public class ServiceOrderHandler
         }
     }
     
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetDeliveredAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetDeliveredAsync(PaginationQuery query)
     {
         try
         {
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
-                $"get-delivered-service-orders/{command.PageNumber}/{command.PageSize}");
+                $"get-delivered-service-orders/{query.PageNumber}/{query.PageSize}");
             
             if (response == null || !response.IsSuccess)
                 return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, response?.Message);

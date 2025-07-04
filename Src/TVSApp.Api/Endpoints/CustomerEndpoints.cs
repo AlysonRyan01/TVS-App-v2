@@ -5,6 +5,8 @@ using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.CustomerCommands;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.Interfaces.Handlers;
+using TVS_App.Application.Queries;
+using TVS_App.Application.Queries.CustomersQueries;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Api.Endpoints;
@@ -57,7 +59,7 @@ public static class CustomerEndpoints
 
         app.MapGet("/get-customer-by-id/{id}", async (ICustomerHandler handler, [FromRoute] long id) =>
         {
-            var command = new GetCustomerByIdCommand { Id = id };
+            var command = new GetCustomerByIdQuery { Id = id };
             command.Validate();
 
             var getResult = await handler.GetCustomerByIdAsync(command);
@@ -96,7 +98,7 @@ public static class CustomerEndpoints
                 [FromRoute] int pageSize,
                 [FromRoute] int pageNumber) =>
         {
-            var command = new PaginationCommand{PageNumber = pageNumber,  PageSize = pageSize};
+            var command = new PaginationQuery{PageNumber = pageNumber,  PageSize = pageSize};
             command.Validate();
 
             var getAllResult = await handler.GetAllCustomersAsync(command);

@@ -5,6 +5,8 @@ using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.ServiceOrderCommands;
 using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Interfaces.Handlers;
+using TVS_App.Application.Queries;
+using TVS_App.Application.Queries.ServiceOrdersQueries;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Shared;
 
@@ -116,7 +118,7 @@ public static class ServiceOrderEndpoints
         {
             var getOrderResult = await handler
                 .GetServiceOrdersBySerialNumberAsync(
-                    new GetServiceOrdersBySerialNumberCommand { SerialNumber = serialNumber });
+                    new GetServiceOrdersBySerialNumberQuery { SerialNumber = serialNumber });
             if (!getOrderResult.IsSuccess)
                 return Results.Ok(getOrderResult);
 
@@ -134,7 +136,7 @@ public static class ServiceOrderEndpoints
         {
             var getOrderResult = await handler
                 .GetServiceOrdersByModelAsync(
-                    new GetServiceOrdersByModelCommand() { Model = model });
+                    new GetServiceOrdersByModelQuery() { Model = model });
                 
             if (!getOrderResult.IsSuccess)
                 return Results.Ok(getOrderResult);
@@ -206,7 +208,7 @@ public static class ServiceOrderEndpoints
 
         app.MapGet("/get-all-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
         {
-            var command = new PaginationCommand { PageNumber = pageNumber, PageSize = pageSize };
+            var command = new PaginationQuery { PageNumber = pageNumber, PageSize = pageSize };
             command.Validate();
 
             var getOrderResult = await handler.GetAllServiceOrdersAsync(command);
@@ -225,7 +227,7 @@ public static class ServiceOrderEndpoints
 
         app.MapGet("/get-pending-estimates-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
         {
-            var command = new PaginationCommand { PageNumber = pageNumber, PageSize = pageSize };
+            var command = new PaginationQuery { PageNumber = pageNumber, PageSize = pageSize };
             command.Validate();
 
             var getOrderResult = await handler.GetPendingEstimatesAsync(command);
@@ -244,7 +246,7 @@ public static class ServiceOrderEndpoints
 
         app.MapGet("/get-waiting-response-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
         {
-            var command = new PaginationCommand { PageNumber = pageNumber, PageSize = pageSize };
+            var command = new PaginationQuery { PageNumber = pageNumber, PageSize = pageSize };
             command.Validate();
 
             var getOrderResult = await handler.GetWaitingResponseAsync(command);
@@ -263,7 +265,7 @@ public static class ServiceOrderEndpoints
 
         app.MapGet("/get-pending-purchase-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
         {
-            var command = new PaginationCommand { PageNumber = pageNumber, PageSize = pageSize };
+            var command = new PaginationQuery { PageNumber = pageNumber, PageSize = pageSize };
             command.Validate();
 
             var getOrderResult = await handler.GetPendingPurchasePartAsync(command);
@@ -282,7 +284,7 @@ public static class ServiceOrderEndpoints
 
         app.MapGet("/get-waiting-parts-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
         {
-            var command = new PaginationCommand { PageNumber = pageNumber, PageSize = pageSize };
+            var command = new PaginationQuery { PageNumber = pageNumber, PageSize = pageSize };
             command.Validate();
 
             var getOrderResult = await handler.GetWaitingPartsAsync(command);
@@ -301,7 +303,7 @@ public static class ServiceOrderEndpoints
 
         app.MapGet("/get-waiting-pickup-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
         {
-            var command = new PaginationCommand { PageNumber = pageNumber, PageSize = pageSize };
+            var command = new PaginationQuery { PageNumber = pageNumber, PageSize = pageSize };
             command.Validate();
 
             var getOrderResult = await handler.GetWaitingPickupAsync(command);
@@ -320,7 +322,7 @@ public static class ServiceOrderEndpoints
 
         app.MapGet("/get-delivered-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
         {
-            var command = new PaginationCommand { PageNumber = pageNumber, PageSize = pageSize };
+            var command = new PaginationQuery { PageNumber = pageNumber, PageSize = pageSize };
             command.Validate();
 
             var getOrderResult = await handler.GetDeliveredAsync(command);

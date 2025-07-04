@@ -2,6 +2,8 @@ using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.ServiceOrderCommands;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.DTOs.ServiceOrder;
+using TVS_App.Application.Queries;
+using TVS_App.Application.Queries.ServiceOrdersQueries;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Shared;
 
@@ -17,18 +19,18 @@ public interface IServiceOrderHandler
     Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersByCustomerName(string customerName);
     Task<BaseResponse<ServiceOrderDto?>> GetServiceOrderById(GetServiceOrderByIdCommand command);
     Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersBySerialNumberAsync(
-        GetServiceOrdersBySerialNumberCommand command);
-    Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersByModelAsync(GetServiceOrdersByModelCommand command);
+        GetServiceOrdersBySerialNumberQuery query);
+    Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersByModelAsync(GetServiceOrdersByModelQuery query);
     Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersByEnterpriseAsync(EEnterprise enterprise);
     Task<BaseResponse<List<ServiceOrderDto>>> GetServiceOrdersByDateAsync(DateTime startDate, DateTime endDate);
     Task<BaseResponse<EstimateServiceOrder>> GetServiceOrderForCustomer(GetServiceOrdersForCustomerCommand command);
-    Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetAllServiceOrdersAsync(PaginationCommand command);
-    Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingEstimatesAsync(PaginationCommand command);
-    Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingResponseAsync(PaginationCommand command);
-    Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingPurchasePartAsync(PaginationCommand command);
-    Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPartsAsync(PaginationCommand command);
-    Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPickupAsync(PaginationCommand command);
-    Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetDeliveredAsync(PaginationCommand command);
+    Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetAllServiceOrdersAsync(PaginationQuery query);
+    Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingEstimatesAsync(PaginationQuery query);
+    Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingResponseAsync(PaginationQuery query);
+    Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingPurchasePartAsync(PaginationQuery query);
+    Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPartsAsync(PaginationQuery query);
+    Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPickupAsync(PaginationQuery query);
+    Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetDeliveredAsync(PaginationQuery query);
     Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderEstimate(AddServiceOrderEstimateCommand command);
     Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderApproveEstimate(GetServiceOrderByIdCommand command);
     Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderRejectEstimate(GetServiceOrderByIdCommand command);

@@ -2,6 +2,8 @@ using System.Net.Http.Json;
 using TVS_App.Application.Commands;
 using TVS_App.Application.Commands.CustomerCommands;
 using TVS_App.Application.DTOs;
+using TVS_App.Application.Queries;
+using TVS_App.Application.Queries.CustomersQueries;
 using TVS_App.Domain.Shared;
 
 namespace TVSApp.Web.Handlers;
@@ -63,12 +65,12 @@ public class CustomerHandler
         }
     }
 
-    public async Task<BaseResponse<CustomerDto?>> GetCustomerByIdAsync(GetCustomerByIdCommand command)
+    public async Task<BaseResponse<CustomerDto?>> GetCustomerByIdAsync(GetCustomerByIdQuery query)
     {
         try
         {
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<CustomerDto?>>(
-                $"get-customer-by-id/{command.Id}");
+                $"get-customer-by-id/{query.Id}");
             
             if (response == null || !response.IsSuccess)
                 return new BaseResponse<CustomerDto?>(null, 500, response?.Message);
@@ -102,12 +104,12 @@ public class CustomerHandler
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<CustomerDto?>>> GetAllCustomersAsync(PaginationCommand command)
+    public async Task<BaseResponse<PaginatedResult<CustomerDto?>>> GetAllCustomersAsync(PaginationQuery query)
     {
         try
         {
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<CustomerDto?>>>(
-                $"get-all-customers/{command.PageSize}/{command.PageNumber}");
+                $"get-all-customers/{query.PageSize}/{query.PageNumber}");
             
             if (response == null || !response.IsSuccess)
                 return new BaseResponse<PaginatedResult<CustomerDto?>>(null, 500, response?.Message);
