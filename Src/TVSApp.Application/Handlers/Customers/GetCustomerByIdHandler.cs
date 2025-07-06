@@ -1,12 +1,13 @@
+using MediatR;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.Mappers;
-using TVS_App.Application.Queries.CustomersQueries;
+using TVS_App.Application.Requests.CustomerRequests.CustomersQueries;
 using TVS_App.Domain.Repositories.Customers;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Handlers.Customers;
 
-public class GetCustomerByIdHandler : IQueryHandler<GetCustomerByIdQuery, BaseResponse<CustomerDto?>>
+public class GetCustomerByIdHandler : IRequestHandler<GetCustomerByIdQuery, BaseResponse<CustomerDto?>>
 {
     private readonly ICustomerQueryRepository _customerQueryRepository;
 
@@ -15,11 +16,13 @@ public class GetCustomerByIdHandler : IQueryHandler<GetCustomerByIdQuery, BaseRe
         _customerQueryRepository = customerQueryRepository;
     }
 
-    public async Task<BaseResponse<CustomerDto?>> HandleAsync(GetCustomerByIdQuery query)
+    public async Task<BaseResponse<CustomerDto?>> Handle(
+        GetCustomerByIdQuery request, 
+        CancellationToken cancellationToken = default)
     {
-        query.Validate();
+        request.Validate();
 
-        var response = await _customerQueryRepository.GetByIdAsync(query.Id);
+        var response = await _customerQueryRepository.GetByIdAsync(request.Id);
             
         if (!response.IsSuccess || response.Data == null)
             return new BaseResponse<CustomerDto?>(null, response.Code, response.Message);

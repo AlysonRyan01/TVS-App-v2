@@ -1,10 +1,12 @@
+using MediatR;
+using TVS_App.Application.Requests.NotificationRequests.NotificationCommands;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Repositories.Notifications;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Handlers.Notifications;
 
-public class MarkNotificationAsReadHandler : ICommandHandler<long, BaseResponse<Notification>>
+public class MarkNotificationAsReadHandler : IRequestHandler<MarkNotificationAsReadCommand, BaseResponse<Notification>>
 {
     private readonly INotificationCommandRepository _notificationCommandRepository;
 
@@ -13,8 +15,10 @@ public class MarkNotificationAsReadHandler : ICommandHandler<long, BaseResponse<
         _notificationCommandRepository = notificationCommandRepository;
     }
 
-    public async Task<BaseResponse<Notification>> HandleAsync(long id)
+    public async Task<BaseResponse<Notification>> Handle(
+        MarkNotificationAsReadCommand request, 
+        CancellationToken cancellationToken = default)
     {
-        return await _notificationCommandRepository.MarkAsRead(id);
+        return await _notificationCommandRepository.MarkAsRead(request.Id);
     }
 }

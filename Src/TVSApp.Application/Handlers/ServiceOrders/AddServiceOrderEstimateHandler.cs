@@ -1,14 +1,15 @@
-using TVS_App.Application.Commands.ServiceOrderCommands;
+using MediatR;
 using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Mappers;
+using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Handlers.ServiceOrders;
 
-public class AddServiceOrderEstimateHandler : ICommandHandler<AddServiceOrderEstimateCommand, BaseResponse<ServiceOrderDto?>>
+public class AddServiceOrderEstimateHandler : IRequestHandler<AddServiceOrderEstimateCommand, BaseResponse<ServiceOrderDto?>>
 {
     private readonly IServiceOrderCommandRepository _serviceOrderCommandRepository;
     private readonly IServiceOrderQueryRepository _serviceOrderQueryRepository;
@@ -23,19 +24,27 @@ public class AddServiceOrderEstimateHandler : ICommandHandler<AddServiceOrderEst
         _serviceOrderQueryRepository = serviceOrderQueryRepository;
         _whatsappService = whatsappService;
     }
-    
-    public async Task<BaseResponse<ServiceOrderDto?>> HandleAsync(AddServiceOrderEstimateCommand command)
-    {
-        command.Normalize();
-        command.Validate();
 
-        var result = await _serviceOrderQueryRepository.GetById(command.ServiceOrderId);
+    public async Task<BaseResponse<ServiceOrderDto?>> Handle(
+        AddServiceOrderEstimateCommand request, 
+        CancellationToken cancellationToken = default)
+    {
+        var normalized = request.Normalize();
+        normalized.Validate();
+
+        var result = await _serviceOrderQueryRepository.GetById(normalized.ServiceOrderId);
         if (result.Data == null)
             return new BaseResponse<ServiceOrderDto?>(null, 404, "Essa ordem de serviço não existe");
 
         var serviceOrder = result.Data;
 
-        serviceOrder.AddEstimate(command.Solution, command.Guarantee, command.PartCost, command.LaborCost, command.RepairResult, command.EstimateMessage);
+        serviceOrder.AddEstimate(
+            normalized.Solution, 
+            normalized.Guarantee, 
+            normalized.PartCost, 
+            normalized.LaborCost, 
+            normalized.RepairResult, 
+            normalized.EstimateMessage);
 
         await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);
 
@@ -47,14 +56,14 @@ public class AddServiceOrderEstimateHandler : ICommandHandler<AddServiceOrderEst
                 serviceOrder.Id.ToString(),
                 serviceOrder.RepairResult!.Value,
                 serviceOrder.Customer.Name.CustomerName, 
-                command.EstimateMessage.ToUpper(),
+                normalized.EstimateMessage.ToUpper(),
                 serviceOrder.TotalAmount,
                 serviceOrder.Guarantee!.ServiceOrderGuarantee,
                 serviceOrder.Customer.Phone.CustomerPhone);
             
             message = whatsappResult.IsSuccess
                 ? "Orçamento adicionado e mensagem enviada com sucesso!"
-                : $"Orçamento adicionado, mas falha ao enviar mensagem";
+                : "Orçamento adicionado, mas falha ao enviar mensagem";
         }
             
         var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);

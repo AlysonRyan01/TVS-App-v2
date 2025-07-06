@@ -1,6 +1,7 @@
-using TVS_App.Application.Commands.CustomerCommands;
+using MediatR;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.Mappers;
+using TVS_App.Application.Requests.CustomerRequests.CustomerCommands;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Repositories.Customers;
 using TVS_App.Domain.Shared;
@@ -8,7 +9,7 @@ using TVS_App.Domain.ValueObjects.Customer;
 
 namespace TVS_App.Application.Handlers.Customers;
 
-public class CreateCustomerHandler : ICommandHandler<CreateCustomerCommand, BaseResponse<CustomerDto?>>
+public class CreateCustomerHandler : IRequestHandler<CreateCustomerCommand, BaseResponse<CustomerDto?>>
 {
     private readonly ICustomerCommandRepository _customerCommandRepository;
 
@@ -16,24 +17,26 @@ public class CreateCustomerHandler : ICommandHandler<CreateCustomerCommand, Base
     {
         _customerCommandRepository = customerCommandRepository;
     }
-
-    public async Task<BaseResponse<CustomerDto?>> HandleAsync(CreateCustomerCommand command)
+    
+    public async Task<BaseResponse<CustomerDto?>> Handle(
+        CreateCustomerCommand request, 
+        CancellationToken cancellationToken = default)
     {
-        command.Normalize();
-        command.Validate();
+        var normalized = request.Normalize();
+        normalized.Validate();
 
-        var name = new Name(command.Name);
+        var name = new Name(normalized.Name);
         var address = new Address(
-            command.Street,
-            command.Neighborhood,
-            command.City,
-            command.Number,
-            command.ZipCode,
-            command.State);
-        var phone = new Phone(command.Phone);
-        var phone2 = new Phone(command.Phone2);
-        Email? email = string.IsNullOrWhiteSpace(command.Email) ? null : new Email(command.Email);
-        var cpf = new Cpf(command.Cpf);
+            normalized.Street,
+            normalized.Neighborhood,
+            normalized.City,
+            normalized.Number,
+            normalized.ZipCode,
+            normalized.State);
+        var phone = new Phone(normalized.Phone);
+        var phone2 = new Phone(normalized.Phone2);
+        Email? email = string.IsNullOrWhiteSpace(normalized.Email) ? null : new Email(normalized.Email);
+        var cpf = new Cpf(normalized.Cpf);
 
         var customer = new Customer(name, address, phone, phone2, email, cpf);
 

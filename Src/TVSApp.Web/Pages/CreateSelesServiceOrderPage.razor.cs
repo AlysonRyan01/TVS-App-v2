@@ -2,10 +2,10 @@ using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using TVS_App.Application.Commands.CustomerCommands;
 using TVS_App.Application.Commands.ServiceOrderCommands;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.Exceptions;
+using TVS_App.Application.Requests.CustomerRequests.CustomerCommands;
 using TVSApp.Web.Components.Dialogs;
 using TVSApp.Web.Handlers;
 

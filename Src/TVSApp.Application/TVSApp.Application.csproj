@@ -4,6 +4,16 @@
     <ProjectReference Include="..\TVSApp.Domain\TVSApp.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="13.0.0" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="11.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Requests\CustomerRequests\" />
+    <Folder Include="Requests\ServiceOrderRequests\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <RootNamespace>TVS_App.Application</RootNamespace>

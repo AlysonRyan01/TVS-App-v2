@@ -1,12 +1,13 @@
-using TVS_App.Application.Commands.CustomerCommands;
+using MediatR;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.Mappers;
+using TVS_App.Application.Requests.CustomerRequests.CustomerCommands;
 using TVS_App.Domain.Repositories.Customers;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Handlers.Customers;
 
-public class UpdateCustomerHandler : ICommandHandler<UpdateCustomerCommand, BaseResponse<CustomerDto?>>
+public class UpdateCustomerHandler : IRequestHandler<UpdateCustomerCommand, BaseResponse<CustomerDto?>>
 {
     private readonly ICustomerCommandRepository _customerCommandRepository;
     private readonly ICustomerQueryRepository _customerQueryRepository;
@@ -17,29 +18,31 @@ public class UpdateCustomerHandler : ICommandHandler<UpdateCustomerCommand, Base
         _customerQueryRepository = customerQueryRepository;
     }
 
-    public async Task<BaseResponse<CustomerDto?>> HandleAsync(UpdateCustomerCommand command)
+    public async Task<BaseResponse<CustomerDto?>> Handle(
+        UpdateCustomerCommand request, 
+        CancellationToken cancellationToken = default)
     {
-        command.Normalize();
-        command.Validate();
+        var normalized = request.Normalize();
+        normalized.Validate();
 
-        var existingCustomer = await _customerQueryRepository.GetByIdAsync(command.Id);
+        var existingCustomer = await _customerQueryRepository.GetByIdAsync(normalized.Id);
 
         if (!existingCustomer.IsSuccess || existingCustomer.Data is null)
             return new BaseResponse<CustomerDto?>(null, 404, "Cliente não encontrado.");
 
         var customer = existingCustomer.Data;
 
-        customer.UpdateName(command.Name);
+        customer.UpdateName(normalized.Name);
         customer.UpdateAdress(
-            command.Street,
-            command.Neighborhood,
-            command.City,
-            command.Number,
-            command.ZipCode,
-            command.State);
-        customer.UpdatePhone(command.Phone, command.Phone2);
-        customer.UpdateEmail(command.Email);
-        customer.UpdateCpf(command.Cpf);
+            normalized.Street,
+            normalized.Neighborhood,
+            normalized.City,
+            normalized.Number,
+            normalized.ZipCode,
+            normalized.State);
+        customer.UpdatePhone(normalized.Phone, normalized.Phone2);
+        customer.UpdateEmail(normalized.Email);
+        customer.UpdateCpf(normalized.Cpf);
 
         await _customerCommandRepository.UpdateAsync(customer);
             

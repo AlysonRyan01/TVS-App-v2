@@ -1,8 +1,6 @@
-using TVS_App.Application.Commands;
-
 namespace TVS_App.Application.Exceptions;
 
-public class CommandException <T> : CommandException where T : ICommand
+public class CommandException <T> : CommandException
 {
     public CommandException(string message) : base (message) { }
 }

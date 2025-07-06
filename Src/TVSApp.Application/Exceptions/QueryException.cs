@@ -2,7 +2,7 @@ using TVS_App.Application.Queries;
 
 namespace TVS_App.Application.Exceptions;
 
-public class QueryException <T> : QueryException where T : IQuery
+public class QueryException <T> : QueryException
 {
     public QueryException(string message) : base (message) { }
 }

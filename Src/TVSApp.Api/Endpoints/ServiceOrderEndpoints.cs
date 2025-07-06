@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using TVS_App.Api.SignalR;
@@ -7,6 +8,8 @@ using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Interfaces.Handlers;
 using TVS_App.Application.Queries;
 using TVS_App.Application.Queries.ServiceOrdersQueries;
+using TVS_App.Application.Requests.NotificationRequests.NotificationCommands;
+using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Shared;
 
@@ -339,35 +342,41 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/add-product-location", async (IServiceOrderHandler handler, AddProductLocationCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-product-location", async (
+                ISender handler, 
+                AddProductLocationCommand command, 
+                IHubContext<ServiceOrderHub> hubContext) =>
         {
             command.Validate();
 
-            var addLocationResult = await handler.AddProductLocation(command);
-            if (!addLocationResult.IsSuccess)
-                return Results.Ok(addLocationResult);
-
+            var addLocationResult = await handler.Send(command);
             await hubContext.Clients.All.SendAsync("Atualizar", addLocationResult.Message);
-
             return Results.Ok(addLocationResult);
         })
         .WithTags("ServiceOrder")
         .WithName("AddProductLocation")
         .WithSummary("Adiciona a localização de um produto na prateleira.")
-        .WithDescription("Recebe as informações necessárias para registrar ou atualizar o local físico do produto dentro da prateleira da empresa.")
+        .WithDescription("Recebe as informações necessárias para registrar ou atualizar o local físico do produto")
         .Produces<BaseResponse<string>>(StatusCodes.Status200OK, "application/json")
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/add-service-order-estimate", async (IServiceOrderHandler handler, INotificationHandler notificationhandler,AddServiceOrderEstimateCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-service-order-estimate", async (
+                ISender handler, 
+                AddServiceOrderEstimateCommand command, 
+                IHubContext<ServiceOrderHub> hubContext) =>
         {
             command.Validate();
 
-            var addServiceOrderEstimateResult = await handler.AddServiceOrderEstimate(command);
+            var addServiceOrderEstimateResult = await handler.Send(command);
             if (!addServiceOrderEstimateResult.IsSuccess)
                 return Results.Ok(addServiceOrderEstimateResult);
 
-            await notificationhandler.CreateNotification("Orçamento Concluído", $"Favor enviar mensagem de orçamento para o responsável da ordem de serviço: {command.ServiceOrderId}");
+            var notificationCommand = new CreateNotificationCommand(
+                "Orçamento Concluído",
+                $"Favor enviar mensagem de orçamento para o responsável da ordem de serviço: {command.ServiceOrderId}");
+            
+            await handler.Send(notificationCommand);
 
             await hubContext.Clients.All.SendAsync("Atualizar", addServiceOrderEstimateResult.Message);
 
@@ -377,15 +386,13 @@ public static class ServiceOrderEndpoints
         .WithName("AddServiceOrderEstimate")
         .WithSummary("Adiciona um orçamento a uma ordem de serviço.")
         .WithDescription("Recebe os dados do orçamento para uma ordem de serviço específica, salva a informação e notifica os clientes conectados via SignalR.")
-        .Produces<BaseResponse<string>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
+        .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status200OK, "application/json")
+        .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/add-service-order-approve-estimate", async (IServiceOrderHandler handler, GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-service-order-approve-estimate", async (ISender handler, AddServiceOrderApproveEstimateCommand command, IHubContext<ServiceOrderHub> hubContext) =>
         {
-            command.Validate();
-
-            var addServiceOrderApproveEstimateResult = await handler.AddServiceOrderApproveEstimate(command);
+            var addServiceOrderApproveEstimateResult = await handler.Send(command);
             if (!addServiceOrderApproveEstimateResult.IsSuccess)
                 return Results.Ok(addServiceOrderApproveEstimateResult);
 
@@ -421,11 +428,12 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/add-service-order-purchased-part", async (IServiceOrderHandler handler, GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-service-order-purchased-part", async (
+                ISender handler, 
+                AddPurchasedPartCommand command, 
+                IHubContext<ServiceOrderHub> hubContext) =>
         {
-            command.Validate();
-
-            var addServiceOrderPurshasedPartResult = await handler.AddPurchasedPart(command);
+            var addServiceOrderPurshasedPartResult = await handler.Send(command);
             if (!addServiceOrderPurshasedPartResult.IsSuccess)
                 return Results.Ok(addServiceOrderPurshasedPartResult);
 
@@ -463,11 +471,12 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/add-service-order-delivery", async (IServiceOrderHandler handler, GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-service-order-delivery", async (
+                ISender handler, 
+                AddServiceOrderDeliveryAndReturnPdfCommand command, 
+                IHubContext<ServiceOrderHub> hubContext) =>
         {
-            command.Validate();
-
-            var addServiceOrderDeliveryResult = await handler.AddServiceOrderDeliveryAndReturnPdfAsync(command);
+            var addServiceOrderDeliveryResult = await handler.Send(command);
             if (!addServiceOrderDeliveryResult.IsSuccess)
                 return Results.Ok(addServiceOrderDeliveryResult);
 
