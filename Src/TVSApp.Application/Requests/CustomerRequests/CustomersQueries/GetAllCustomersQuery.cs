@@ -10,9 +10,9 @@ public record GetAllCustomersQuery(int PageNumber, int PageSize) : IRequest<Base
     public void Validate()
     {
         if (PageNumber < 1)
-            throw new CommandException<GetAllCustomersQuery>("O pageNumber não pode ser menor que 1");
+            throw new QueryException<GetAllCustomersQuery>("O pageNumber não pode ser menor que 1");
 
         if (PageSize < 1)
-            throw new CommandException<GetAllCustomersQuery>("O pageSize não pode ser menor que 1");
+            throw new QueryException<GetAllCustomersQuery>("O pageSize não pode ser menor que 1");
     }
 }

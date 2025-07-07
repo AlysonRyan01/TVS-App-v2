@@ -1,11 +1,13 @@
+using MediatR;
 using TVS_App.Application.DTOs;
-using TVS_App.Application.Queries.ServiceOrdersQueries;
+using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries;
 using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Handlers.ServiceOrders;
 
-public class GetServiceOrderForCustomerHandler : IQueryHandler<GetServiceOrdersForCustomerQuery, BaseResponse<EstimateServiceOrder>>
+public class GetServiceOrderForCustomerHandler 
+    : IRequestHandler<GetServiceOrdersForCustomerQuery, BaseResponse<EstimateServiceOrder>>
 {
     private readonly IServiceOrderQueryRepository _serviceOrderQueryRepository;
 
@@ -13,16 +15,18 @@ public class GetServiceOrderForCustomerHandler : IQueryHandler<GetServiceOrdersF
     {
         _serviceOrderQueryRepository = serviceOrderQueryRepository;
     }
-    
-    public async Task<BaseResponse<EstimateServiceOrder>> HandleAsync(GetServiceOrdersForCustomerQuery query)
+
+    public async Task<BaseResponse<EstimateServiceOrder>> Handle(
+        GetServiceOrdersForCustomerQuery request, 
+        CancellationToken cancellationToken = default)
     {
-        var orderResult = await _serviceOrderQueryRepository.GetById(query.ServiceOrderId);
+        var orderResult = await _serviceOrderQueryRepository.GetById(request.ServiceOrderId);
         if (!orderResult.IsSuccess)
             return new BaseResponse<EstimateServiceOrder>(null, 404, "Nenhuma ordem de serviço encontrada");
 
         var serviceOrder = orderResult.Data;
 
-        if (!string.Equals(serviceOrder?.SecurityCode, query.NormalizedSecurityCode))
+        if (!string.Equals(serviceOrder?.SecurityCode, request.NormalizedSecurityCode))
             return new BaseResponse<EstimateServiceOrder>(null, 404, "O código de segurança está incorreto");
             
         if (serviceOrder == null)

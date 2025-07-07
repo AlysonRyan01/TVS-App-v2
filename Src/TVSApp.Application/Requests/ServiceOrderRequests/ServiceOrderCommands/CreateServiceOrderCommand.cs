@@ -1,22 +1,21 @@
+using MediatR;
 using TVS_App.Application.Exceptions;
-using TVS_App.Application.Requests;
 using TVS_App.Domain.Enums;
+using TVS_App.Domain.Shared;
 
-namespace TVS_App.Application.Commands.ServiceOrderCommands;
+namespace TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 
-public class CreateServiceOrderCommand : ICommand
+public record CreateServiceOrderCommand(
+    long CustomerId,
+    string ProductBrand,
+    string ProductModel,
+    string ProductSerialNumber,
+    string ProductDefect,
+    string Accessories,
+    EProduct ProductType = EProduct.Tv,
+    EEnterprise Enterprise = EEnterprise.Particular
+) : IRequest<BaseResponse<byte[]>>
 {
-    public long CustomerId { get; set; }
-
-    public string ProductBrand { get; set; } = string.Empty;
-    public string ProductModel { get; set; } = string.Empty;
-    public string ProductSerialNumber { get; set; } = string.Empty;
-    public string ProductDefect { get; set; } = string.Empty;
-    public string Accessories { get; set; } = string.Empty;
-    public EProduct ProductType { get; set; } = EProduct.Tv;
-
-    public EEnterprise Enterprise { get; set; } = EEnterprise.Particular;
-
     public void Validate()
     {
         if (CustomerId == 0)
@@ -33,15 +32,17 @@ public class CreateServiceOrderCommand : ICommand
 
         if (!Enum.IsDefined(typeof(EEnterprise), Enterprise))
             throw new CommandException<CreateServiceOrderCommand>("A empresa da ordem de serviço não tem um valor válido");
-
     }
 
-    public void Normalize()
+    public CreateServiceOrderCommand Normalize()
     {
-        ProductBrand = ProductBrand.Trim().ToUpper();
-        ProductModel = ProductModel.Trim().ToUpper();
-        ProductSerialNumber = ProductSerialNumber.Trim().ToUpper();
-        ProductDefect = ProductDefect.Trim().ToUpper();
-        Accessories = Accessories.Trim().ToUpper();
+        return this with
+        {
+            ProductBrand = ProductBrand.Trim().ToUpper(),
+            ProductModel = ProductModel.Trim().ToUpper(),
+            ProductSerialNumber = ProductSerialNumber.Trim().ToUpper(),
+            ProductDefect = ProductDefect.Trim().ToUpper(),
+            Accessories = Accessories.Trim().ToUpper()
+        };
     }
 }

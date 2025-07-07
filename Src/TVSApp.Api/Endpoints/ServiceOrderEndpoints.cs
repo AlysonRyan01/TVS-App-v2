@@ -2,14 +2,10 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using TVS_App.Api.SignalR;
-using TVS_App.Application.Commands;
-using TVS_App.Application.Commands.ServiceOrderCommands;
 using TVS_App.Application.DTOs.ServiceOrder;
-using TVS_App.Application.Interfaces.Handlers;
-using TVS_App.Application.Queries;
-using TVS_App.Application.Queries.ServiceOrdersQueries;
 using TVS_App.Application.Requests.NotificationRequests.NotificationCommands;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
+using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Shared;
 
@@ -19,11 +15,14 @@ public static class ServiceOrderEndpoints
 {
     public static void MapServiceOrderEndpoints(this WebApplication app)
     {
-        app.MapPost("/create-service-order", async (IServiceOrderHandler handler, CreateServiceOrderCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPost("/create-service-order", async (
+                ISender handler, 
+                CreateServiceOrderCommand command, 
+                IHubContext<ServiceOrderHub> hubContext) =>
         {
             command.Validate();
 
-            var createOrderResult = await handler.CreateServiceOrderAndReturnPdfAsync(command);
+            var createOrderResult = await handler.Send(command);
             if (!createOrderResult.IsSuccess)
                 return Results.Ok(createOrderResult);
 
@@ -41,11 +40,14 @@ public static class ServiceOrderEndpoints
         .Produces<FileResult>(StatusCodes.Status200OK, "application/pdf")
         .RequireAuthorization();
         
-        app.MapPost("/create-sales-service-order", async (IServiceOrderHandler handler, CreateSalesServiceOrderCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPost("/create-sales-service-order", async (
+                ISender handler, 
+                CreateSalesServiceOrderCommand command, 
+                IHubContext<ServiceOrderHub> hubContext) =>
         {
             command.Validate();
 
-            var createOrderResult = await handler.CreateSalesServiceOrderAsync(command);
+            var createOrderResult = await handler.Send(command);
             if (!createOrderResult.IsSuccess)
                 return Results.Ok(createOrderResult);
 
@@ -62,9 +64,12 @@ public static class ServiceOrderEndpoints
         .Produces<FileResult>(StatusCodes.Status200OK, "application/pdf")
         .RequireAuthorization();
 
-        app.MapPut("/edit-service-order", async ([FromServices]IServiceOrderHandler handler, [FromBody]EditServiceOrderCommand command, [FromServices]IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/edit-service-order", async (
+                ISender handler, 
+                EditServiceOrderCommand command, 
+                IHubContext<ServiceOrderHub> hubContext) =>
         {
-            var editOrderResult = await handler.EditServiceOrderAsync(command);
+            var editOrderResult = await handler.Send(command);
             if (!editOrderResult.IsSuccess)
                 return Results.Ok(editOrderResult);
 
@@ -81,17 +86,17 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-service-order-by-id/{id}", async (IServiceOrderHandler handler, long id) =>
-        {
-            var command = new GetServiceOrderByIdCommand { Id = id };
-            command.Validate();
+        app.MapGet("/get-service-order-by-id/{id}", async (
+                ISender handler,
+                long id) =>
+            {
+                var command = new GetServiceOrderByIdQuery(id); 
+                command.Validate();
 
-            var getOrderResult = await handler.GetServiceOrderById(command);
-            if (!getOrderResult.IsSuccess)
+                var getOrderResult = await handler.Send(command);
+
                 return Results.Ok(getOrderResult);
-
-            return Results.Ok(getOrderResult);
-        })
+            })
         .WithTags("ServiceOrder")
         .WithName("GetServiceOrderById")
         .WithSummary("Busca uma ordem de serviço pelo ID.")
@@ -101,11 +106,12 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-service-orders-by-customer-name", async (IServiceOrderHandler handler, [FromQuery] string name) =>
+        app.MapGet("/get-service-orders-by-customer-name", async (
+                ISender handler, 
+                [FromQuery] string name) =>
         {
-            var getOrderResult = await handler.GetServiceOrdersByCustomerName(name);
-            if (!getOrderResult.IsSuccess)
-                return Results.Ok(getOrderResult);
+            var command = new GetServiceOrdersByCustomerNameQuery(name);
+            var getOrderResult = await handler.Send(command);
 
             return Results.Ok(getOrderResult);
         })
@@ -117,13 +123,12 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
         
-        app.MapGet("/get-service-orders-by-serial-number", async (IServiceOrderHandler handler, [FromQuery] string serialNumber) =>
+        app.MapGet("/get-service-orders-by-serial-number", async (ISender handler, [FromQuery] string serialNumber) =>
         {
-            var getOrderResult = await handler
-                .GetServiceOrdersBySerialNumberAsync(
-                    new GetServiceOrdersBySerialNumberQuery { SerialNumber = serialNumber });
-            if (!getOrderResult.IsSuccess)
-                return Results.Ok(getOrderResult);
+            var command = new GetServiceOrdersBySerialNumberQuery(serialNumber);
+            command.Validate();
+            
+            var getOrderResult = await handler.Send(command);
 
             return Results.Ok(getOrderResult);
         })
@@ -135,14 +140,14 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
         
-        app.MapGet("/get-service-orders-by-model", async (IServiceOrderHandler handler, [FromQuery] string model) =>
+        app.MapGet("/get-service-orders-by-model", async (
+                ISender handler, 
+                [FromQuery] string model) =>
         {
-            var getOrderResult = await handler
-                .GetServiceOrdersByModelAsync(
-                    new GetServiceOrdersByModelQuery() { Model = model });
-                
-            if (!getOrderResult.IsSuccess)
-                return Results.Ok(getOrderResult);
+            var command = new GetServiceOrdersByModelQuery(model);
+            command.Validate();
+            
+            var getOrderResult = await handler.Send(command);
 
             return Results.Ok(getOrderResult);
         })
@@ -154,13 +159,10 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
         
-        app.MapGet("/get-service-orders-by-enterprise", async (IServiceOrderHandler handler, [FromQuery] EEnterprise enterprise) =>
+        app.MapGet("/get-service-orders-by-enterprise", async (ISender handler, [FromQuery] EEnterprise enterprise) =>
         {
-            var getOrderResult = await handler
-                .GetServiceOrdersByEnterpriseAsync(enterprise);
-                
-            if (!getOrderResult.IsSuccess)
-                return Results.Ok(getOrderResult);
+            var command = new GetServiceOrdersByEnterpriseQuery(enterprise);
+            var getOrderResult = await handler.Send(command);
 
             return Results.Ok(getOrderResult);
         })
@@ -173,13 +175,15 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
         
-        app.MapGet("/get-service-orders-by-date", async (IServiceOrderHandler handler, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate) =>
+        app.MapGet("/get-service-orders-by-date", async (
+                ISender handler, 
+                [FromQuery] DateTime startDate, 
+                [FromQuery] DateTime endDate) =>
         {
-            var getOrderResult = await handler
-                .GetServiceOrdersByDateAsync(startDate, endDate);
-                
-            if (!getOrderResult.IsSuccess)
-                return Results.Ok(getOrderResult);
+            var command = new GetServiceOrdersByDateQuery(startDate, endDate);
+            command.Validate();
+            
+            var getOrderResult = await handler.Send(command);
 
             return Results.Ok(getOrderResult);
         })
@@ -191,15 +195,18 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-service-order-for-customer/{id}/{code}", async (IServiceOrderHandler handler, long id, string code) =>
-        {
-            var command = new GetServiceOrdersForCustomerCommand { ServiceOrderId = id, SecurityCode = code };
-            command.Validate();
+        app.MapGet("/get-service-order-for-customer/{id}/{code}", async (
+                ISender handler,
+                long id,
+                string code) =>
+            {
+                var command = new GetServiceOrdersForCustomerQuery(id, code);
+                command.Validate();
 
-            var getOrderResult = await handler.GetServiceOrderForCustomer(command);
+                var getOrderResult = await handler.Send(command);
 
-            return Results.Ok(getOrderResult);
-        })
+                return Results.Ok(getOrderResult);
+            })
         .WithTags("ServiceOrder")
         .WithName("GetServiceOrderForCustomer")
         .WithSummary("Consulta pública de ordem de serviço pelo cliente.")
@@ -209,17 +216,18 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<ServiceOrderDto>>(StatusCodes.Status200OK, "application/json")
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json");
 
-        app.MapGet("/get-all-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
-        {
-            var command = new PaginationQuery { PageNumber = pageNumber, PageSize = pageSize };
-            command.Validate();
+        app.MapGet("/get-all-service-orders/{pageNumber}/{pageSize}", async (
+                ISender handler,
+                int pageNumber,
+                int pageSize) =>
+            {
+                var command = new GetAllServiceOrdersQuery(pageNumber, pageSize);
+                command.Validate();
 
-            var getOrderResult = await handler.GetAllServiceOrdersAsync(command);
-            if (!getOrderResult.IsSuccess)
+                var getOrderResult = await handler.Send(command);
+
                 return Results.Ok(getOrderResult);
-
-            return Results.Ok(getOrderResult);
-        })
+            })
         .WithTags("ServiceOrder")
         .WithName("GetAllServiceOrders")
         .WithSummary("Retorna todas as ordens de serviço paginadas.")
@@ -228,14 +236,15 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-pending-estimates-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
+        app.MapGet("/get-pending-estimates-service-orders/{pageNumber}/{pageSize}", async (
+                ISender handler, 
+                int pageNumber, 
+                int pageSize) =>
         {
-            var command = new PaginationQuery { PageNumber = pageNumber, PageSize = pageSize };
+            var command = new GetPendingEstimatesQuery(pageNumber, pageSize);
             command.Validate();
 
-            var getOrderResult = await handler.GetPendingEstimatesAsync(command);
-            if (!getOrderResult.IsSuccess)
-                return Results.Ok(getOrderResult);
+            var getOrderResult = await handler.Send(command);
 
             return Results.Ok(getOrderResult);
         })
@@ -247,14 +256,15 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-waiting-response-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
+        app.MapGet("/get-waiting-response-service-orders/{pageNumber}/{pageSize}", async (
+                ISender handler, 
+                int pageNumber, 
+                int pageSize) =>
         {
-            var command = new PaginationQuery { PageNumber = pageNumber, PageSize = pageSize };
+            var command = new GetWaitingResponseQuery(pageNumber, pageSize);
             command.Validate();
 
-            var getOrderResult = await handler.GetWaitingResponseAsync(command);
-            if (!getOrderResult.IsSuccess)
-                return Results.Ok(getOrderResult);
+            var getOrderResult = await handler.Send(command);
 
             return Results.Ok(getOrderResult);
         })
@@ -266,14 +276,15 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-pending-purchase-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
+        app.MapGet("/get-pending-purchase-service-orders/{pageNumber}/{pageSize}", async (
+                ISender handler, 
+                int pageNumber, 
+                int pageSize) =>
         {
-            var command = new PaginationQuery { PageNumber = pageNumber, PageSize = pageSize };
+            var command = new GetPendingPurchasePartQuery(pageNumber, pageSize);
             command.Validate();
 
-            var getOrderResult = await handler.GetPendingPurchasePartAsync(command);
-            if (!getOrderResult.IsSuccess)
-                return Results.Ok(getOrderResult);
+            var getOrderResult = await handler.Send(command);
 
             return Results.Ok(getOrderResult);
         })
@@ -285,14 +296,15 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-waiting-parts-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
+        app.MapGet("/get-waiting-parts-service-orders/{pageNumber}/{pageSize}", async (
+                ISender handler, 
+                int pageNumber, 
+                int pageSize) =>
         {
-            var command = new PaginationQuery { PageNumber = pageNumber, PageSize = pageSize };
+            var command = new GetWaitingPartsQuery(pageNumber, pageSize);
             command.Validate();
 
-            var getOrderResult = await handler.GetWaitingPartsAsync(command);
-            if (!getOrderResult.IsSuccess)
-                return Results.Ok(getOrderResult);
+            var getOrderResult = await handler.Send(command);
 
             return Results.Ok(getOrderResult);
         })
@@ -304,14 +316,15 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-waiting-pickup-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
+        app.MapGet("/get-waiting-pickup-service-orders/{pageNumber}/{pageSize}", async (
+                ISender handler, 
+                int pageNumber, 
+                int pageSize) =>
         {
-            var command = new PaginationQuery { PageNumber = pageNumber, PageSize = pageSize };
+            var command = new GetWaitingPickupQuery(pageNumber, pageSize);
             command.Validate();
 
-            var getOrderResult = await handler.GetWaitingPickupAsync(command);
-            if (!getOrderResult.IsSuccess)
-                return Results.Ok(getOrderResult);
+            var getOrderResult = await handler.Send(command);
 
             return Results.Ok(getOrderResult);
         })
@@ -323,17 +336,18 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-delivered-service-orders/{pageNumber}/{pageSize}", async (IServiceOrderHandler handler, int pageNumber, int pageSize) =>
-        {
-            var command = new PaginationQuery { PageNumber = pageNumber, PageSize = pageSize };
-            command.Validate();
+        app.MapGet("/get-delivered-service-orders/{pageNumber}/{pageSize}", async (
+                ISender handler,
+                int pageNumber, 
+                int pageSize) =>
+                {
+                    var command = new GetDeliveredQuery(pageNumber, pageSize);
+                    command.Validate();
 
-            var getOrderResult = await handler.GetDeliveredAsync(command);
-            if (!getOrderResult.IsSuccess)
-                return Results.Ok(getOrderResult);
+                    var getOrderResult = await handler.Send(command);
 
-            return Results.Ok(getOrderResult);
-        })
+                    return Results.Ok(getOrderResult);
+                })
         .WithTags("ServiceOrder")
         .WithName("GetDeliveredServiceOrders")
         .WithSummary("Lista ordens de serviço entregues aos clientes.")
@@ -408,11 +422,12 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/add-service-order-reject-estimate", async (IServiceOrderHandler handler, GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-service-order-reject-estimate", async (
+                ISender handler, 
+                AddServiceOrderRejectEstimateCommand command, 
+                IHubContext<ServiceOrderHub> hubContext) =>
         {
-            command.Validate();
-
-            var addServiceOrderRejectEstimateResult = await handler.AddServiceOrderRejectEstimate(command);
+            var addServiceOrderRejectEstimateResult = await handler.Send(command);
             if (!addServiceOrderRejectEstimateResult.IsSuccess)
                 return Results.Ok(addServiceOrderRejectEstimateResult);
 
@@ -449,15 +464,20 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/add-service-order-repair", async (IServiceOrderHandler handler,INotificationHandler notificationhandler ,GetServiceOrderByIdCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-service-order-repair", async (
+                ISender handler, 
+                AddServiceOrderRepairCommand command, 
+                IHubContext<ServiceOrderHub> hubContext) =>
         {
-            command.Validate();
-
-            var addServiceOrderRepairResult = await handler.AddServiceOrderRepair(command);
+            var addServiceOrderRepairResult = await handler.Send(command);
             if (!addServiceOrderRepairResult.IsSuccess)
                 return Results.Ok(addServiceOrderRepairResult);
+
+            var notificationCommand = new CreateNotificationCommand(
+                "Conserto Concluído", 
+                $"Favor avisar o responsável da ordem de serviço: {command.Id}");
                 
-            await notificationhandler.CreateNotification("Conserto Concluído", $"Favor avisar o responsável da ordem de serviço: {command.Id}");
+            await handler.Send(notificationCommand);
 
             await hubContext.Clients.All.SendAsync("Atualizar", addServiceOrderRepairResult.Message);
 
@@ -496,22 +516,22 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/regenerate-service-order-pdf", async (IServiceOrderHandler handler, GetServiceOrderByIdCommand command) =>
-        {
-            command.Validate();
+        app.MapPut("/regenerate-service-order-pdf", async (ISender handler, long id) =>
+            {
+                var command = new RegenerateAndReturnPdfCommand(id);
 
-            var regenerateServiceOrderResult = await handler.RegenerateAndReturnPdfAsync(command);
-            if (!regenerateServiceOrderResult.IsSuccess)
-                return Results.Ok(regenerateServiceOrderResult);
+                var regenerateServiceOrderResult = await handler.Send(command);
+                if (!regenerateServiceOrderResult.IsSuccess)
+                    return Results.Ok(regenerateServiceOrderResult);
 
-            return Results.File(regenerateServiceOrderResult.Data!, "application/pdf", "ordem_servico.pdf");
-        })
+                return Results.File(regenerateServiceOrderResult.Data!, "application/pdf", "ordem_servico.pdf");
+            })
         .WithTags("ServiceOrder")
         .WithName("RegenerateServiceOrderPdf")
         .WithSummary("Regenera o PDF de uma ordem de serviço existente.")
         .WithDescription("Recebe o ID da ordem de serviço, regenera o arquivo PDF atualizado e retorna o arquivo para download.")
         .Produces<FileResult>(StatusCodes.Status200OK, "application/pdf")
-        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
+        .Produces<BaseResponse<byte[]>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
     }
 }

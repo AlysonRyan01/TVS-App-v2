@@ -1,12 +1,14 @@
+using MediatR;
 using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Mappers;
-using TVS_App.Application.Queries.ServiceOrdersQueries;
+using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries;
 using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Handlers.ServiceOrders;
 
-public class GetServiceOrdersByModelHandler : IQueryHandler<GetServiceOrdersByModelQuery, BaseResponse<List<ServiceOrderDto>>>
+public class GetServiceOrdersByModelHandler 
+    : IRequestHandler<GetServiceOrdersByModelQuery, BaseResponse<List<ServiceOrderDto>>>
 {
     private readonly IServiceOrderQueryRepository _serviceOrderQueryRepository;
 
@@ -14,12 +16,15 @@ public class GetServiceOrdersByModelHandler : IQueryHandler<GetServiceOrdersByMo
     {
         _serviceOrderQueryRepository = serviceOrderQueryRepository;
     }
-    
-    public async Task<BaseResponse<List<ServiceOrderDto>>> HandleAsync(GetServiceOrdersByModelQuery query)
-    {
-        query.Validate();
 
-        var repositoryResult = await _serviceOrderQueryRepository.GetServiceOrdersByModel(query.NormalizedModel);
+    public async Task<BaseResponse<List<ServiceOrderDto>>> Handle(
+        GetServiceOrdersByModelQuery request, 
+        CancellationToken cancellationToken = default)
+    {
+        request.Validate();
+
+        var repositoryResult = await _serviceOrderQueryRepository.GetServiceOrdersByModel(
+            request.NormalizedModel);
         if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
             return new BaseResponse<List<ServiceOrderDto>>(null, 500, repositoryResult.Message);
             

@@ -1,5 +1,6 @@
-using TVS_App.Application.Commands.ServiceOrderCommands;
+using MediatR;
 using TVS_App.Application.Interfaces.Services;
+using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Repositories.ServiceOrders;
@@ -8,7 +9,7 @@ using TVS_App.Domain.ValueObjects.ServiceOrder;
 
 namespace TVS_App.Application.Handlers.ServiceOrders;
 
-public class CreateSalesServiceOrderHandler : ICommandHandler<CreateSalesServiceOrderCommand, BaseResponse<byte[]>>
+public class CreateSalesServiceOrderHandler : IRequestHandler<CreateSalesServiceOrderCommand, BaseResponse<byte[]>>
 {
     private readonly IServiceOrderCommandRepository _serviceOrderCommandRepository;
     private readonly IGenerateServiceOrderPdf _generateServiceOrderPdf;
@@ -23,19 +24,21 @@ public class CreateSalesServiceOrderHandler : ICommandHandler<CreateSalesService
         _generateServiceOrderPdf = generateServiceOrderPdf;
         _whatsappService = whatsappService;
     }
-    
-    public async Task<BaseResponse<byte[]>> HandleAsync(CreateSalesServiceOrderCommand command)
+
+    public async Task<BaseResponse<byte[]>> Handle(
+        CreateSalesServiceOrderCommand request, 
+        CancellationToken cancellationToken = default)
     {
-        command.Normalize();
-        command.Validate();
+        request.Validate();
+        var normalized = request.Normalize();
 
-        var product = new Product(command.ProductBrand, command.ProductModel,
-            command.ProductSerialNumber, "VENDA", "", command.ProductType);
+        var product = new Product(normalized.ProductBrand, normalized.ProductModel,
+            normalized.ProductSerialNumber, "VENDA", "", normalized.ProductType);
 
-        var serviceOrder = new ServiceOrder(EEnterprise.Particular, command.CustomerId, product);
+        var serviceOrder = new ServiceOrder(EEnterprise.Particular, normalized.CustomerId, product);
             
-        serviceOrder.EditGuarantee(new Guarantee(command.Guarantee));
-        serviceOrder.EditPartCost(new PartCost(command.Amount));
+        serviceOrder.EditGuarantee(new Guarantee(normalized.Guarantee));
+        serviceOrder.EditPartCost(new PartCost(normalized.Amount));
         serviceOrder.EditServiceOrderStatus(EServiceOrderStatus.Delivered);
         serviceOrder.EditRepairResult(ERepairResult.Repair);
         serviceOrder.EditRepairStatus(ERepairStatus.Approved);

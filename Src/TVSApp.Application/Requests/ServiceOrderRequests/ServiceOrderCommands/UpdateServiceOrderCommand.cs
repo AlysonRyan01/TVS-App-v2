@@ -1,23 +1,23 @@
+using MediatR;
+using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Exceptions;
-using TVS_App.Application.Requests;
 using TVS_App.Domain.Enums;
+using TVS_App.Domain.Shared;
 
-namespace TVS_App.Application.Commands.ServiceOrderCommands;
+namespace TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 
-public class UpdateServiceOrderCommand : ICommand
+public record UpdateServiceOrderCommand(
+    long CustomerId,
+    long ServiceOrderId,
+    string ProductBrand,
+    string ProductModel,
+    string ProductSerialNumber,
+    string ProductDefect,
+    string Accessories,
+    EProduct ProductType,
+    EEnterprise Enterprise = EEnterprise.Particular
+) : IRequest<BaseResponse<UpdateServiceOrderResponseDto?>>
 {
-    public long CustomerId { get; set; }
-    public long ServiceOrderId { get; set; }
-
-    public string ProductBrand { get; set; } = string.Empty;
-    public string ProductModel { get; set; } = string.Empty;
-    public string ProductSerialNumber { get; set; } = string.Empty;
-    public string ProductDefect { get; set; } = string.Empty;
-    public string Accessories { get; set; } = string.Empty;
-    public EProduct ProductType { get; set; }
-
-    public EEnterprise Enterprise { get; set; } = EEnterprise.Particular;
-
     public void Validate()
     {
         if (ServiceOrderId == 0)
@@ -37,15 +37,17 @@ public class UpdateServiceOrderCommand : ICommand
 
         if (!Enum.IsDefined(typeof(EEnterprise), Enterprise))
             throw new CommandException<UpdateServiceOrderCommand>("A empresa informada da ordem de serviço é inválida.");
-
     }
-    
-    public void Normalize()
+
+    public UpdateServiceOrderCommand Normalize()
     {
-        ProductBrand = ProductBrand.Trim().ToUpper();
-        ProductModel = ProductModel.Trim().ToUpper();
-        ProductSerialNumber = ProductSerialNumber.Trim().ToUpper();
-        ProductDefect = ProductDefect.Trim().ToUpper();
-        Accessories = Accessories.Trim().ToUpper();
+        return this with
+        {
+            ProductBrand = ProductBrand.Trim().ToUpper(),
+            ProductModel = ProductModel.Trim().ToUpper(),
+            ProductSerialNumber = ProductSerialNumber.Trim().ToUpper(),
+            ProductDefect = ProductDefect.Trim().ToUpper(),
+            Accessories = Accessories.Trim().ToUpper()
+        };
     }
 }

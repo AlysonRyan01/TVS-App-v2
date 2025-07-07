@@ -1,5 +1,6 @@
-using TVS_App.Application.Commands.ServiceOrderCommands;
+using MediatR;
 using TVS_App.Application.Interfaces.Services;
+using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Domain.Shared;
@@ -7,7 +8,7 @@ using TVS_App.Domain.ValueObjects.ServiceOrder;
 
 namespace TVS_App.Application.Handlers.ServiceOrders;
 
-public class CreateServiceOrderAndReturnPdfHandler : ICommandHandler<CreateServiceOrderCommand, BaseResponse<byte[]>>
+public class CreateServiceOrderAndReturnPdfHandler : IRequestHandler<CreateServiceOrderCommand, BaseResponse<byte[]>>
 {
     private readonly IServiceOrderCommandRepository _serviceOrderCommandRepository;
     private readonly IGenerateServiceOrderPdf _generateServiceOrderPdf;
@@ -23,15 +24,17 @@ public class CreateServiceOrderAndReturnPdfHandler : ICommandHandler<CreateServi
         _whatsappService = whatsappService;
     }
 
-    public async Task<BaseResponse<byte[]>> HandleAsync(CreateServiceOrderCommand command)
+    public async Task<BaseResponse<byte[]>> Handle(
+        CreateServiceOrderCommand request, 
+        CancellationToken cancellationToken = default)
     {
-        command.Normalize();
-        command.Validate();
+        request.Validate();
+        var normalized = request.Normalize();
 
-        var product = new Product(command.ProductBrand, command.ProductModel,
-            command.ProductSerialNumber, command.ProductDefect, command.Accessories, command.ProductType);
+        var product = new Product(normalized.ProductBrand, normalized.ProductModel,
+            normalized.ProductSerialNumber, normalized.ProductDefect, normalized.Accessories, normalized.ProductType);
 
-        var serviceOrder = new ServiceOrder(command.Enterprise, command.CustomerId, product);
+        var serviceOrder = new ServiceOrder(normalized.Enterprise, normalized.CustomerId, product);
 
         var createServiceOrder = await _serviceOrderCommandRepository.CreateAsync(serviceOrder);
         if (!createServiceOrder.IsSuccess)

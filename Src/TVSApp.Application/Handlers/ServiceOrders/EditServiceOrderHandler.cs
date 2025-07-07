@@ -1,37 +1,45 @@
-using TVS_App.Application.Commands.ServiceOrderCommands;
+using MediatR;
 using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Mappers;
+using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Handlers.ServiceOrders;
 
-public class EditServiceOrderHandler : ICommandHandler<EditServiceOrderCommand, BaseResponse<UpdateServiceOrderResponseDto?>>
+public class EditServiceOrderHandler : IRequestHandler<EditServiceOrderCommand, BaseResponse<UpdateServiceOrderResponseDto?>>
 {
     private readonly IServiceOrderCommandRepository _serviceOrderCommandRepository;
     private readonly IServiceOrderQueryRepository _serviceOrderQueryRepository;
 
-    public EditServiceOrderHandler(IServiceOrderCommandRepository serviceOrderCommandRepository, IServiceOrderQueryRepository serviceOrderQueryRepository)
+    public EditServiceOrderHandler(
+        IServiceOrderCommandRepository serviceOrderCommandRepository, 
+        IServiceOrderQueryRepository serviceOrderQueryRepository)
     {
         _serviceOrderCommandRepository = serviceOrderCommandRepository;
         _serviceOrderQueryRepository = serviceOrderQueryRepository;
     }
 
-    public async Task<BaseResponse<UpdateServiceOrderResponseDto?>> HandleAsync(EditServiceOrderCommand command)
+    public async Task<BaseResponse<UpdateServiceOrderResponseDto?>> Handle(
+        EditServiceOrderCommand request, 
+        CancellationToken cancellationToken = default)
     {
-        command.Normalize();
-        command.Validate();
+        request.Validate();
+        var normalized = request.Normalize();
             
-        if (command.Id == 0)
-            return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 401, "O ID da ordem de serviço não pode ser 0");
+        if (normalized.Id == 0)
+            return new BaseResponse<UpdateServiceOrderResponseDto?>(
+                null, 
+                401, 
+                "O ID da ordem de serviço não pode ser 0");
             
-        var repositoryResult = await _serviceOrderQueryRepository.GetById(command.Id);
+        var repositoryResult = await _serviceOrderQueryRepository.GetById(normalized.Id);
         if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
             return new BaseResponse<UpdateServiceOrderResponseDto?>(null, 500, repositoryResult.Message);
             
         var serviceOrder = repositoryResult.Data;
             
-        ServiceOrderMapper.ApplyChanges(serviceOrder, command);
+        ServiceOrderMapper.ApplyChanges(serviceOrder, normalized);
             
         var result = await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);
         if (!result.IsSuccess || result.Data == null)

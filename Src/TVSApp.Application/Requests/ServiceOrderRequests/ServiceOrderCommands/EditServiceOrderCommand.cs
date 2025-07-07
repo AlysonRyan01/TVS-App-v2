@@ -1,84 +1,70 @@
-using TVS_App.Application.Requests;
+using MediatR;
+using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Domain.Enums;
+using TVS_App.Domain.Shared;
 
-namespace TVS_App.Application.Commands.ServiceOrderCommands;
+namespace TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 
-public class EditServiceOrderCommand : ICommand
+public record EditServiceOrderCommand(
+    long Id,
+    long CustomerId,
+    string Name,
+    string Street,
+    string Neighborhood,
+    string City,
+    string Number,
+    string ZipCode,
+    string State,
+    string Phone,
+    string Phone2,
+    string? Email,
+    string Cpf,
+    string Brand,
+    string Model,
+    string SerialNumber,
+    string Defect,
+    string Accessories,
+    EProduct Type,
+    string Location,
+    EEnterprise Enterprise,
+    DateTime? DeliveryDate,
+    string? Solution,
+    string? Guarantee,
+    string? EstimateMessage,
+    decimal PartCost,
+    decimal LaborCost,
+    EServiceOrderStatus ServiceOrderStatus,
+    ERepairStatus RepairStatus,
+    ERepairResult? RepairResult
+) : IRequest<BaseResponse<UpdateServiceOrderResponseDto?>>
 {
-    public long Id { get; set; }
-    public long CustomerId { get; set; }
-    
-    public string Name { get; set; } = string.Empty;
-    public string Street { get; set; } = string.Empty;
-    public string Neighborhood { get; set; } = string.Empty;
-    public string City { get; set; } = string.Empty;
-    public string Number { get; set; } = string.Empty;
-    public string ZipCode { get; set; } = string.Empty;
-    public string State { get; set; } = string.Empty;
-    public string Phone { get; set; } = string.Empty;
-    public string Phone2 { get; set; } = string.Empty;
-    public string? Email { get; set; }
-    public string Cpf { get; set; } = string.Empty;
-    
-    public string Brand { get; set; } = null!;
-    public string Model { get; set; } = null!;
-    public string SerialNumber { get; set; } = null!;
-    public string Defect { get; set; } = string.Empty;
-    public string Accessories { get; set; } = string.Empty;
-    public EProduct Type { get; set; }
-    public string Location { get; set; } = string.Empty;
-        
-    public EEnterprise Enterprise { get; set; }
-    public DateTime? DeliveryDate { get; set; }
-    
-    public string? Solution { get; set; }
-    
-    public string? Guarantee { get; set; }
-    
-    public string? EstimateMessage { get; set; }
-    
-    public decimal PartCost { get; set; }
-    
-    public decimal LaborCost { get; set; }
-    
-    public EServiceOrderStatus ServiceOrderStatus { get; set; }
-    
-    public ERepairStatus RepairStatus { get; set; }
-    
-    public ERepairResult? RepairResult { get; set; }
-
-    public void Normalize()
+    public EditServiceOrderCommand Normalize()
     {
-        Name = Name.ToUpper().Trim();
-        Street = Street.ToUpper().Trim();
-        Neighborhood = Neighborhood.ToUpper().Trim();
-        City = City.ToUpper().Trim();
-        Number = Number.ToUpper().Trim();
-        ZipCode = ZipCode.ToUpper().Trim();
-        State = State.ToUpper().Trim();
-        Phone = Phone.ToUpper().Trim();
-        Phone2 = Phone2.ToUpper().Trim();
-        if (!string.IsNullOrEmpty(Email))
-            Email = Email.ToUpper().Trim();
-        Cpf = Cpf.ToUpper().Trim();
-    
-        Brand = Brand.ToUpper().Trim();
-        Model = Model.ToUpper().Trim();
-        SerialNumber = SerialNumber.ToUpper().Trim();
-        Defect = Defect.ToUpper().Trim();
-        Accessories = Accessories.ToUpper().Trim();
-        Location = Location.ToUpper().Trim();
-    
-        if (!string.IsNullOrEmpty(Solution))
-            Solution = Solution.ToUpper().Trim();
-    
-        if (!string.IsNullOrEmpty(Guarantee))
-            Guarantee = Guarantee.ToUpper().Trim();
-    
-        if (!string.IsNullOrEmpty(EstimateMessage))
-            EstimateMessage = EstimateMessage.ToUpper().Trim();
+        return this with
+        {
+            Name = Name.ToUpper().Trim(),
+            Street = Street.ToUpper().Trim(),
+            Neighborhood = Neighborhood.ToUpper().Trim(),
+            City = City.ToUpper().Trim(),
+            Number = Number.ToUpper().Trim(),
+            ZipCode = ZipCode.ToUpper().Trim(),
+            State = State.ToUpper().Trim(),
+            Phone = Phone.ToUpper().Trim(),
+            Phone2 = Phone2.ToUpper().Trim(),
+            Email = string.IsNullOrWhiteSpace(Email) ? null : Email.ToUpper().Trim(),
+            Cpf = Cpf.ToUpper().Trim(),
+            Brand = Brand.ToUpper().Trim(),
+            Model = Model.ToUpper().Trim(),
+            SerialNumber = SerialNumber.ToUpper().Trim(),
+            Defect = Defect.ToUpper().Trim(),
+            Accessories = Accessories.ToUpper().Trim(),
+            Location = Location.ToUpper().Trim(),
+            Solution = string.IsNullOrWhiteSpace(Solution) ? null : Solution.ToUpper().Trim(),
+            Guarantee = string.IsNullOrWhiteSpace(Guarantee) ? null : Guarantee.ToUpper().Trim(),
+            EstimateMessage = string.IsNullOrWhiteSpace(EstimateMessage) ? null : EstimateMessage.ToUpper().Trim()
+        };
     }
-    
+
     public void Validate()
     {
         if (Id <= 0)

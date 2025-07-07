@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuestPDF.Infrastructure;
 using TVS_App.Application.Interfaces.Services;
+using TVS_App.Application.Requests.CustomerRequests.CustomerCommands;
 using TVS_App.Domain.Repositories.Customers;
 using TVS_App.Domain.Repositories.Notifications;
 using TVS_App.Domain.Repositories.ServiceOrders;
@@ -67,7 +68,7 @@ public static class BuilderExtensions
         builder.Services.Configure<EvolutionApiSettings>(builder.Configuration.GetSection("EvolutionApiSettings"));
         builder.Services.AddMediatR(x =>
         {
-            x.RegisterServicesFromAssembly(typeof(BuilderExtensions).Assembly);
+            x.RegisterServicesFromAssembly(typeof(CreateCustomerCommand).Assembly);
         });
     }
 

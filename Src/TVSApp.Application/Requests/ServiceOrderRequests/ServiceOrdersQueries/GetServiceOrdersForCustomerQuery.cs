@@ -1,9 +1,12 @@
+using MediatR;
+using TVS_App.Application.DTOs;
 using TVS_App.Application.Exceptions;
-using TVS_App.Application.Requests;
+using TVS_App.Domain.Shared;
 
-namespace TVS_App.Application.Queries.ServiceOrdersQueries;
+namespace TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries;
 
-public record GetServiceOrdersForCustomerQuery(long ServiceOrderId, string SecurityCode) : IQuery
+public record GetServiceOrdersForCustomerQuery(long ServiceOrderId, string SecurityCode) 
+    : IRequest<BaseResponse<EstimateServiceOrder>>
 {
     public string NormalizedSecurityCode => SecurityCode.Trim().ToUpper();
     
