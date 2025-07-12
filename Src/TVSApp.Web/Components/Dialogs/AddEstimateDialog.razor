@@ -1,8 +1,10 @@
 @using TVS_App.Application.DTOs.ServiceOrder
 @using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands
+@using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries
 @using TVS_App.Domain.Enums
 @using TVSApp.Web.Extensions
 @using TVSApp.Web.Handlers
+@using TVSApp.Web.Models.ServiceOrders
 
 <MudDialog>
     <TitleContent>
@@ -77,19 +79,19 @@
             <MudForm @ref="_form">
                 <MudGrid>
                     <MudItem xs="12" md="6">
-                        <MudTextField Label="Solução" Lines="2" @bind-Value="Request.Solution" For="@(() => Request.Solution)" Variant="Variant.Outlined" />
+                        <MudTextField Label="Solução" Lines="2" @bind-Value="Model.Solution" For="@(() => Model.Solution)" Variant="Variant.Outlined" />
                     </MudItem>
                     <MudItem xs="12" md="6">
-                        <MudTextField Label="Mensagem de orçamento" Lines="2" @bind-Value="Request.EstimateMessage" For="@(() => Request.EstimateMessage)" Variant="Variant.Outlined" />
+                        <MudTextField Label="Mensagem de orçamento" Lines="2" @bind-Value="Model.EstimateMessage" For="@(() => Model.EstimateMessage)" Variant="Variant.Outlined" />
                     </MudItem>
                     <MudItem xs="12" md="6">
-                        <MudTextField Label="Valor total" @bind-Value="Request.LaborCost" For="@(() => Request.LaborCost)" Variant="Variant.Outlined" />
+                        <MudTextField Label="Valor total" @bind-Value="Model.LaborCost" For="@(() => Model.LaborCost)" Variant="Variant.Outlined" />
                     </MudItem>
                     <MudItem xs="12" md="6">
-                        <MudTextField Label="Garantia" @bind-Value="Request.Guarantee" For="@(() => Request.Guarantee)" Variant="Variant.Outlined" />
+                        <MudTextField Label="Garantia" @bind-Value="Model.Guarantee" For="@(() => Model.Guarantee)" Variant="Variant.Outlined" />
                     </MudItem>
                     <MudItem xs="12" md="6">
-                        <MudSelect  Variant="Variant.Outlined" T="ERepairResult" Label="Situação" @bind-Value="Request.RepairResult" Color="Color.Primary">
+                        <MudSelect  Variant="Variant.Outlined" T="ERepairResult" Label="Situação" @bind-Value="Model.RepairResult" Color="Color.Primary">
                             @foreach (var value in Enum.GetValues(typeof(ERepairResult)).Cast<ERepairResult>())
                             {
                                 <MudSelectItem Value="@value">@GetPortugueseLabel(value)</MudSelectItem>
@@ -124,7 +126,7 @@
 
 @code {
     private MudForm _form = null!;
-    public AddServiceOrderEstimateCommand Request { get; set; } = new();
+    public AddServiceOrderEstimateCommandModel Model { get; set; } = new();
     private bool _isProcessing;
 
     [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
@@ -134,7 +136,7 @@
 
     protected override Task OnInitializedAsync()
     {
-        Request.RepairResult = ERepairResult.Repair;
+        Model.RepairResult = ERepairResult.Repair;
         return Task.CompletedTask;
     }
 
@@ -151,8 +153,17 @@
             }
 
             _isProcessing = true;
-            Request.ServiceOrderId = ServiceOrder.Id;
-            var result = await ServiceOrderHandler.AddServiceOrderEstimate(Request);
+
+            var request = new AddServiceOrderEstimateCommand(
+                ServiceOrder.Id,
+                Model.Guarantee,
+                Model.Solution,
+                Model.PartCost,
+                Model.LaborCost,
+                Model.RepairResult,
+                Model.EstimateMessage);
+            
+            var result = await ServiceOrderHandler.AddServiceOrderEstimate(request);
 
             if (result.IsSuccess)
             {
@@ -185,7 +196,7 @@
 
     private async Task UpdateLocation()
     {
-        var command = new GetServiceOrderByIdCommand { Id = ServiceOrder.Id };
+        var command = new GetServiceOrderByIdQuery(ServiceOrder.Id);
         
         var result = await ServiceOrderHandler.GetServiceOrderById(command);
         if (result.IsSuccess)

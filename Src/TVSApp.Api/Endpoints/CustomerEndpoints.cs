@@ -18,10 +18,10 @@ public static class CustomerEndpoints
                 CreateCustomerCommand command, 
                 IHubContext<ServiceOrderHub> hubContext) =>
         {
-            command.Normalize();
-            command.Validate();
+            var normalizedCommand = command.Normalize();
+            normalizedCommand.Validate();
 
-            var createResult = await handler.Send(command);
+            var createResult = await handler.Send(normalizedCommand);
             if (!createResult.IsSuccess)
                 return Results.Ok(createResult);
 
@@ -43,10 +43,10 @@ public static class CustomerEndpoints
                 UpdateCustomerCommand command, 
                 IHubContext<ServiceOrderHub> hubContext) =>
         {
-            command.Normalize();
-            command.Validate();
+            var normalizedCommand = command.Normalize();
+            normalizedCommand.Validate();
 
-            var updateResult = await handler.Send(command);
+            var updateResult = await handler.Send(normalizedCommand);
             if (!updateResult.IsSuccess)
                 return Results.Ok(updateResult);
 

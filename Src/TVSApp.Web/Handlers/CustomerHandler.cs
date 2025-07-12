@@ -1,7 +1,5 @@
 using System.Net.Http.Json;
-using TVS_App.Application.Commands;
 using TVS_App.Application.DTOs;
-using TVS_App.Application.Queries;
 using TVS_App.Application.Requests.CustomerRequests.CustomerCommands;
 using TVS_App.Application.Requests.CustomerRequests.CustomersQueries;
 using TVS_App.Domain.Shared;
@@ -104,7 +102,7 @@ public class CustomerHandler
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<CustomerDto?>>> GetAllCustomersAsync(PaginationQuery query)
+    public async Task<BaseResponse<PaginatedResult<CustomerDto?>>> GetAllCustomersAsync(GetAllCustomersQuery query)
     {
         try
         {

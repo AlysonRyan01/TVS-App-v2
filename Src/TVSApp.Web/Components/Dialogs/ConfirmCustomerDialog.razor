@@ -3,6 +3,7 @@
 @using TVS_App.Application.Requests.CustomerRequests.CustomerCommands
 @using TVS_App.Application.Requests.CustomerRequests.CustomersQueries
 @using TVSApp.Web.Handlers
+@using TVSApp.Web.Models.ServiceOrders
 <MudDialog>
     <TitleContent>
         <h2 class="font-extrabold text-lg lg:text-2xl font-sans text-[#750303]">SELECIONAR CLIENTE</h2>
@@ -119,8 +120,8 @@
 {
     [Parameter] public long CustomerId { get; set; }
     public CustomerDto Customer { get; set; } = null!;
-    public UpdateCustomerCommand EditableCustomerCommand { get; set; } = new();
-    public GetCustomerByIdQuery Query => new GetCustomerByIdQuery { Id = CustomerId };
+    public UpdateCustomerCommandModel EditableCustomerCommand { get; set; } = new();
+    public GetCustomerByIdQuery Query => new GetCustomerByIdQuery(CustomerId);
 
     [Inject] public CustomerHandler CustomerHandler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
@@ -136,7 +137,7 @@
             {
                 Customer = customerResult.Data;
                 
-                EditableCustomerCommand = new UpdateCustomerCommand
+                EditableCustomerCommand = new UpdateCustomerCommandModel
                 {
                     Id = Customer.Id,
                     Name = Customer.Name,
@@ -174,10 +175,21 @@
         _isBusy = true;
         try
         {
-            EditableCustomerCommand.Normalize();
-            EditableCustomerCommand.Validate();
-
-            var updateResult = await CustomerHandler.UpdateCustomerAsync(EditableCustomerCommand);
+            var command = new UpdateCustomerCommand(
+                EditableCustomerCommand.Id,
+                EditableCustomerCommand.Name,
+                EditableCustomerCommand.Street,
+                EditableCustomerCommand.Neighborhood,
+                EditableCustomerCommand.City,
+                EditableCustomerCommand.Number,
+                EditableCustomerCommand.ZipCode,
+                EditableCustomerCommand.State,
+                EditableCustomerCommand.Phone,
+                EditableCustomerCommand.Phone2,
+                EditableCustomerCommand.Email,
+                EditableCustomerCommand.Cpf);
+            
+            var updateResult = await CustomerHandler.UpdateCustomerAsync(command);
             if (updateResult.IsSuccess && updateResult.Data != null)
             {
                 MudDialog.Close(DialogResult.Ok(updateResult.Data));

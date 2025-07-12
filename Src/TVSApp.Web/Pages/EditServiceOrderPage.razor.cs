@@ -5,8 +5,10 @@ using MudBlazor;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
+using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries;
 using TVSApp.Web.Components.Dialogs;
 using TVSApp.Web.Handlers;
+using TVSApp.Web.Models.ServiceOrders;
 
 namespace TVSApp.Web.Pages;
 
@@ -14,9 +16,14 @@ public partial class EditServiceOrderPage : ComponentBase
 {
     public CustomerDto? SelectedCustomer { get; set; }
     private string _serviceOrderId = string.Empty;
-    private GetServiceOrderByIdCommand _printCommand = new();
-    private AddProductLocationCommand _locationCommand = new();
+    private RegenerateAndReturnPdfCommandModel _printCommand = new();
+    private AddProductLocationCommandModel _locationCommand = new();
     private bool _isBusy;
+    
+    private RegenerateAndReturnPdfCommand ToQuery()
+    {
+        return new RegenerateAndReturnPdfCommand(_printCommand.Id);
+    }
     
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
     [Inject] public IDialogService DialogService { get; set; } = null!;
@@ -35,7 +42,7 @@ public partial class EditServiceOrderPage : ComponentBase
         }
         
         var serviceOrderResult = await ServiceOrderHandler.GetServiceOrderById(
-            new GetServiceOrderByIdCommand{Id = longNumber});
+            new GetServiceOrderByIdQuery(longNumber));
         if (serviceOrderResult.IsSuccess)
         {
             if (serviceOrderResult.Data != null)
@@ -148,7 +155,11 @@ public partial class EditServiceOrderPage : ComponentBase
         _isBusy = true;
         try
         {
-            var result = await ServiceOrderHandler.AddProductLocation(_locationCommand);
+            var command = new AddProductLocationCommand(
+                _locationCommand.ServiceOrderId, 
+                _locationCommand.Location);
+            
+            var result = await ServiceOrderHandler.AddProductLocation(command);
             if (result.IsSuccess)
                 Snackbar.Add(result.Message ?? "Prateleira adicionada com sucesso!", Severity.Success);
             else

@@ -1,8 +1,7 @@
 using System.Net.Http.Json;
-using TVS_App.Application.Commands;
 using TVS_App.Application.DTOs.ServiceOrder;
-using TVS_App.Application.Queries;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
+using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Shared;
 
@@ -84,7 +83,7 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<ServiceOrderDto?>> GetServiceOrderById(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> GetServiceOrderById(GetServiceOrderByIdQuery command)
     {
         try
         {
@@ -198,7 +197,7 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetAllServiceOrdersAsync(PaginationQuery query)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetAllServiceOrdersAsync(GetAllServiceOrdersQuery query)
     {
         try
         {
@@ -216,7 +215,7 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingEstimatesAsync(PaginationQuery query)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingEstimatesAsync(GetPendingEstimatesQuery query)
     {
         try
         {
@@ -234,7 +233,7 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingResponseAsync(PaginationQuery query)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingResponseAsync(GetWaitingResponseQuery query)
     {
         try
         {
@@ -252,7 +251,7 @@ public class ServiceOrderHandler
         }
     }
     
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingPurchasePartAsync(PaginationQuery query)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetPendingPurchasePartAsync(GetPendingPurchasePartQuery query)
     {
         try
         {
@@ -270,7 +269,7 @@ public class ServiceOrderHandler
         }
     }
     
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPartsAsync(PaginationQuery query)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPartsAsync(GetWaitingPartsQuery query)
     {
         try
         {
@@ -288,7 +287,7 @@ public class ServiceOrderHandler
         }
     }
     
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPickupAsync(PaginationQuery query)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPickupAsync(GetWaitingPickupQuery query)
     {
         try
         {
@@ -306,7 +305,7 @@ public class ServiceOrderHandler
         }
     }
     
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetDeliveredAsync(PaginationQuery query)
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetDeliveredAsync(GetDeliveredQuery query)
     {
         try
         {
@@ -372,7 +371,7 @@ public class ServiceOrderHandler
         }
     }
     
-    public async Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderApproveEstimate(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderApproveEstimate(AddServiceOrderApproveEstimateCommand command)
     {
         try
         {
@@ -396,7 +395,7 @@ public class ServiceOrderHandler
         }
     }
     
-    public async Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderRejectEstimate(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderRejectEstimate(AddServiceOrderRejectEstimateCommand command)
     {
         try
         {
@@ -420,7 +419,7 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<ServiceOrderDto?>> AddPurchasedPart(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> AddPurchasedPart(AddPurchasedPartCommand command)
     {
         try
         {
@@ -444,7 +443,7 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderRepair(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<ServiceOrderDto?>> AddServiceOrderRepair(AddServiceOrderRepairCommand command)
     {
         try
         {
@@ -468,7 +467,7 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<byte[]?>> AddServiceOrderDeliveryAndReturnPdfAsync(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<byte[]?>> AddServiceOrderDeliveryAndReturnPdfAsync(AddServiceOrderDeliveryAndReturnPdfCommand command)
     {
         try
         {
@@ -491,11 +490,11 @@ public class ServiceOrderHandler
         }
     }
 
-    public async Task<BaseResponse<byte[]>> RegenerateAndReturnPdfAsync(GetServiceOrderByIdCommand command)
+    public async Task<BaseResponse<byte[]>> RegenerateAndReturnPdfAsync(RegenerateAndReturnPdfCommand command)
     {
         try
         {
-            var response = await _httpClient.PutAsJsonAsync("regenerate-service-order-pdf", command);
+            var response = await _httpClient.PostAsJsonAsync("regenerate-service-order-pdf", command);
             if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync();

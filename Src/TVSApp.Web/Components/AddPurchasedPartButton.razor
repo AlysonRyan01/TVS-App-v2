@@ -1,4 +1,5 @@
 @using TVS_App.Application.DTOs.ServiceOrder
+@using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands
 @using TVSApp.Web.Handlers
 
 
@@ -18,7 +19,7 @@
         try
         {
             _isProcessing = true;
-            var result = await ServiceOrderHandler.AddPurchasedPart(new GetServiceOrderByIdCommand { Id = ServiceOrder.Id });
+            var result = await ServiceOrderHandler.AddPurchasedPart(new AddPurchasedPartCommand(ServiceOrder.Id));
             if (result.IsSuccess)
             {
                 DialogInstance.Close(DialogResult.Ok(true));

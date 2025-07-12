@@ -4,9 +4,11 @@
 @using TVS_App.Application.DTOs.ServiceOrder
 @using TVS_App.Application.Requests.CustomerRequests.CustomersQueries
 @using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands
+@using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries
 @using TVS_App.Domain.Enums
 @using TVSApp.Web.Extensions
 @using TVSApp.Web.Handlers
+@using TVSApp.Web.Models.ServiceOrders
 
 <MudDialog MaxWidth="MaxWidth.False" FullWidth="true">
 
@@ -319,7 +321,7 @@
                     </MudText>
                     <DeliveryServiceOrderButton
                         OnDeliveryAdded="OnDeliveryAdded"
-                        Command="_getServiceOrderByIdCommand" />
+                        Command="_deliveryCommand" />
                 </div>
             }
         </div>
@@ -331,9 +333,9 @@
 
 
 @code {
-    private EditServiceOrderCommand _command = null!;
-    private AddServiceOrderEstimateCommand _addEstimateCommand = new();
-    private GetServiceOrderByIdCommand _getServiceOrderByIdCommand = new();
+    private EditServiceOrderCommandModel _command = null!;
+    private AddServiceOrderEstimateCommandModel _addEstimateCommand = new();
+    private AddServiceOrderDeliveryAndReturnPdfCommand _deliveryCommand = null!;
     [Parameter] public EventCallback OnRepairAdded { get; set; }
     private bool _isProcessing;
     
@@ -348,7 +350,7 @@
     {
         try
         {
-            _command = new EditServiceOrderCommand
+            _command = new EditServiceOrderCommandModel
             {
                 Id = ServiceOrder.Id,
                 CustomerId = ServiceOrder.CustomerId,
@@ -382,8 +384,7 @@
                 RepairResult = ServiceOrder.RepairResult
             };
 
-            _addEstimateCommand.ServiceOrderId = ServiceOrder.Id;
-            _getServiceOrderByIdCommand.Id = ServiceOrder.Id;
+            _deliveryCommand = new AddServiceOrderDeliveryAndReturnPdfCommand(ServiceOrder.Id);
 
             _selectedCustomer = new CustomerDto
             {
@@ -416,15 +417,47 @@
         }
         
         var customer = await CustomerHandler.
-            GetCustomerByIdAsync(new GetCustomerByIdQuery { Id = _selectedCustomer.Id});
+            GetCustomerByIdAsync(new GetCustomerByIdQuery(_selectedCustomer.Id));
 
         if (!customer.IsSuccess || customer.Data == null)
         {
             Snackbar.Add(customer.Message ?? "Ocorreu um erro ao tentar obter o cliente", Severity.Error);
             return;
         }
+
+        var command = new EditServiceOrderCommand(
+            _command.Id,
+            _command.CustomerId,
+            _command.Name,
+            _command.Street,
+            _command.Neighborhood,
+            _command.City,
+            _command.Number,
+            _command.ZipCode,
+            _command.State,
+            _command.Phone,
+            _command.Phone2,
+            _command.Email,
+            _command.Cpf,
+            _command.Brand,
+            _command.Model,
+            _command.SerialNumber,
+            _command.Defect,
+            _command.Accessories,
+            _command.Type,
+            _command.Location,
+            _command.Enterprise,
+            _command.DeliveryDate,
+            _command.Solution,
+            _command.Guarantee,
+            _command.EstimateMessage,
+            _command.PartCost,
+            _command.LaborCost,
+            _command.ServiceOrderStatus,
+            _command.RepairStatus,
+            _command.RepairResult);
         
-        var result = await ServiceOrderHandler.EditServiceOrderAsync(_command);
+        var result = await ServiceOrderHandler.EditServiceOrderAsync(command);
         if (result.IsSuccess)
         {
             Snackbar.Add(result.Message ?? "Ordem de serviço alterada com sucesso!", Severity.Success);
@@ -440,7 +473,16 @@
         _isProcessing = true;
         try
         {
-            var result = await ServiceOrderHandler.AddServiceOrderEstimate(_addEstimateCommand);
+            var command = new AddServiceOrderEstimateCommand(
+                _addEstimateCommand.ServiceOrderId,
+                _addEstimateCommand.Guarantee,
+                _addEstimateCommand.Solution,
+                _addEstimateCommand.PartCost,
+                _addEstimateCommand.LaborCost,
+                _addEstimateCommand.RepairResult,
+                _addEstimateCommand.EstimateMessage);
+            
+            var result = await ServiceOrderHandler.AddServiceOrderEstimate(command);
             if (result.IsSuccess)
             {
                 Snackbar.Add(result.Message ?? "Orçamento adicionado com sucesso!", Severity.Success);
@@ -465,7 +507,8 @@
         _isProcessing = true;
         try
         {
-            var result = await ServiceOrderHandler.AddServiceOrderApproveEstimate(_getServiceOrderByIdCommand);
+            var result = await ServiceOrderHandler.AddServiceOrderApproveEstimate(
+                new AddServiceOrderApproveEstimateCommand(ServiceOrder.Id));
             if (result.IsSuccess)
             {
                 Snackbar.Add(result.Message ?? "Resposta adicionada com sucesso!", Severity.Success);
@@ -490,7 +533,8 @@
         _isProcessing = true;
         try
         {
-            var result = await ServiceOrderHandler.AddServiceOrderRejectEstimate(_getServiceOrderByIdCommand);
+            var result = await ServiceOrderHandler.AddServiceOrderRejectEstimate(
+                new AddServiceOrderRejectEstimateCommand(ServiceOrder.Id));
             if (result.IsSuccess)
             {
                 Snackbar.Add(result.Message ?? "Resposta adicionada com sucesso!", Severity.Success);
@@ -514,7 +558,8 @@
     {
         try
         {
-            var result = await ServiceOrderHandler.AddServiceOrderRepair(_getServiceOrderByIdCommand);
+            var result = await ServiceOrderHandler.AddServiceOrderRepair(
+                new AddServiceOrderRepairCommand(ServiceOrder.Id));
 
             if (result.IsSuccess)
             {
@@ -570,7 +615,7 @@
     
     private async Task UpdateLocation()
     {
-        var command = new GetServiceOrderByIdCommand { Id = ServiceOrder.Id };
+        var command = new GetServiceOrderByIdQuery(ServiceOrder.Id);
         
         var result = await ServiceOrderHandler.GetServiceOrderById(command);
         if (result.IsSuccess)

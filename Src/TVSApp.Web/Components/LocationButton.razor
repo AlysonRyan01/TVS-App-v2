@@ -1,10 +1,11 @@
 @using TVS_App.Application.DTOs.ServiceOrder
 @using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands
 @using TVSApp.Web.Handlers
+@using TVSApp.Web.Models.ServiceOrders
 <div class="flex flex-row items-start lg:items-center lg:flex-row gap-1 w-[300px] justify-start lg:justify-center mb-8">
     <MudTextField Label="Adicionar Prateleira"
-                  @bind-Value="Request.Location"
-                  For="@(() => Request.Location)"
+                  @bind-Value="Model.Location"
+                  For="@(() => Model.Location)"
                   Variant="Variant.Outlined"
                   FullWidth="false"
                   Class="max-w-[200px]"/>
@@ -28,7 +29,7 @@
 @code {
     [Parameter] public EventCallback OnLocationChanged { get; set; }
     [Parameter] public ServiceOrderDto ServiceOrder { get; set; } = null!;
-    private AddProductLocationCommand Request { get; set; } = new();
+    private AddProductLocationCommandModel Model { get; set; } = new();
     [Inject] public ServiceOrderHandler ServiceOrderHandler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
 
@@ -38,13 +39,16 @@
         try
         {
             _isProcessing = true;
-            Request.ServiceOrderId = ServiceOrder.Id;
-            var result = await ServiceOrderHandler.AddProductLocation(Request);
+            Model.ServiceOrderId = ServiceOrder.Id;
+
+            var request = new AddProductLocationCommand(Model.ServiceOrderId, Model.Location);
+            
+            var result = await ServiceOrderHandler.AddProductLocation(request);
             if (result.IsSuccess)
             {
                 Snackbar.Add("Prateleira adicionada com sucesso!", Severity.Success);
                 await OnLocationChanged.InvokeAsync();
-                Request.Location = string.Empty;
+                Model.Location = string.Empty;
             }
             else
             {

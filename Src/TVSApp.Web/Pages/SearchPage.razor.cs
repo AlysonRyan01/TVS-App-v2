@@ -2,11 +2,9 @@ using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
-using TVS_App.Application.Commands;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.DTOs.ServiceOrder;
-using TVS_App.Application.Queries;
-using TVS_App.Domain.Entities;
+using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries;
 using TVSApp.Web.Components.Dialogs;
 using TVSApp.Web.Handlers;
 
@@ -33,7 +31,8 @@ public partial class SearchPage : ComponentBase
         try
         {
             var allOrdersResult =
-                await ServiceOrderHandler.GetAllServiceOrdersAsync(new PaginationQuery { PageNumber = 1, PageSize = 300 });
+                await ServiceOrderHandler.GetAllServiceOrdersAsync(
+                    new GetAllServiceOrdersQuery(1, 300));
             if (allOrdersResult.IsSuccess && allOrdersResult.Data?.Items.Any() == true)
             {
                 FilteredServiceOrders = allOrdersResult.Data.Items
@@ -135,7 +134,7 @@ public partial class SearchPage : ComponentBase
             }
                
             var searchResult = await ServiceOrderHandler.
-                GetServiceOrderById(new GetServiceOrderByIdCommand { Id = longNumber });
+                GetServiceOrderById(new GetServiceOrderByIdQuery(longNumber));
 
             if (searchResult.IsSuccess)
             {

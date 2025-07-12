@@ -20,9 +20,10 @@ public static class ServiceOrderEndpoints
                 CreateServiceOrderCommand command, 
                 IHubContext<ServiceOrderHub> hubContext) =>
         {
-            command.Validate();
+            var normalizedCommand = command.Normalize();
+            normalizedCommand.Validate();
 
-            var createOrderResult = await handler.Send(command);
+            var createOrderResult = await handler.Send(normalizedCommand);
             if (!createOrderResult.IsSuccess)
                 return Results.Ok(createOrderResult);
 
@@ -45,9 +46,10 @@ public static class ServiceOrderEndpoints
                 CreateSalesServiceOrderCommand command, 
                 IHubContext<ServiceOrderHub> hubContext) =>
         {
-            command.Validate();
+            var normalizedCommand = command.Normalize();
+            normalizedCommand.Validate();
 
-            var createOrderResult = await handler.Send(command);
+            var createOrderResult = await handler.Send(normalizedCommand);
             if (!createOrderResult.IsSuccess)
                 return Results.Ok(createOrderResult);
 
@@ -361,9 +363,10 @@ public static class ServiceOrderEndpoints
                 AddProductLocationCommand command, 
                 IHubContext<ServiceOrderHub> hubContext) =>
         {
-            command.Validate();
+            var normalizedCommand = command.Normalize();
+            normalizedCommand.Validate();
 
-            var addLocationResult = await handler.Send(command);
+            var addLocationResult = await handler.Send(normalizedCommand);
             await hubContext.Clients.All.SendAsync("Atualizar", addLocationResult.Message);
             return Results.Ok(addLocationResult);
         })
@@ -380,9 +383,10 @@ public static class ServiceOrderEndpoints
                 AddServiceOrderEstimateCommand command, 
                 IHubContext<ServiceOrderHub> hubContext) =>
         {
-            command.Validate();
+            var normalizedCommand = command.Normalize();
+            normalizedCommand.Validate();
 
-            var addServiceOrderEstimateResult = await handler.Send(command);
+            var addServiceOrderEstimateResult = await handler.Send(normalizedCommand);
             if (!addServiceOrderEstimateResult.IsSuccess)
                 return Results.Ok(addServiceOrderEstimateResult);
 
@@ -516,10 +520,8 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/regenerate-service-order-pdf", async (ISender handler, long id) =>
+        app.MapPost("/regenerate-service-order-pdf", async (ISender handler, RegenerateAndReturnPdfCommand command) =>
             {
-                var command = new RegenerateAndReturnPdfCommand(id);
-
                 var regenerateServiceOrderResult = await handler.Send(command);
                 if (!regenerateServiceOrderResult.IsSuccess)
                     return Results.Ok(regenerateServiceOrderResult);

@@ -3,22 +3,36 @@ using System.Text;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using TVS_App.Application.DTOs;
-using TVS_App.Application.Exceptions;
 using TVS_App.Application.Requests.CustomerRequests.CustomerCommands;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 using TVSApp.Web.Components.Dialogs;
 using TVSApp.Web.Handlers;
+using TVSApp.Web.Models.Customers;
+using TVSApp.Web.Models.ServiceOrders;
 
 namespace TVSApp.Web.Pages;
 
 public partial class CreateServiceOrderPage : ComponentBase
 {
-    public CreateCustomerCommand CreateCustomerCommand { get; set; } = new();
-    public CreateServiceOrderCommand CreateServiceOrderCommand { get; set; } = new();
+    public CreateCustomerCommandModel CreateCustomerCommand { get; set; } = new();
+    public CreateServiceOrderCommandModel CreateServiceOrderCommand { get; set; } = new();
     public CustomerDto? SelectedCustomer { get; set; }
     private bool _isLoading;
     private bool _customerSideCompleted;
     private bool _serviceOrderTime;
+
+    private CreateServiceOrderCommand ModelToCommand()
+    {
+        return new CreateServiceOrderCommand(
+            CreateServiceOrderCommand.CustomerId,
+            CreateServiceOrderCommand.ProductBrand,
+            CreateServiceOrderCommand.ProductModel,
+            CreateServiceOrderCommand.ProductSerialNumber,
+            CreateServiceOrderCommand.ProductDefect,
+            CreateServiceOrderCommand.Accessories,
+            CreateServiceOrderCommand.ProductType,
+            CreateServiceOrderCommand.Enterprise);
+    }
 
     [Inject] public CustomerHandler CustomerHandler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
@@ -75,10 +89,20 @@ public partial class CreateServiceOrderPage : ComponentBase
         _isLoading = true;
         try
         {
-            CreateCustomerCommand.Normalize();
-            CreateCustomerCommand.Validate();
-
-            var createResult = await CustomerHandler.CreateCustomerAsync(CreateCustomerCommand);
+            var command = new CreateCustomerCommand(
+                CreateCustomerCommand.Name,
+                CreateCustomerCommand.Street,
+                CreateCustomerCommand.Neighborhood,
+                CreateCustomerCommand.City,
+                CreateCustomerCommand.Number,
+                CreateCustomerCommand.ZipCode,
+                CreateCustomerCommand.State,
+                CreateCustomerCommand.Phone,
+                CreateCustomerCommand.Phone2,
+                CreateCustomerCommand.Email,
+                CreateCustomerCommand.Cpf);
+            
+            var createResult = await CustomerHandler.CreateCustomerAsync(command);
             if (createResult.IsSuccess || createResult.Data != null)
             {
                 SelectedCustomer = createResult.Data!;

@@ -1,3 +1,4 @@
+@using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands
 @using TVSApp.Web.Handlers
 
 @if (_isProcessing)
@@ -19,7 +20,7 @@ else
 
 
 @code {
-    [Parameter] public GetServiceOrderByIdCommand Command { get; set; } = null!;
+    [Parameter] public AddServiceOrderDeliveryAndReturnPdfCommand Command { get; set; } = null!;
     [Parameter] public IMudDialogInstance DialogInstance { get; set; } = null!;
     [Parameter] public EventCallback OnDeliveryAdded { get; set; }
     [Inject] public ServiceOrderHandler Handler { get; set; } = null!;
@@ -32,8 +33,6 @@ else
     {
         try
         {
-            Command.Validate();
-
             _isProcessing = true;
             var result = await Handler.AddServiceOrderDeliveryAndReturnPdfAsync(Command);
             if (!result.IsSuccess)

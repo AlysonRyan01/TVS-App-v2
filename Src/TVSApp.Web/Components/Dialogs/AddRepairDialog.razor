@@ -1,4 +1,6 @@
 @using TVS_App.Application.DTOs.ServiceOrder
+@using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands
+@using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries
 @using TVS_App.Domain.Enums
 @using TVSApp.Web.Extensions
 @using TVSApp.Web.Handlers
@@ -127,7 +129,8 @@
         _isBusy = true;
         try
         {
-            var result = await ServiceOrderHandler.AddServiceOrderRepair(new GetServiceOrderByIdCommand { Id = ServiceOrder.Id });
+            var result = await ServiceOrderHandler.AddServiceOrderRepair(
+                new AddServiceOrderRepairCommand(ServiceOrder.Id));
 
             if (result.IsSuccess)
             {
@@ -179,7 +182,7 @@
 
     private async Task UpdateLocation()
     {
-        var command = new GetServiceOrderByIdCommand { Id = ServiceOrder.Id };
+        var command = new GetServiceOrderByIdQuery(ServiceOrder.Id);
         
         var result = await ServiceOrderHandler.GetServiceOrderById(command);
         if (result.IsSuccess)

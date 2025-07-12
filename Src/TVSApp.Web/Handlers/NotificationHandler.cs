@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using TVS_App.Application.DTOs;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Shared;
 
@@ -17,10 +18,10 @@ public class NotificationHandler
     {
         try
         {
-            var content = new
+            var content = new CreateNotification
             {
-                title,
-                message
+                Title = title,
+                Message = message
             };
 
             var response = await _httpClient.PostAsJsonAsync("/notifications", content);

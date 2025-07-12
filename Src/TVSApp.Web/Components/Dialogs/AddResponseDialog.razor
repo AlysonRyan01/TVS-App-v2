@@ -1,4 +1,7 @@
+
 @using TVS_App.Application.DTOs.ServiceOrder
+@using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands
+@using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries
 @using TVS_App.Domain.Enums
 @using TVSApp.Web.Extensions
 @using TVSApp.Web.Handlers
@@ -132,7 +135,8 @@
         _isProcessing = true;
         try
         {
-            var result = await ServiceOrderHandler.AddServiceOrderApproveEstimate(new GetServiceOrderByIdCommand { Id = ServiceOrder.Id });
+            var result = await ServiceOrderHandler.
+                AddServiceOrderApproveEstimate(new AddServiceOrderApproveEstimateCommand(ServiceOrder.Id));
             if (result.IsSuccess)
             {
                 MudDialog.Close(DialogResult.Ok(true));
@@ -157,7 +161,8 @@
         try
         {
             _isProcessing = true;
-            var result = await ServiceOrderHandler.AddServiceOrderRejectEstimate(new GetServiceOrderByIdCommand { Id = ServiceOrder.Id });
+            var result = await ServiceOrderHandler.AddServiceOrderRejectEstimate(
+                new AddServiceOrderRejectEstimateCommand(ServiceOrder.Id));
             if (result.IsSuccess)
             {
                 Snackbar.Add("Resposta adicionada com sucesso!", Severity.Success);
@@ -208,7 +213,8 @@
 
     private async Task AtualizarPrateleira()
     {
-        var result = await ServiceOrderHandler.GetServiceOrderById(new GetServiceOrderByIdCommand { Id = ServiceOrder.Id });
+        var result = await ServiceOrderHandler.GetServiceOrderById(
+            new GetServiceOrderByIdQuery(ServiceOrder.Id));
         if (result.IsSuccess)
         {
             if (result.Data != null)

@@ -1,3 +1,4 @@
+@using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands
 @using TVSApp.Web.Handlers
 
 @if (_isProcessing)
@@ -15,7 +16,7 @@ else
 
 
 @code {
-    [Parameter] public GetServiceOrderByIdCommand Command { get; set; } = null!;
+    [Parameter] public RegenerateAndReturnPdfCommand Command { get; set; } = null!;
 
     [Inject] public ServiceOrderHandler Handler { get; set; } = null!;
     [Inject] public ISnackbar Snackbar { get; set; } = null!;
@@ -27,7 +28,6 @@ else
         try
         {
             _isProcessing = true;
-            Command.Validate();
 
             var result = await Handler.RegenerateAndReturnPdfAsync(Command);
             if (!result.IsSuccess || result.Data is null)

@@ -8,16 +8,16 @@ namespace TVS_App.Application.Requests.CustomerRequests.CustomerCommands;
 public record UpdateCustomerCommand(
     long Id,
     string Name,
-    string? Street,
-    string? Neighborhood,
-    string? City,
-    string? Number,
-    string? ZipCode,
-    string? State,
+    string Street,
+    string Neighborhood,
+    string City,
+    string Number,
+    string ZipCode,
+    string State,
     string Phone,
-    string? Phone2,
-    string? Email,
-    string? Cpf
+    string Phone2,
+    string Email,
+    string Cpf
 ) : IRequest<BaseResponse<CustomerDto?>>
 {
     public void Validate()
