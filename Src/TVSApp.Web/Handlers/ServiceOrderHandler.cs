@@ -269,6 +269,24 @@ public class ServiceOrderHandler
         }
     }
     
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetRejectedEstimateServiceOrdersAsync(GetRejectedEstimateServiceOrdersQuery query)
+    {
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(
+                $"get-rejected-estimate-service-orders/{query.PageNumber}/{query.PageSize}");
+            
+            if (response == null || !response.IsSuccess)
+                return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, response?.Message);
+            
+            return response;
+        }
+        catch
+        {
+            return new BaseResponse<PaginatedResult<ServiceOrderDto?>>(null, 500, "Erro ao se conectar ao servidor.");
+        }
+    }
+    
     public async Task<BaseResponse<PaginatedResult<ServiceOrderDto?>>> GetWaitingPartsAsync(GetWaitingPartsQuery query)
     {
         try
@@ -400,6 +418,30 @@ public class ServiceOrderHandler
         try
         {
             var response = await _httpClient.PutAsJsonAsync("add-service-order-reject-estimate", command);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                return new BaseResponse<ServiceOrderDto?>(null, (int)response.StatusCode, 
+                    $"Erro na API: {response.StatusCode}. Detalhes: {errorContent}");
+            }
+            
+            var content = await response.Content.ReadFromJsonAsync<BaseResponse<ServiceOrderDto?>>();
+            if (content == null || !content.IsSuccess)
+                return new BaseResponse<ServiceOrderDto?>(null, 500, content?.Message);
+            
+            return content;
+        }
+        catch
+        {
+            return new BaseResponse<ServiceOrderDto?>(null, 500, "Erro ao se conectar ao servidor.");
+        }
+    }
+    
+    public async Task<BaseResponse<ServiceOrderDto?>> MarkRejectedEstimateAsReadyToPickUp(MarkEstimateRejectedAsReadyToPickUpCommand command)
+    {
+        try
+        {
+            var response = await _httpClient.PutAsJsonAsync("mark-estimate-rejected-as-ready-to-pick-up", command);
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();

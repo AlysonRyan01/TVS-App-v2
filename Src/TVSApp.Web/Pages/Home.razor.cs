@@ -13,6 +13,7 @@ public partial class Home : ComponentBase
     public List<ServiceOrderDto> PendingEstimatesServiceOrders { get; set; } = new();
     public List<ServiceOrderDto> WaitingResponseServiceOrders { get; set; } = new();
     public List<ServiceOrderDto> PendingPurchaseServiceOrders { get; set; } = new();
+    public List<ServiceOrderDto> RejectedEstimateServiceOrders { get; set; } = new();
     public List<ServiceOrderDto> WaitingPartsServiceOrders { get; set; } = new();
     public List<ServiceOrderDto> WaitingPickupServiceOrders { get; set; } = new();
     private bool _isBusy;
@@ -101,6 +102,26 @@ public partial class Home : ComponentBase
         }
     }
     
+    public async Task LoadRejectedEstimateServiceOrdersAsync()
+    {
+        try
+        {
+            var rejectedEstimateResult = await Handler.GetRejectedEstimateServiceOrdersAsync(
+                new GetRejectedEstimateServiceOrdersQuery(1, 500));
+            if (rejectedEstimateResult.IsSuccess && rejectedEstimateResult.Data != null)
+                RejectedEstimateServiceOrders = rejectedEstimateResult.Data.Items
+                    .Where(item => item is not null)
+                    .Cast<ServiceOrderDto>()
+                    .ToList();
+            else
+                Snackbar.Add(rejectedEstimateResult.Message ?? "Ocorreu um erro ao carregar  os serviços com orçamentos rejeitados.");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+    }
+    
     public async Task LoadWaitingPartsAsync()
     {
         try
@@ -150,6 +171,7 @@ public partial class Home : ComponentBase
             await LoadPendingEstimatesAsync();
             await LoadWaitingResponseAsync();
             await LoadPendingPurchaseAsync();
+            await LoadRejectedEstimateServiceOrdersAsync();
             await LoadWaitingPartsAsync();
             await LoadWaitingPickupAsync();
             StateHasChanged();
@@ -219,6 +241,25 @@ public partial class Home : ComponentBase
         };
 
         var dialog = await DialogService.ShowAsync<AddPurchasePartDialog>("Atualizar Ordem de Serviço", parameters, options);
+        await dialog.Result;
+    }
+    
+    private async Task OpenAddDeliveryRelease(ServiceOrderDto order)
+    {
+        var parameters = new DialogParameters
+        {
+            ["ServiceOrder"] = order
+        };
+
+        var options = new DialogOptions
+        {
+            CloseButton = true,
+            FullWidth = true,
+            MaxWidth = MaxWidth.False,
+            FullScreen = true
+        };
+
+        var dialog = await DialogService.ShowAsync<AddDeliveryReleaseDialog>("Atualizar Ordem de Serviço", parameters, options);
         await dialog.Result;
     }
     

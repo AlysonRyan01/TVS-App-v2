@@ -223,6 +223,44 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         return new BaseResponse<PaginatedResult<ServiceOrder?>>(result, 200, "Ordens de serviço pendentes de compra de peça recuperadas com sucesso!");
     }
 
+    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetRejectedEstimateServiceOrders(
+        int pageNumber,
+        int pageSize)
+    {
+        if (pageNumber < 1)
+            return new BaseResponse<PaginatedResult<ServiceOrder?>>(
+                null, 400, "O número da página deve ser maior que zero.");
+
+        if (pageSize < 1)
+            return new BaseResponse<PaginatedResult<ServiceOrder?>>(
+                null, 400, "O tamanho da página deve ser maior que zero.");
+
+        var oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
+
+        var query = _context.ServiceOrders
+            .Where(x => x.ServiceOrderStatus == EServiceOrderStatus.Evaluated &&
+                        x.RepairStatus == ERepairStatus.Disapproved &&
+                        x.ResponseDate >= oneMonthAgo)
+            .OrderByDescending(x => x.Id)
+            .AsNoTracking();
+
+        var totalCount = await query.CountAsync();
+
+        var rejectedEstimateServiceOrders = await query
+            .Include(x => x.Customer)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        int? totalPages = totalCount > 0 ? (int?)Math.Ceiling(totalCount / (double)pageSize) : null;
+
+        var result = new PaginatedResult<ServiceOrder?>(
+            rejectedEstimateServiceOrders, totalCount, pageNumber, pageSize, totalPages);
+        
+        return new BaseResponse<PaginatedResult<ServiceOrder?>>(
+            result, 200, "Ordens de serviço com orçamento rejeitado recuperadas com sucesso!");
+    }
+    
     public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetWaitingPartsAsync(int pageNumber, int pageSize)
     {
         if (pageNumber < 1)
@@ -266,9 +304,9 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         var sixMonths = DateTime.UtcNow.AddMonths(-6);
 
         var query = _context.ServiceOrders
-            .Where(x => (x.RepairDate >= sixMonths || x.RepairDate == null) && (x.ServiceOrderStatus == EServiceOrderStatus.Repaired ||
-                (x.ServiceOrderStatus == EServiceOrderStatus.Evaluated &&
-                 (x.RepairStatus == ERepairStatus.Disapproved || x.RepairResult == ERepairResult.Unrepaired || x.RepairResult == ERepairResult.NoDefectFound))))
+            .Where(x => 
+                (x.RepairDate >= sixMonths || x.RepairDate == null) && 
+                (x.ServiceOrderStatus == EServiceOrderStatus.Repaired || x.ServiceOrderStatus == EServiceOrderStatus.ReadyToPickUp))
             .OrderByDescending(x => x.Id)
             .AsNoTracking();
 

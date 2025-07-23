@@ -297,6 +297,26 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status200OK, "application/json")
         .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
+        
+        app.MapGet("/get-rejected-estimate-service-orders/{pageNumber}/{pageSize}", async (
+                ISender handler, 
+                int pageNumber, 
+                int pageSize) =>
+            {
+                var command = new GetRejectedEstimateServiceOrdersQuery(pageNumber, pageSize);
+                command.Validate();
+
+                var getOrderResult = await handler.Send(command);
+
+                return Results.Ok(getOrderResult);
+            })
+            .WithTags("ServiceOrder")
+            .WithName("GetRejectedEstimateServiceOrders")
+            .WithSummary("Lista ordens de serviço com orçamentos rejeitados.")
+            .WithDescription("Retorna uma lista paginada de ordens de serviço que estão com orçamento rejeitado.")
+            .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status200OK, "application/json")
+            .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
+            .RequireAuthorization();
 
         app.MapGet("/get-waiting-parts-service-orders/{pageNumber}/{pageSize}", async (
                 ISender handler, 
@@ -446,6 +466,27 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status200OK, "application/json")
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
+        
+        app.MapPut("/mark-estimate-rejected-as-ready-to-pick-up", async (
+                ISender handler, 
+                MarkEstimateRejectedAsReadyToPickUpCommand command, 
+                IHubContext<ServiceOrderHub> hubContext) =>
+            {
+                var markServiceOrderResult = await handler.Send(command);
+                if (!markServiceOrderResult.IsSuccess)
+                    return Results.Ok(markServiceOrderResult);
+
+                await hubContext.Clients.All.SendAsync("Atualizar", markServiceOrderResult.Message);
+
+                return Results.Ok(markServiceOrderResult);
+            })
+            .WithTags("ServiceOrder")
+            .WithName("MarkEstimateRejectedAsReadyToPickUp")
+            .WithSummary("Marca a ordem de serviço como pronta para entrega.")
+            .WithDescription("Recebe o ID da ordem de serviço, valida e marca a ordem de serviço como pronta para entrega.")
+            .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status200OK, "application/json")
+            .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
+            .RequireAuthorization();
 
         app.MapPut("/add-service-order-purchased-part", async (
                 ISender handler, 

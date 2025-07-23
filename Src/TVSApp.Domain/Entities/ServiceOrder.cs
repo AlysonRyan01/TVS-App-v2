@@ -53,7 +53,10 @@ public class ServiceOrder : Entity
         EstimateMessage = estimateMessage;
 
         if (RepairResult == ERepairResult.Unrepaired || RepairResult == ERepairResult.NoDefectFound)
+        {
             RepairStatus = ERepairStatus.Approved;
+            ServiceOrderStatus = EServiceOrderStatus.ReadyToPickUp;
+        }
     }
 
     public void ApproveEstimate()
@@ -72,6 +75,15 @@ public class ServiceOrder : Entity
 
         RepairStatus = ERepairStatus.Disapproved;
         ResponseDate = DateTime.UtcNow;
+    }
+
+    public void MarkEstimateRejectedAsReadyToPickUp()
+    {
+        if (RepairStatus != ERepairStatus.Disapproved)
+            throw new EntityException<ServiceOrder>(
+                "O orçamento precisa estar rejeitado para marcar como pronto para entrega");
+        
+        ServiceOrderStatus = EServiceOrderStatus.ReadyToPickUp;
     }
 
     public void AddPurchasedPart()

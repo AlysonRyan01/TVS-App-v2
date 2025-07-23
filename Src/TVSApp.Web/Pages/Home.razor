@@ -91,7 +91,7 @@
             </div>
             }
         </MudTabPanel>
-        <MudTabPanel Text="COMPRAR PEÇA">
+        <MudTabPanel Text="APROVADOS">
             @if (_isBusy)
             {
                 <div class="w-full flex justify-center items-center min-h-[50vh]">
@@ -101,39 +101,84 @@
             else
             {
                 <div class="w-full flex flex-wrap justify-center">
-                <MudTable Class="min-w-[100%]" Items="@PendingPurchaseServiceOrders" Hover="true" Breakpoint="Breakpoint.Sm">
-                    <HeaderContent>
-                        <MudTh>
-                            <p class="text-xl text-[#750303] font-bold">Número</p></MudTh>
-                        <MudTh>
-                            <p class="text-xl text-[#750303] font-bold">Cliente</p></MudTh>
-                        <MudTh>
-                            <p class="text-xl text-[#750303] font-bold">Modelo</p></MudTh>
-                        <MudTh>
-                            <p class="text-xl text-[#750303] font-bold">Solução</p></MudTh>
-                        <MudTh>
-                            <p class="text-xl text-[#750303] font-bold">Aprovação em</p></MudTh>
-                        <MudTh>
-                            <p class="text-xl text-[#750303] font-bold">Ação</p></MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="Número">
-                            <p class="font-sans font-bold text-lg">@context.Id</p></MudTd>
-                        <MudTd DataLabel="Cliente">
-                            <p class="text-sm font-sans font-normal uppercase">@context.Name</p></MudTd>
-                        <MudTd DataLabel="Modelo">
-                            <p class="text-sm font-sans font-normal uppercase">@context.Model</p></MudTd>
-                        <MudTd DataLabel="Solução">
-                            <p class="text-sm font-sans font-normal uppercase">@context.Solution</p></MudTd>
-                        <MudTd DataLabel="Aprovação em">
-                            <p class="text-sm font-sans font-normal uppercase">@context.ResponseDate?.ToString("dd/MM/yyyy") (Há @((DateTime.Now - context.EntryDate).Days) dias)</p></MudTd>
-                        <MudTd DataLabel="Ação">
-                            <MudButton OnClick="() => OpenAddPerchasePartDialog(context)" EndIcon="@Icons.Material.Filled.Done" Variant="Variant.Filled" Color="Color.Primary">
-                                <p class="text-base">Comprado</p>
-                            </MudButton></MudTd>
-                    </RowTemplate>
-                </MudTable>
-            </div>
+                    <MudTable Class="min-w-[100%]" Items="@PendingPurchaseServiceOrders" Hover="true" Breakpoint="Breakpoint.Sm">
+                        <HeaderContent>
+                            <MudTh>
+                                <p class="text-xl text-[#750303] font-bold">Número</p></MudTh>
+                            <MudTh>
+                                <p class="text-xl text-[#750303] font-bold">Cliente</p></MudTh>
+                            <MudTh>
+                                <p class="text-xl text-[#750303] font-bold">Modelo</p></MudTh>
+                            <MudTh>
+                                <p class="text-xl text-[#750303] font-bold">Solução</p></MudTh>
+                            <MudTh>
+                                <p class="text-xl text-[#750303] font-bold">Aprovação em</p></MudTh>
+                            <MudTh>
+                                <p class="text-xl text-[#750303] font-bold">Ação</p></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Número">
+                                <p class="font-sans font-bold text-lg">@context.Id</p></MudTd>
+                            <MudTd DataLabel="Cliente">
+                                <p class="text-sm font-sans font-normal uppercase">@context.Name</p></MudTd>
+                            <MudTd DataLabel="Modelo">
+                                <p class="text-sm font-sans font-normal uppercase">@context.Model</p></MudTd>
+                            <MudTd DataLabel="Solução">
+                                <p class="text-sm font-sans font-normal uppercase">@context.Solution</p></MudTd>
+                            <MudTd DataLabel="Aprovação em">
+                                <p class="text-sm font-sans font-normal uppercase">@context.ResponseDate?.ToString("dd/MM/yyyy") (Há @((DateTime.Now - context.EntryDate).Days) dias)</p></MudTd>
+                            <MudTd DataLabel="Ação">
+                                <MudButton OnClick="() => OpenAddPerchasePartDialog(context)" EndIcon="@Icons.Material.Filled.Done" Variant="Variant.Filled" Color="Color.Primary">
+                                    <p class="text-base">Comprado</p>
+                                </MudButton></MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </div>
+            }
+        </MudTabPanel>
+        <MudTabPanel Text="REPROVADOS">
+            @if (_isBusy)
+            {
+                <div class="w-full flex justify-center items-center min-h-[50vh]">
+                    <MudProgressCircular Class="self-center" Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+                </div>
+            }
+            else
+            {
+                <div class="w-full flex flex-wrap justify-center">
+                    <MudTable Class="min-w-[100%]" Items="@RejectedEstimateServiceOrders" Hover="true" Breakpoint="Breakpoint.Sm">
+                        <HeaderContent>
+                            <MudTh>
+                                <p class="text-xl text-[#750303] font-bold">Número</p></MudTh>
+                            <MudTh>
+                                <p class="text-xl text-[#750303] font-bold">Cliente</p></MudTh>
+                            <MudTh>
+                                <p class="text-xl text-[#750303] font-bold">Modelo</p></MudTh>
+                            <MudTh>
+                                <p class="text-xl text-[#750303] font-bold">Solução</p></MudTh>
+                            <MudTh>
+                                <p class="text-xl text-[#750303] font-bold">Reprovado em</p></MudTh>
+                            <MudTh>
+                                <p class="text-xl text-[#750303] font-bold">Ação</p></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Número">
+                                <p class="font-sans font-bold text-lg">@context.Id</p></MudTd>
+                            <MudTd DataLabel="Cliente">
+                                <p class="text-sm font-sans font-normal uppercase">@context.Name</p></MudTd>
+                            <MudTd DataLabel="Modelo">
+                                <p class="text-sm font-sans font-normal uppercase">@context.Model</p></MudTd>
+                            <MudTd DataLabel="Solução">
+                                <p class="text-sm font-sans font-normal uppercase">@context.Solution</p></MudTd>
+                            <MudTd DataLabel="Aprovação em">
+                                <p class="text-sm font-sans font-normal uppercase">@context.ResponseDate?.ToString("dd/MM/yyyy") (Há @((DateTime.Now - context.EntryDate).Days) dias)</p></MudTd>
+                            <MudTd DataLabel="Ação">
+                                <MudButton OnClick="() => OpenAddDeliveryRelease(context)" EndIcon="@Icons.Material.Filled.Done" Variant="Variant.Filled" Color="Color.Primary">
+                                    <p class="text-base">Liberado</p>
+                                </MudButton></MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </div>
             }
         </MudTabPanel>
         <MudTabPanel Text="AGUARDANDO PEÇA">

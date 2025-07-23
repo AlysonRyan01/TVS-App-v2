@@ -13,5 +13,7 @@ public enum EServiceOrderStatus
     [Display(Name = "Entregue")]
     Delivered = 4,
     [Display(Name = "Aguardando peça")]
-    OrderPart = 5
+    OrderPart = 5,
+    [Display(Name = "Pronto para entrega")]
+    ReadyToPickUp = 6,
 }
