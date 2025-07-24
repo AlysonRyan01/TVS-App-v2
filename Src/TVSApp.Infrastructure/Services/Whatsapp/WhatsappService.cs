@@ -121,8 +121,8 @@ public class WhatsappService : IWhatsappService
             {
                 var link = $"https://www.tvseletronica.com/consultar?id={serviceOrder}&code={securityCode}";
                 text = $"Olá {customerName}, tudo bem? 👋\n\n" +
-                       $"O orçamento referente à sua Ordem de Serviço nº {serviceOrder} está disponível no link abaixo:\n\n" +
-                       $"{link}\n\n" +
+                       $"*O orçamento referente à sua Ordem de Serviço nº {serviceOrder} está disponível no link abaixo:*\n\n" +
+                       $"👉 {link}\n\n" +
                        $"Nele, você pode visualizar os detalhes e aprovar ou recusar o orçamento diretamente.\n\n" +
                        $"Atenciosamente,\nTVS Eletrônica 📺🔧";
             }
@@ -378,8 +378,11 @@ public class WhatsappService : IWhatsappService
 
             var formattedNumber = FormatPhoneNumber(phoneNumber);
 
-            var text = $"Olá {customerName}, seu aparelho já está disponível para retirada na *TVS Eletrônica*.\n\n" +
-                       $"Agradecemos a preferência e permanecemos à disposição para quaisquer esclarecimentos.";
+            var text = $"🚀 *Pronto para retirada, {customerName}!*\n\n" +
+                       $"Seu equipamento está disponível na TVS Eletrônica:\n" +
+                       $"🕒 09h-12h 13-18h (Seg-Sex)\n\n" +
+                       $"⚠️ *Lembrete:* Orçamento não foi aprovado\n\n" +
+                       $"📞 Dúvidas? Chame aqui mesmo!";
             
             var url = $"{_settings.BaseUrl}/message/sendText/{_settings.Instance}";
 
@@ -433,7 +436,7 @@ public class WhatsappService : IWhatsappService
             if (string.IsNullOrWhiteSpace(customerName))
                 return new BaseResponse<string>(null, 404, "Nome do cliente vazio");
 
-            var formattedNumber = "";//"5541992744920";
+            var formattedNumber = "5541992744920";
             
             var decisionText = result switch
             {
@@ -442,8 +445,10 @@ public class WhatsappService : IWhatsappService
                 _ => "tomou uma decisão sobre"
             };
 
-            var text = $"⚙️ *Atualização de Orçamento*\n\n" +
-                       $"O cliente *{customerName}* {decisionText} o orçamento da ordem de serviço *{serviceOrder}*";
+            var text = $"📢 *DECISÃO DE ORÇAMENTO - ATUALIZAÇÃO* 📢\n\n" +
+                       $"🛠️ *Ordem de Serviço:* #{serviceOrder}\n" +
+                       $"👤 *Cliente:* {customerName}\n" +
+                       $"📝 *Status:* {GetStatusEmoji(result)} {decisionText.ToUpper()} o orçamento\n";
             
             var url = $"{_settings.BaseUrl}/message/sendText/{_settings.Instance}";
 
@@ -499,9 +504,12 @@ public class WhatsappService : IWhatsappService
 
             var formattedNumber = FormatPhoneNumber(phoneNumber);
 
-            var text = $"Olá *{customerName}*, agradecemos pela aprovação do orçamento da ordem de serviço *{serviceOrder}*.\n" +
-                       $"*Assim que estiver pronto para retirada, avisaremos por aqui.*\n\n" +
-                       $"Qualquer dúvida, estamos à disposição!\nAtenciosamente, *TVS Eletrônica*.";;
+            var text = $"✨ *{customerName}, obrigado por confiar em nós!* ✨\n\n" +
+                       $"🛠️ OS #{serviceOrder} em andamento\n" +
+                       $"✅ Orçamento aprovado - reparo iniciado\n\n" +
+                       $"📲 Avisaremos por aqui quando estiver pronto\n" +
+                       $"📞 Dúvidas? Chame aqui mesmo!\n\n" +
+                       $"🙌 *Equipe TVS Eletrônica*";
 
 
             var url = $"{_settings.BaseUrl}/message/sendText/{_settings.Instance}";
@@ -558,9 +566,12 @@ public class WhatsappService : IWhatsappService
 
             var formattedNumber = FormatPhoneNumber(phoneNumber);
 
-            var text = $"Olá *{customerName}*, recebemos sua decisão sobre o orçamento da ordem de serviço *{serviceOrder}*.\n\n" +
-                       $"Agradecemos pelo retorno. *Em breve, entraremos em contato para avisar quando o equipamento estiver disponível para retirada.*\n\n" +
-                       $"Caso mude de ideia ou tenha qualquer dúvida, a *TVS Eletrônica* está à disposição.";
+            var text = $"✨ *{customerName}*, recebemos sua resposta! ✨\n\n" +
+                       $"🔹 OS: #{serviceOrder}\n" +
+                       $"🔹 Status: Orçamento não aprovado\n\n" +
+                       $"⏳ *Avisaremos pelo WhatsApp* quando seu equipamento estiver pronto para retirada (em até 2 dias úteis)*\n" +
+                       $"📞 Dúvidas? TVS Eletrônica à disposição!\n\n" +
+                       $"💙 Agradecemos pela confiança!";
             
             var url = $"{_settings.BaseUrl}/message/sendText/{_settings.Instance}";
 
@@ -616,5 +627,12 @@ public class WhatsappService : IWhatsappService
 
         return digitsOnly;
     }
+    
+    private string GetStatusEmoji(ERepairStatus status) => status switch
+    {
+        ERepairStatus.Approved => "✅",
+        ERepairStatus.Disapproved => "❌",
+        _ => "⚠️"
+    };
 }
 
