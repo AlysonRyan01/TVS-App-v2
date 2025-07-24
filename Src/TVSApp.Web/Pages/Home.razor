@@ -106,6 +106,8 @@
                             <MudTh>
                                 <p class="text-xl text-[#750303] font-bold">Número</p></MudTh>
                             <MudTh>
+                                <p class="text-xl text-[#750303] font-bold">Empresa</p></MudTh>
+                            <MudTh>
                                 <p class="text-xl text-[#750303] font-bold">Cliente</p></MudTh>
                             <MudTh>
                                 <p class="text-xl text-[#750303] font-bold">Modelo</p></MudTh>
@@ -119,6 +121,8 @@
                         <RowTemplate>
                             <MudTd DataLabel="Número">
                                 <p class="font-sans font-bold text-lg">@context.Id</p></MudTd>
+                            <MudTd DataLabel="Empresa">
+                                <p class="font-sans font-bold text-lg">@context.Enterprise.GetDisplayName()</p></MudTd>
                             <MudTd DataLabel="Cliente">
                                 <p class="text-sm font-sans font-normal uppercase">@context.Name</p></MudTd>
                             <MudTd DataLabel="Modelo">

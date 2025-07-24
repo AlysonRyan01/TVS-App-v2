@@ -11,5 +11,5 @@ public enum ERepairStatus
     [Display(Name = "Reprovado")]
     Disapproved = 3,
     [Display(Name = "Aguardando resposta")]
-    Waiting = 4,
+    Waiting = 4
 }

@@ -54,11 +54,10 @@ public class AddServiceOrderEstimateHandler : IRequestHandler<AddServiceOrderEst
         {
             var whatsappResult = await _whatsappService.SendEstimateMessage(
                 serviceOrder.Id.ToString(),
+                serviceOrder.SecurityCode,
                 serviceOrder.RepairResult!.Value,
-                serviceOrder.Customer.Name.CustomerName, 
+                serviceOrder.Customer.Name.CustomerName,
                 normalized.EstimateMessage.ToUpper(),
-                serviceOrder.TotalAmount,
-                serviceOrder.Guarantee!.ServiceOrderGuarantee,
                 serviceOrder.Customer.Phone.CustomerPhone);
             
             message = whatsappResult.IsSuccess

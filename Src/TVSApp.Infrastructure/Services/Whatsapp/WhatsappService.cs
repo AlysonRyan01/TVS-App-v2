@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
-using TVS_App.Application.Interfaces;
 using TVS_App.Application.Interfaces.Services;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Shared;
@@ -85,18 +84,20 @@ public class WhatsappService : IWhatsappService
     }
 
     public async Task<BaseResponse<string>> SendEstimateMessage(
-        string serviceOrder,
-        ERepairResult result,
-        string customerName,
-        string solution,
-        decimal amount,
-        string guarantee,
+        string serviceOrder, 
+        string securityCode, 
+        ERepairResult? result, 
+        string customerName, 
+        string? solution, 
         string phoneNumber)
     {
         try
         {
             if (string.IsNullOrWhiteSpace(serviceOrder))
                 return new BaseResponse<string>(null, 404, "Ordem de serviço vazia");
+            
+            if (string.IsNullOrWhiteSpace(securityCode))
+                return new BaseResponse<string>(null, 404, "Código de segurança vazio");
 
             if (string.IsNullOrWhiteSpace(customerName))
                 return new BaseResponse<string>(null, 404, "Nome do cliente vazio");
@@ -104,58 +105,33 @@ public class WhatsappService : IWhatsappService
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return new BaseResponse<string>(null, 404, "Número de telefone vazio");
 
-            if (string.IsNullOrWhiteSpace(solution))
-                return new BaseResponse<string>(null, 404, "Solução vazia");
-
             var formattedNumber = FormatPhoneNumber(phoneNumber);
-            
+            string text;
+
             if (result == ERepairResult.Unrepaired || result == ERepairResult.NoDefectFound)
             {
-                var text = $"Olá {customerName}, tudo bem? 👋\n\n" +
-                           $"Sobre a ordem de serviço nº {serviceOrder}, informamos:\n\n" +
-                           $"🛠️ Situação: {result.GetDisplayName()}.\n" +
-                           $"🔎 Detalhes: {solution}\n\n" +
-                           $"Em caso de dúvidas, estamos à disposição.\n\n" +
-                           $"Atenciosamente,\nTVS Eletrônica 📺🔧";
-
-                var urlText = $"{_settings.BaseUrl}/message/sendText/{_settings.Instance}";
-                var requestBodyText = new
-                {
-                    number = formattedNumber,
-                    text,
-                    delay = 0,
-                    linkPreview = false,
-                    mentionsEveryOne = false
-                };
-                var jsonText = JsonSerializer.Serialize(requestBodyText);
-                var contentText = new StringContent(jsonText, Encoding.UTF8, "application/json");
-                var requestText = new HttpRequestMessage(HttpMethod.Post, urlText);
-                requestText.Headers.Add("apikey", _settings.ApiKey);
-                requestText.Content = contentText;
-                var responseText = await _httpClient.SendAsync(requestText);
-                var responseTextContent = await responseText.Content.ReadAsStringAsync();
-
-                if (!responseText.IsSuccessStatusCode)
-                    return new BaseResponse<string>(null, (int)responseText.StatusCode, $"Erro ao enviar mensagem de texto: {responseTextContent}");
-
-                return new BaseResponse<string>("Mensagem de orçamento (texto) enviada com sucesso!", 200, "Mensagem enviada com sucesso!");
+                text = $"Olá {customerName}, tudo bem? 👋\n\n" +
+                       $"Sobre a ordem de serviço nº {serviceOrder}, informamos:\n\n" +
+                       $"🛠️ Situação: {result.GetDisplayName()}.\n" +
+                       $"🔎 Detalhes: {solution}\n\n" +
+                       $"Em caso de dúvidas, estamos à disposição.\n\n" +
+                       $"Atenciosamente,\nTVS Eletrônica 📺🔧";
             }
-            
-            var estimateText = 
-                $"Olá {customerName}, tudo bem? 👋\n\n" +
-                $"Segue o orçamento para o conserto da sua ordem #{serviceOrder}:\n\n" +
-                $"🛠️ Solução: {solution}\n" +
-                $"💰 Valor: R$ {amount:F2}\n" +
-                $"🛡️ Garantia: {guarantee}\n\n" +
-                $"Por favor, responda essa mensagem para confirmar sua aprovação ou reprovação.\n\n" +
-                $"Qualquer dúvida, estamos à disposição.\n\n" +
-                $"Atenciosamente,\nTVS Eletrônica 📺🔧";
+            else
+            {
+                var link = $"https://www.tvseletronica.com/consultar?id={serviceOrder}&code={securityCode}";
+                text = $"Olá {customerName}, tudo bem? 👋\n\n" +
+                       $"O orçamento referente à sua Ordem de Serviço nº {serviceOrder} está disponível no link abaixo:\n\n" +
+                       $"{link}\n\n" +
+                       $"Nele, você pode visualizar os detalhes e aprovar ou recusar o orçamento diretamente.\n\n" +
+                       $"Atenciosamente,\nTVS Eletrônica 📺🔧";
+            }
 
             var urlEstimateText = $"{_settings.BaseUrl}/message/sendText/{_settings.Instance}";
             var requestBodyEstimateText = new
             {
                 number = formattedNumber,
-                text = estimateText,
+                text,
                 delay = 0,
                 linkPreview = false,
                 mentionsEveryOne = false
@@ -389,7 +365,245 @@ public class WhatsappService : IWhatsappService
             return new BaseResponse<string>(null, 500, $"Ocorreu um erro: {ex.Message}");
         }
     }
-    
+
+    public async Task<BaseResponse<string>> SendRejectionReadyForPickupMessage(string customerName, string phoneNumber)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(customerName))
+                return new BaseResponse<string>(null, 404, "Nome do cliente vazio");
+
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                return new BaseResponse<string>(null, 404, "Número de telefone vazio");
+
+            var formattedNumber = FormatPhoneNumber(phoneNumber);
+
+            var text = $"Olá {customerName}, seu aparelho já está disponível para retirada na *TVS Eletrônica*.\n\n" +
+                       $"Agradecemos a preferência e permanecemos à disposição para quaisquer esclarecimentos.";
+            
+            var url = $"{_settings.BaseUrl}/message/sendText/{_settings.Instance}";
+
+            var requestBody = new
+            {
+                number = formattedNumber,
+                text,
+                delay = 0,
+                linkPreview = false,
+                mentionsEveryOne = false
+            };
+
+            var json = JsonSerializer.Serialize(requestBody);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Add("apikey", _settings.ApiKey);
+            request.Content = content;
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                return new BaseResponse<string>(null, (int)response.StatusCode, $"Erro ao enviar mensagem: {error}");
+            }
+
+            return new BaseResponse<string>("Mensagem de venda enviada com sucesso!", 200, "Mensagem enviada com sucesso!");
+        }
+        catch (HttpRequestException httpEx)
+        {
+            return new BaseResponse<string>(null, 500, httpEx.Message);
+        }
+        catch (TaskCanceledException taskCanceledEx)
+        {
+            return new BaseResponse<string>(null, 500, $"Ocorreu um erro: {taskCanceledEx.Message}");
+        }
+        catch (Exception ex)
+        {
+            return new BaseResponse<string>(null, 500, $"Ocorreu um erro: {ex.Message}");
+        }
+    }
+
+    public async Task<BaseResponse<string>> NotifyOwnerEstimateDecision(
+        string serviceOrder, 
+        ERepairStatus result, 
+        string customerName)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(customerName))
+                return new BaseResponse<string>(null, 404, "Nome do cliente vazio");
+
+            var formattedNumber = "";//"5541992744920";
+            
+            var decisionText = result switch
+            {
+                ERepairStatus.Approved => "aprovou",
+                ERepairStatus.Disapproved => "rejeitou",
+                _ => "tomou uma decisão sobre"
+            };
+
+            var text = $"⚙️ *Atualização de Orçamento*\n\n" +
+                       $"O cliente *{customerName}* {decisionText} o orçamento da ordem de serviço *{serviceOrder}*";
+            
+            var url = $"{_settings.BaseUrl}/message/sendText/{_settings.Instance}";
+
+            var requestBody = new
+            {
+                number = formattedNumber,
+                text,
+                delay = 0,
+                linkPreview = false,
+                mentionsEveryOne = false
+            };
+
+            var json = JsonSerializer.Serialize(requestBody);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Add("apikey", _settings.ApiKey);
+            request.Content = content;
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                return new BaseResponse<string>(null, (int)response.StatusCode, $"Erro ao enviar mensagem: {error}");
+            }
+
+            return new BaseResponse<string>("Mensagem de venda enviada com sucesso!", 200, "Mensagem enviada com sucesso!");
+        }
+        catch (HttpRequestException httpEx)
+        {
+            return new BaseResponse<string>(null, 500, httpEx.Message);
+        }
+        catch (TaskCanceledException taskCanceledEx)
+        {
+            return new BaseResponse<string>(null, 500, $"Ocorreu um erro: {taskCanceledEx.Message}");
+        }
+        catch (Exception ex)
+        {
+            return new BaseResponse<string>(null, 500, $"Ocorreu um erro: {ex.Message}");
+        }
+    }
+
+    public async Task<BaseResponse<string>> SendThankYouForEstimateApprovalAsync(string serviceOrder, string customerName, string phoneNumber)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(customerName))
+                return new BaseResponse<string>(null, 404, "Nome do cliente vazio");
+
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                return new BaseResponse<string>(null, 404, "Número de telefone vazio");
+
+            var formattedNumber = FormatPhoneNumber(phoneNumber);
+
+            var text = $"Olá *{customerName}*, agradecemos pela aprovação do orçamento da ordem de serviço *{serviceOrder}*.\n" +
+                       $"*Assim que estiver pronto para retirada, avisaremos por aqui.*\n\n" +
+                       $"Qualquer dúvida, estamos à disposição!\nAtenciosamente, *TVS Eletrônica*.";;
+
+
+            var url = $"{_settings.BaseUrl}/message/sendText/{_settings.Instance}";
+
+            var requestBody = new
+            {
+                number = formattedNumber,
+                text,
+                delay = 0,
+                linkPreview = false,
+                mentionsEveryOne = false
+            };
+
+            var json = JsonSerializer.Serialize(requestBody);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Add("apikey", _settings.ApiKey);
+            request.Content = content;
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                return new BaseResponse<string>(null, (int)response.StatusCode, $"Erro ao enviar mensagem: {error}");
+            }
+
+            return new BaseResponse<string>("Mensagem de venda enviada com sucesso!", 200, "Mensagem enviada com sucesso!");
+        }
+        catch (HttpRequestException httpEx)
+        {
+            return new BaseResponse<string>(null, 500, httpEx.Message);
+        }
+        catch (TaskCanceledException taskCanceledEx)
+        {
+            return new BaseResponse<string>(null, 500, $"Ocorreu um erro: {taskCanceledEx.Message}");
+        }
+        catch (Exception ex)
+        {
+            return new BaseResponse<string>(null, 500, $"Ocorreu um erro: {ex.Message}");
+        }
+    }
+
+    public async Task<BaseResponse<string>> SendEstimateDisapprovalAcknowledgmentAsync(string serviceOrder, string customerName, string phoneNumber)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(customerName))
+                return new BaseResponse<string>(null, 404, "Nome do cliente vazio");
+
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                return new BaseResponse<string>(null, 404, "Número de telefone vazio");
+
+            var formattedNumber = FormatPhoneNumber(phoneNumber);
+
+            var text = $"Olá *{customerName}*, recebemos sua decisão sobre o orçamento da ordem de serviço *{serviceOrder}*.\n\n" +
+                       $"Agradecemos pelo retorno. *Em breve, entraremos em contato para avisar quando o equipamento estiver disponível para retirada.*\n\n" +
+                       $"Caso mude de ideia ou tenha qualquer dúvida, a *TVS Eletrônica* está à disposição.";
+            
+            var url = $"{_settings.BaseUrl}/message/sendText/{_settings.Instance}";
+
+            var requestBody = new
+            {
+                number = formattedNumber,
+                text,
+                delay = 0,
+                linkPreview = false,
+                mentionsEveryOne = false
+            };
+
+            var json = JsonSerializer.Serialize(requestBody);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Add("apikey", _settings.ApiKey);
+            request.Content = content;
+
+            var response = await _httpClient.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                return new BaseResponse<string>(null, (int)response.StatusCode, $"Erro ao enviar mensagem: {error}");
+            }
+
+            return new BaseResponse<string>("Mensagem de venda enviada com sucesso!", 200, "Mensagem enviada com sucesso!");
+        }
+        catch (HttpRequestException httpEx)
+        {
+            return new BaseResponse<string>(null, 500, httpEx.Message);
+        }
+        catch (TaskCanceledException taskCanceledEx)
+        {
+            return new BaseResponse<string>(null, 500, $"Ocorreu um erro: {taskCanceledEx.Message}");
+        }
+        catch (Exception ex)
+        {
+            return new BaseResponse<string>(null, 500, $"Ocorreu um erro: {ex.Message}");
+        }
+    }
+
     public static string FormatPhoneNumber(string rawPhoneNumber)
     {
         if (string.IsNullOrWhiteSpace(rawPhoneNumber))

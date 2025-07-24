@@ -78,13 +78,13 @@
             <MudText Typo="Typo.h6" Color="Color.Primary" Class="font-bold uppercase mb-4">Informações do Orçamento</MudText>
             <MudGrid>
                 <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Situação" Value="@Situacao" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
+                    <MudTextField T="string" Label="Situação" Value="@ServiceOrder.ServiceOrderStatus.GetDisplayName()" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Resposta do Cliente" Value="@Resposta" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
+                    <MudTextField T="string" Label="Resposta do Cliente" Value="@ServiceOrder.RepairStatus.GetDisplayName()" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField T="string" Label="Resultado" Value="@TemConserto" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
+                    <MudTextField T="string" Label="Resultado" Value="@ServiceOrder.RepairResult?.GetDisplayName()" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>
                 </MudItem>
                 <MudItem xs="12" md="6">
                     <MudTextField T="string" Label="Solução" Value="@ServiceOrder.Solution" ReadOnly="true" Variant="Variant.Outlined" FullWidth="true"/>

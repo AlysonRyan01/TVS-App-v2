@@ -1,5 +1,6 @@
 using MediatR;
 using TVS_App.Application.DTOs.ServiceOrder;
+using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Mappers;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 using TVS_App.Domain.Repositories.ServiceOrders;
@@ -12,13 +13,16 @@ public class MarkEstimateRejectedAsReadyToPickUpHandler :
 {
     private readonly IServiceOrderQueryRepository _serviceOrderQueryRepository;
     private readonly IServiceOrderCommandRepository _serviceOrderCommandRepository;
+    private readonly IWhatsappService _whatsappService;
 
     public MarkEstimateRejectedAsReadyToPickUpHandler(
         IServiceOrderQueryRepository serviceOrderQueryRepository, 
-        IServiceOrderCommandRepository serviceOrderCommandRepository)
+        IServiceOrderCommandRepository serviceOrderCommandRepository,
+        IWhatsappService whatsappService)
     {
         _serviceOrderQueryRepository = serviceOrderQueryRepository;
         _serviceOrderCommandRepository = serviceOrderCommandRepository;
+        _whatsappService = whatsappService;
     }
 
     public async Task<BaseResponse<ServiceOrderDto>> Handle(
@@ -42,9 +46,14 @@ public class MarkEstimateRejectedAsReadyToPickUpHandler :
         var updateResult = await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);
         
         var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);
-        
-        return updateResult.IsSuccess ? 
-            new BaseResponse<ServiceOrderDto>(dto, 200, "Ordem de serviço marcada como pronta para entrega")
-            : new BaseResponse<ServiceOrderDto>(null, updateResult.Code, updateResult.Message);
+
+        if (!updateResult.IsSuccess)
+            return new BaseResponse<ServiceOrderDto>(null, updateResult.Code, updateResult.Message);
+
+        await _whatsappService.SendRejectionReadyForPickupMessage(
+            serviceOrder.Customer.Name.CustomerName,
+            serviceOrder.Customer.Phone.CustomerPhone);
+
+        return new BaseResponse<ServiceOrderDto>(dto, 200, "Ordem de serviço marcada como pronta para entrega");
     }
 }

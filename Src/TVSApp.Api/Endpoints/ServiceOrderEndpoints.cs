@@ -410,12 +410,6 @@ public static class ServiceOrderEndpoints
             if (!addServiceOrderEstimateResult.IsSuccess)
                 return Results.Ok(addServiceOrderEstimateResult);
 
-            var notificationCommand = new CreateNotificationCommand(
-                "Orçamento Concluído",
-                $"Favor enviar mensagem de orçamento para o responsável da ordem de serviço: {command.ServiceOrderId}");
-            
-            await handler.Send(notificationCommand);
-
             await hubContext.Clients.All.SendAsync("Atualizar", addServiceOrderEstimateResult.Message);
 
             return Results.Ok(addServiceOrderEstimateResult);
@@ -428,11 +422,20 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapPut("/add-service-order-approve-estimate", async (ISender handler, AddServiceOrderApproveEstimateCommand command, IHubContext<ServiceOrderHub> hubContext) =>
+        app.MapPut("/add-service-order-approve-estimate", async (
+                ISender handler, 
+                AddServiceOrderApproveEstimateCommand command, 
+                IHubContext<ServiceOrderHub> hubContext) =>
         {
             var addServiceOrderApproveEstimateResult = await handler.Send(command);
             if (!addServiceOrderApproveEstimateResult.IsSuccess)
                 return Results.Ok(addServiceOrderApproveEstimateResult);
+            
+            var notificationCommand = new CreateNotificationCommand(
+                $"Orçamento Aprovado, OS: {command.Id}",
+                $"Favor comprar peça para OS: {command.Id}");
+            
+            await handler.Send(notificationCommand);
 
             await hubContext.Clients.All.SendAsync("Atualizar", addServiceOrderApproveEstimateResult.Message);
 
@@ -443,8 +446,7 @@ public static class ServiceOrderEndpoints
         .WithSummary("Registra a aprovação do orçamento para uma ordem de serviço.")
         .WithDescription("Recebe o ID da ordem de serviço, valida e registra a aprovação do orçamento pelo cliente, notificando os clientes conectados via SignalR.")
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
+        .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json");
 
         app.MapPut("/add-service-order-reject-estimate", async (
                 ISender handler, 
@@ -454,6 +456,12 @@ public static class ServiceOrderEndpoints
             var addServiceOrderRejectEstimateResult = await handler.Send(command);
             if (!addServiceOrderRejectEstimateResult.IsSuccess)
                 return Results.Ok(addServiceOrderRejectEstimateResult);
+            
+            var notificationCommand = new CreateNotificationCommand(
+                $"Orçamento Reprovado, OS: {command.Id}",
+                $"Favor montar a OS {command.Id} para entrega");
+            
+            await handler.Send(notificationCommand);
 
             await hubContext.Clients.All.SendAsync("Atualizar", addServiceOrderRejectEstimateResult.Message);
 
@@ -464,8 +472,7 @@ public static class ServiceOrderEndpoints
         .WithSummary("Registra a rejeição do orçamento para uma ordem de serviço.")
         .WithDescription("Recebe o ID da ordem de serviço, valida e registra a rejeição do orçamento pelo cliente, notificando os clientes conectados via SignalR.")
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
+        .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json");
         
         app.MapPut("/mark-estimate-rejected-as-ready-to-pick-up", async (
                 ISender handler, 
@@ -517,12 +524,6 @@ public static class ServiceOrderEndpoints
             var addServiceOrderRepairResult = await handler.Send(command);
             if (!addServiceOrderRepairResult.IsSuccess)
                 return Results.Ok(addServiceOrderRepairResult);
-
-            var notificationCommand = new CreateNotificationCommand(
-                "Conserto Concluído", 
-                $"Favor avisar o responsável da ordem de serviço: {command.Id}");
-                
-            await handler.Send(notificationCommand);
 
             await hubContext.Clients.All.SendAsync("Atualizar", addServiceOrderRepairResult.Message);
 

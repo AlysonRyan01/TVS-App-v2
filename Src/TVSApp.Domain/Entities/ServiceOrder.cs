@@ -57,6 +57,15 @@ public class ServiceOrder : Entity
             RepairStatus = ERepairStatus.Approved;
             ServiceOrderStatus = EServiceOrderStatus.ReadyToPickUp;
         }
+
+        if (Enterprise == EEnterprise.PhilcoBritania)
+        {
+            RepairResult = ERepairResult.Repair;
+            ServiceOrderStatus = EServiceOrderStatus.Evaluated;
+            RepairStatus = ERepairStatus.Approved;
+            ResponseDate = DateTime.UtcNow;
+        }
+            
     }
 
     public void ApproveEstimate()

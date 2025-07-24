@@ -207,7 +207,7 @@
                                     @foreach (var value in Enum.GetValues(typeof(ERepairResult)).Cast<ERepairResult>())
                                     {
                                         <MudSelectItem Value="@value">
-                                            @GetPortugueseLabel(value)
+                                            @value.GetDisplayName()
                                         </MudSelectItem>
                                     }
                                 </MudSelect>

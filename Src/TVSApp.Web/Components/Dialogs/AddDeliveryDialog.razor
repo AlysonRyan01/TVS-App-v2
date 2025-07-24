@@ -76,7 +76,7 @@
                     <MudTextField Variant="Variant.Outlined" Label="Conserto feito em" ReadOnly="true" Value="@ServiceOrder.RepairDate?.ToString("dd/MM/yyyy")" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField Variant="Variant.Outlined" Label="Situação" ReadOnly="true" Value="@Situacao" />
+                    <MudTextField Variant="Variant.Outlined" Label="Situação" ReadOnly="true" Value="@ServiceOrder.ServiceOrderStatus.GetDisplayName()" />
                 </MudItem>
                 <MudItem xs="12" md="6">
                     <MudTextField Variant="Variant.Outlined" Label="Tem Conserto?" ReadOnly="true" Value="@TemConserto" />
