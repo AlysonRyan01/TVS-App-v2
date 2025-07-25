@@ -43,7 +43,7 @@ public class AddServiceOrderEstimateHandler : IRequestHandler<AddServiceOrderEst
             normalized.Guarantee, 
             normalized.PartCost, 
             normalized.LaborCost, 
-            normalized.RepairResult, 
+            normalized.RepairResult,
             normalized.EstimateMessage);
 
         await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);

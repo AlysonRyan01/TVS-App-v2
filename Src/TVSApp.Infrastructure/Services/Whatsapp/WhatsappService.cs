@@ -120,10 +120,10 @@ public class WhatsappService : IWhatsappService
             else
             {
                 var link = $"https://www.tvseletronica.com/consultar?id={serviceOrder}&code={securityCode}";
-                text = $"Olá {customerName}, tudo bem? 👋\n\n" +
+                text = $"*Olá {customerName}, tudo bem? 👋*\n\n" +
                        $"*O orçamento referente à sua Ordem de Serviço nº {serviceOrder} está disponível no link abaixo:*\n\n" +
-                       $"👉 {link}\n\n" +
-                       $"Nele, você pode visualizar os detalhes e aprovar ou recusar o orçamento diretamente.\n\n" +
+                       $"➡️ {link}\n\n" +
+                       $"*Nele, você pode visualizar os detalhes e aprovar ou recusar o orçamento diretamente.*\n\n" +
                        $"Atenciosamente,\nTVS Eletrônica 📺🔧";
             }
 
@@ -133,7 +133,7 @@ public class WhatsappService : IWhatsappService
                 number = formattedNumber,
                 text,
                 delay = 0,
-                linkPreview = false,
+                linkPreview = true,
                 mentionsEveryOne = false
             };
             var jsonEstimateText = JsonSerializer.Serialize(requestBodyEstimateText);
