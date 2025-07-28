@@ -3,6 +3,7 @@ using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Mappers;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
+using TVS_App.Application.Requests.WhatsAppQueueRequests;
 using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Domain.Shared;
 
@@ -12,16 +13,16 @@ public class AddServiceOrderRepairHandler : IRequestHandler<AddServiceOrderRepai
 {
     private readonly IServiceOrderCommandRepository _serviceOrderCommandRepository;
     private readonly IServiceOrderQueryRepository _serviceOrderQueryRepository;
-    private readonly IWhatsappService _whatsappService;
+    private readonly IWhatsAppQueue _whatsAppQueue;
 
     public AddServiceOrderRepairHandler(
         IServiceOrderCommandRepository serviceOrderCommandRepository, 
         IServiceOrderQueryRepository serviceOrderQueryRepository,
-        IWhatsappService whatsappService)
+        IWhatsAppQueue whatsAppQueue)
     {
         _serviceOrderCommandRepository = serviceOrderCommandRepository;
         _serviceOrderQueryRepository = serviceOrderQueryRepository;
-        _whatsappService = whatsappService;
+        _whatsAppQueue = whatsAppQueue;
     }
 
     public async Task<BaseResponse<ServiceOrderDto?>> Handle(
@@ -39,16 +40,12 @@ public class AddServiceOrderRepairHandler : IRequestHandler<AddServiceOrderRepai
         await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);
             
         var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);
-
-        var messageResult = await _whatsappService.SendDeviceReadyMessage(
+        
+        _whatsAppQueue.Enqueue(new SendDeviceReadyMessageRequest(
             serviceOrder.Id.ToString(),
             serviceOrder.Customer.Name.CustomerName,
-            serviceOrder.Customer.Phone.CustomerPhone);
-            
-        var message = messageResult.IsSuccess
-            ? "Ordem marcada como consertada e mensagem enviada com sucesso!"
-            : "Ordem marcada como consertada, mas falha ao enviar mensagem";
-
-        return new BaseResponse<ServiceOrderDto?>(dto, 200, message);
+            serviceOrder.Customer.Phone.CustomerPhone));
+        
+        return new BaseResponse<ServiceOrderDto?>(dto, 200, "Conserto adicionado com sucesso");
     }
 }

@@ -18,6 +18,8 @@ using TVS_App.Domain.Repositories.Notifications;
 using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Infrastructure.Configurations;
 using TVS_App.Infrastructure.Data;
+using TVS_App.Infrastructure.Messaging.BackgroundWorker;
+using TVS_App.Infrastructure.Messaging.Queue;
 using TVS_App.Infrastructure.Models;
 using TVS_App.Infrastructure.Repositories.Customers;
 using TVS_App.Infrastructure.Repositories.Notifications;
@@ -59,6 +61,8 @@ public static class BuilderExtensions
 
     public static void AddDependencies(this WebApplicationBuilder builder)
     {
+        builder.Services.AddSingleton<IWhatsAppQueue, WhatsAppQueue>();
+        builder.Services.AddHostedService<WhatsAppNotificationWorker>();
         builder.Services.AddScoped<ICustomerCommandRepository, CustomerCommandRepository>();
         builder.Services.AddScoped<ICustomerQueryRepository, CustomerQueryRepository>();
         builder.Services.AddScoped<IServiceOrderCommandRepository, ServiceOrderCommandRepository>();

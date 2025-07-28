@@ -1,6 +1,7 @@
 using MediatR;
 using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
+using TVS_App.Application.Requests.WhatsAppQueueRequests;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Repositories.ServiceOrders;
@@ -13,16 +14,16 @@ public class CreateSalesServiceOrderHandler : IRequestHandler<CreateSalesService
 {
     private readonly IServiceOrderCommandRepository _serviceOrderCommandRepository;
     private readonly IGenerateServiceOrderPdf _generateServiceOrderPdf;
-    private readonly IWhatsappService _whatsappService;
+    private readonly IWhatsAppQueue _whatsAppQueue;
 
     public CreateSalesServiceOrderHandler(
         IServiceOrderCommandRepository serviceOrderCommandRepository,
         IGenerateServiceOrderPdf generateServiceOrderPdf,
-        IWhatsappService whatsappService)
+        IWhatsAppQueue whatsAppQueue)
     {
         _serviceOrderCommandRepository = serviceOrderCommandRepository;
         _generateServiceOrderPdf = generateServiceOrderPdf;
-        _whatsappService = whatsappService;
+        _whatsAppQueue = whatsAppQueue;
     }
 
     public async Task<BaseResponse<byte[]>> Handle(
@@ -54,14 +55,14 @@ public class CreateSalesServiceOrderHandler : IRequestHandler<CreateSalesService
         var createPdf = await _generateServiceOrderPdf.GenerateSaleDocumentAsync(serviceOrder);
         if (!createPdf.IsSuccess)
             return new BaseResponse<byte[]>(null, 500, createPdf.Message);
-            
-        await _whatsappService.SendProductSaleMessage(
+        
+        _whatsAppQueue.Enqueue(new SendProductSaleMessageRequest(
             serviceOrder.Customer.Name.CustomerName, 
             serviceOrder.Customer.Phone.CustomerPhone, 
             serviceOrder.PartCost.ServiceOrderPartCost, 
             serviceOrder.Guarantee!.ServiceOrderGuarantee, 
-            serviceOrder.Product.Type);
-
+            serviceOrder.Product.Type));
+        
         return createPdf;
     }
 }

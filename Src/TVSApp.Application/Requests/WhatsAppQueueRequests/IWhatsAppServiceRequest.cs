@@ -1,0 +1,3 @@
+namespace TVS_App.Application.Requests.WhatsAppQueueRequests;
+
+public interface IWhatsAppServiceRequest;

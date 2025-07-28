@@ -1,6 +1,7 @@
 using MediatR;
 using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
+using TVS_App.Application.Requests.WhatsAppQueueRequests;
 using TVS_App.Domain.Entities;
 using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Domain.Shared;
@@ -12,16 +13,16 @@ public class CreateServiceOrderAndReturnPdfHandler : IRequestHandler<CreateServi
 {
     private readonly IServiceOrderCommandRepository _serviceOrderCommandRepository;
     private readonly IGenerateServiceOrderPdf _generateServiceOrderPdf;
-    private readonly IWhatsappService _whatsappService;
+    private readonly IWhatsAppQueue _whatsAppQueue;
 
     public CreateServiceOrderAndReturnPdfHandler(
         IServiceOrderCommandRepository serviceOrderCommandRepository,
         IGenerateServiceOrderPdf generateServiceOrderPdf,
-        IWhatsappService whatsappService)
+        IWhatsAppQueue whatsAppQueue)
     {
         _serviceOrderCommandRepository = serviceOrderCommandRepository;
         _generateServiceOrderPdf = generateServiceOrderPdf;
-        _whatsappService = whatsappService;
+        _whatsAppQueue = whatsAppQueue;
     }
 
     public async Task<BaseResponse<byte[]>> Handle(
@@ -47,10 +48,10 @@ public class CreateServiceOrderAndReturnPdfHandler : IRequestHandler<CreateServi
         if (!createPdf.IsSuccess)
             return new BaseResponse<byte[]>(null, 500, createPdf.Message);
             
-        await _whatsappService.SendWelcomeMessage(
-            serviceOrder.Id.ToString(), 
-            serviceOrder.Customer.Name.CustomerName, 
-            serviceOrder.Customer.Phone.CustomerPhone);
+        _whatsAppQueue.Enqueue(new SendWelcomeMessageRequest(
+            serviceOrder.Id.ToString(),
+            serviceOrder.Customer.Name.CustomerName,
+            serviceOrder.Customer.Phone.CustomerPhone));
 
         return createPdf;
     }

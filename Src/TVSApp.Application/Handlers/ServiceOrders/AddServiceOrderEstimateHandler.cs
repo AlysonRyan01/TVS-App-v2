@@ -3,6 +3,7 @@ using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Mappers;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
+using TVS_App.Application.Requests.WhatsAppQueueRequests;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Domain.Shared;
@@ -13,16 +14,16 @@ public class AddServiceOrderEstimateHandler : IRequestHandler<AddServiceOrderEst
 {
     private readonly IServiceOrderCommandRepository _serviceOrderCommandRepository;
     private readonly IServiceOrderQueryRepository _serviceOrderQueryRepository;
-    private readonly IWhatsappService _whatsappService;
+    private readonly IWhatsAppQueue _whatsAppQueue;
 
     public AddServiceOrderEstimateHandler(
         IServiceOrderCommandRepository serviceOrderCommandRepository, 
         IServiceOrderQueryRepository serviceOrderQueryRepository,
-        IWhatsappService whatsappService)
+        IWhatsAppQueue whatsAppQueue)
     {
         _serviceOrderCommandRepository = serviceOrderCommandRepository;
         _serviceOrderQueryRepository = serviceOrderQueryRepository;
-        _whatsappService = whatsappService;
+        _whatsAppQueue = whatsAppQueue;
     }
 
     public async Task<BaseResponse<ServiceOrderDto?>> Handle(
@@ -52,17 +53,13 @@ public class AddServiceOrderEstimateHandler : IRequestHandler<AddServiceOrderEst
 
         if (serviceOrder.Enterprise != EEnterprise.PhilcoBritania)
         {
-            var whatsappResult = await _whatsappService.SendEstimateMessage(
+            _whatsAppQueue.Enqueue(new SendEstimateMessageRequest(
                 serviceOrder.Id.ToString(),
                 serviceOrder.SecurityCode,
                 serviceOrder.RepairResult!.Value,
                 serviceOrder.Customer.Name.CustomerName,
                 normalized.EstimateMessage.ToUpper(),
-                serviceOrder.Customer.Phone.CustomerPhone);
-            
-            message = whatsappResult.IsSuccess
-                ? "Orçamento adicionado e mensagem enviada com sucesso!"
-                : "Orçamento adicionado, mas falha ao enviar mensagem";
+                serviceOrder.Customer.Phone.CustomerPhone));
         }
             
         var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);

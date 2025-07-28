@@ -3,6 +3,7 @@ using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Mappers;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
+using TVS_App.Application.Requests.WhatsAppQueueRequests;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Domain.Shared;
@@ -14,16 +15,16 @@ public class AddServiceOrderRejectEstimateHandler :
 {
     private readonly IServiceOrderCommandRepository _serviceOrderCommandRepository;
     private readonly IServiceOrderQueryRepository _serviceOrderQueryRepository;
-    private readonly IWhatsappService _whatsappService;
+    private readonly IWhatsAppQueue _whatsAppQueue;
 
     public AddServiceOrderRejectEstimateHandler(
         IServiceOrderCommandRepository serviceOrderCommandRepository, 
         IServiceOrderQueryRepository serviceOrderQueryRepository,
-        IWhatsappService whatsappService)
+        IWhatsAppQueue whatsAppQueue)
     {
         _serviceOrderCommandRepository = serviceOrderCommandRepository;
         _serviceOrderQueryRepository = serviceOrderQueryRepository;
-        _whatsappService = whatsappService;
+        _whatsAppQueue = whatsAppQueue;
     }
 
     public async Task<BaseResponse<ServiceOrderDto?>> Handle(
@@ -42,15 +43,15 @@ public class AddServiceOrderRejectEstimateHandler :
             
         var dto = ServiceOrderMapper.MapToServiceOrderDto(serviceOrder);
 
-        await _whatsappService.SendEstimateDisapprovalAcknowledgmentAsync(
+        _whatsAppQueue.Enqueue(new SendEstimateDisapprovalAcknowledgmentRequest(
             serviceOrder.Id.ToString(),
             serviceOrder.Customer.Name.CustomerName,
-            serviceOrder.Customer.Phone.CustomerPhone);
-        
-        await _whatsappService.NotifyOwnerEstimateDecision(
-            serviceOrder.Id.ToString(), 
-            ERepairStatus.Disapproved, 
-            serviceOrder.Customer.Name.CustomerName);
+            serviceOrder.Customer.Phone.CustomerPhone));
+
+        _whatsAppQueue.Enqueue(new NotifyOwnerEstimateDecisionRequest(
+            serviceOrder.Id.ToString(),
+            ERepairStatus.Disapproved,
+            serviceOrder.Customer.Name.CustomerName));
 
         return new BaseResponse<ServiceOrderDto?>(dto, 200, "Orçamento reprovado com sucesso!");
     }

@@ -3,6 +3,7 @@ using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Mappers;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
+using TVS_App.Application.Requests.WhatsAppQueueRequests;
 using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Domain.Shared;
 
@@ -13,16 +14,16 @@ public class MarkEstimateRejectedAsReadyToPickUpHandler :
 {
     private readonly IServiceOrderQueryRepository _serviceOrderQueryRepository;
     private readonly IServiceOrderCommandRepository _serviceOrderCommandRepository;
-    private readonly IWhatsappService _whatsappService;
+    private readonly IWhatsAppQueue _whatsAppQueue;
 
     public MarkEstimateRejectedAsReadyToPickUpHandler(
         IServiceOrderQueryRepository serviceOrderQueryRepository, 
         IServiceOrderCommandRepository serviceOrderCommandRepository,
-        IWhatsappService whatsappService)
+        IWhatsAppQueue whatsAppQueue)
     {
         _serviceOrderQueryRepository = serviceOrderQueryRepository;
         _serviceOrderCommandRepository = serviceOrderCommandRepository;
-        _whatsappService = whatsappService;
+        _whatsAppQueue = whatsAppQueue;
     }
 
     public async Task<BaseResponse<ServiceOrderDto>> Handle(
@@ -50,10 +51,10 @@ public class MarkEstimateRejectedAsReadyToPickUpHandler :
         if (!updateResult.IsSuccess)
             return new BaseResponse<ServiceOrderDto>(null, updateResult.Code, updateResult.Message);
 
-        await _whatsappService.SendRejectionReadyForPickupMessage(
+        _whatsAppQueue.Enqueue(new SendRejectionReadyForPickupMessageRequest(
             serviceOrder.Customer.Name.CustomerName,
-            serviceOrder.Customer.Phone.CustomerPhone);
-
+            serviceOrder.Customer.Phone.CustomerPhone));
+        
         return new BaseResponse<ServiceOrderDto>(dto, 200, "Ordem de serviço marcada como pronta para entrega");
     }
 }

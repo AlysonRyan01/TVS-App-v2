@@ -227,7 +227,11 @@ public class WhatsappService : IWhatsappService
         }
     }
 
-    public async Task<BaseResponse<string>> SendGuaranteeMessage(string serviceOrder, string customerName, string guarantee, string phoneNumber)
+    public async Task<BaseResponse<string>> SendGuaranteeMessage(
+        string serviceOrder, 
+        string customerName, 
+        string guarantee, 
+        string phoneNumber)
     {
         try
         {
@@ -298,8 +302,12 @@ public class WhatsappService : IWhatsappService
         }
     }
 
-    public async Task<BaseResponse<string>> SendProductSaleMessage(string customerName, string phoneNumber, decimal amount,
-        string guarantee, EProduct productType)
+    public async Task<BaseResponse<string>> SendProductSaleMessage(
+        string customerName, 
+        string phoneNumber, 
+        decimal amount,
+        string guarantee, 
+        EProduct productType)
     {
         try
         {
@@ -492,7 +500,10 @@ public class WhatsappService : IWhatsappService
         }
     }
 
-    public async Task<BaseResponse<string>> SendThankYouForEstimateApprovalAsync(string serviceOrder, string customerName, string phoneNumber)
+    public async Task<BaseResponse<string>> SendThankYouForEstimateApprovalAsync(
+        string serviceOrder, 
+        string customerName, 
+        string phoneNumber)
     {
         try
         {
@@ -554,7 +565,10 @@ public class WhatsappService : IWhatsappService
         }
     }
 
-    public async Task<BaseResponse<string>> SendEstimateDisapprovalAcknowledgmentAsync(string serviceOrder, string customerName, string phoneNumber)
+    public async Task<BaseResponse<string>> SendEstimateDisapprovalAcknowledgmentAsync(
+        string serviceOrder, 
+        string customerName, 
+        string phoneNumber)
     {
         try
         {

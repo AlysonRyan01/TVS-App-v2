@@ -1,6 +1,7 @@
 using MediatR;
 using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
+using TVS_App.Application.Requests.WhatsAppQueueRequests;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Domain.Shared;
@@ -11,18 +12,18 @@ public class AddServiceOrderDeliveryAndReturnPdfHandler : IRequestHandler<AddSer
 {
     private readonly IServiceOrderCommandRepository _serviceOrderCommandRepository;
     private readonly IServiceOrderQueryRepository _serviceOrderQueryRepository;
-    private readonly IWhatsappService _whatsappService;
+    private readonly IWhatsAppQueue _whatsappQueue;
     private readonly IGenerateServiceOrderPdf _generateServiceOrderPdf;
 
     public AddServiceOrderDeliveryAndReturnPdfHandler(
         IServiceOrderCommandRepository serviceOrderCommandRepository, 
         IServiceOrderQueryRepository serviceOrderQueryRepository,
-        IWhatsappService whatsappService,
+        IWhatsAppQueue whatsAppQueue,
         IGenerateServiceOrderPdf generateServiceOrderPdf)
     {
         _serviceOrderCommandRepository = serviceOrderCommandRepository;
         _serviceOrderQueryRepository = serviceOrderQueryRepository;
-        _whatsappService = whatsappService;
+        _whatsappQueue = whatsAppQueue;
         _generateServiceOrderPdf = generateServiceOrderPdf;
     }
 
@@ -46,12 +47,12 @@ public class AddServiceOrderDeliveryAndReturnPdfHandler : IRequestHandler<AddSer
             var createPdf = await _generateServiceOrderPdf.GenerateCheckOutDocumentAsync(serviceOrder);
             if (!createPdf.IsSuccess)
                 return new BaseResponse<byte[]>(null, 500, createPdf.Message);
-
-            await _whatsappService.SendGuaranteeMessage(
-                serviceOrder.Id.ToString(), 
-                serviceOrder.Customer.Name.CustomerName, 
-                serviceOrder.Guarantee!.ServiceOrderGuarantee, 
-                serviceOrder.Customer.Phone.CustomerPhone);
+            
+            _whatsappQueue.Enqueue(new SendGuaranteeMessageRequest(
+                serviceOrder.Id.ToString(),
+                serviceOrder.Customer.Name.CustomerName,
+                serviceOrder.Guarantee!.ServiceOrderGuarantee,
+                serviceOrder.Customer.Phone.CustomerPhone));
                 
             return createPdf;
         }
