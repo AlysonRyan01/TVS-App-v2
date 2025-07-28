@@ -1,6 +1,7 @@
 using TVS_App.Api.Common;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddCompression();
 builder.AddQuestPdfConfiguration();
 builder.AddCorsConfiguration();
 builder.AddSqlServer();
@@ -13,6 +14,7 @@ builder.AddSignalR();
 builder.AddSwagger();
 
 var app = builder.Build();
+app.UseResponseCompression();
 app.AddExceptionMiddleware();
 app.UseCors(builder.Configuration["Cors:PolicyName"]!);
 app.AddSwagger();
