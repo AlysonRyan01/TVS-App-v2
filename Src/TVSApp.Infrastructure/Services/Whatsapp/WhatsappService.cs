@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using TVS_App.Application.Interfaces.Services;
 using TVS_App.Domain.Enums;
@@ -15,11 +17,16 @@ public class WhatsappService : IWhatsappService
 {
     private readonly HttpClient _httpClient;
     private readonly EvolutionApiSettings _settings;
+    private readonly IWebHostEnvironment _env;
 
-    public WhatsappService(HttpClient httpClient, IOptions<EvolutionApiSettings> options)
+    public WhatsappService(
+        HttpClient httpClient, 
+        IOptions<EvolutionApiSettings> options,
+        IWebHostEnvironment env)
     {
         _httpClient = httpClient;
         _settings = options.Value;
+        _env = env;
     }
     
     public async Task<BaseResponse<string>> SendWelcomeMessage(string serviceOrder, string customerName, string phoneNumber)
@@ -34,6 +41,9 @@ public class WhatsappService : IWhatsappService
             
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return new BaseResponse<string>(null, 404, "Número de telefone vazio");
+
+            if (_env.IsDevelopment())
+                phoneNumber = "5541997561468";
 
             var text = $"Olá {customerName}, seja bem-vindo(a) à TVS Eletrônica! 👋😊\n\n" +
                        $"📄 Recebemos sua ordem de serviço nº {serviceOrder} com sucesso ✅.\n\n" +
@@ -104,6 +114,9 @@ public class WhatsappService : IWhatsappService
 
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return new BaseResponse<string>(null, 404, "Número de telefone vazio");
+            
+            if (_env.IsDevelopment())
+                phoneNumber = "5541997561468";
 
             var formattedNumber = FormatPhoneNumber(phoneNumber);
             string text;
@@ -178,6 +191,9 @@ public class WhatsappService : IWhatsappService
             
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return new BaseResponse<string>(null, 404, "Número de telefone vazio");
+            
+            if (_env.IsDevelopment())
+                phoneNumber = "5541997561468";
 
             var text = $"Olá {customerName}, tudo bem? 👋😊\n\n" +
                        $"📦 Sua ordem de serviço nº {serviceOrder} está pronta para retirada! 🎉✅\n" +
@@ -246,6 +262,9 @@ public class WhatsappService : IWhatsappService
             
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return new BaseResponse<string>(null, 404, "Número de telefone vazio");
+            
+            if (_env.IsDevelopment())
+                phoneNumber = "5541997561468";
 
             var text = $"""
                         Olá {customerName}, tudo bem? 👋😊
@@ -319,6 +338,9 @@ public class WhatsappService : IWhatsappService
 
             if (string.IsNullOrWhiteSpace(guarantee))
                 return new BaseResponse<string>(null, 404, "Garantia vazia");
+            
+            if (_env.IsDevelopment())
+                phoneNumber = "5541997561468";
 
             var formattedNumber = FormatPhoneNumber(phoneNumber);
 
@@ -383,6 +405,9 @@ public class WhatsappService : IWhatsappService
 
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return new BaseResponse<string>(null, 404, "Número de telefone vazio");
+            
+            if (_env.IsDevelopment())
+                phoneNumber = "5541997561468";
 
             var formattedNumber = FormatPhoneNumber(phoneNumber);
 
@@ -444,7 +469,12 @@ public class WhatsappService : IWhatsappService
             if (string.IsNullOrWhiteSpace(customerName))
                 return new BaseResponse<string>(null, 404, "Nome do cliente vazio");
 
-            var formattedNumber = "5541992744920";
+            string formattedNumber = string.Empty;
+            
+            if (_env.IsDevelopment())
+                formattedNumber = "5541997561468";
+            if (_env.IsProduction())
+                formattedNumber = "5541992744920";
             
             var decisionText = result switch
             {
@@ -512,6 +542,9 @@ public class WhatsappService : IWhatsappService
 
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return new BaseResponse<string>(null, 404, "Número de telefone vazio");
+            
+            if (_env.IsDevelopment())
+                phoneNumber = "5541997561468";
 
             var formattedNumber = FormatPhoneNumber(phoneNumber);
 
@@ -577,6 +610,9 @@ public class WhatsappService : IWhatsappService
 
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 return new BaseResponse<string>(null, 404, "Número de telefone vazio");
+            
+            if (_env.IsDevelopment())
+                phoneNumber = "5541997561468";
 
             var formattedNumber = FormatPhoneNumber(phoneNumber);
 

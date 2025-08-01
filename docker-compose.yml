@@ -1,0 +1,57 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    environment:
+      SA_PASSWORD: "SenhaForte123!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserverdata:/var/opt/mssql
+    networks:
+      - appnetwork
+
+  api:
+    build:
+      context: ./src/TVSApp.Api
+      dockerfile: Dockerfile.dev
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=MinhaDb;User=sa;Password=SenhaForte123!;TrustServerCertificate=True;"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    depends_on:
+      - sqlserver
+    volumes:
+      - ./src:/src
+      - /src/TVSApp.Api/bin
+      - /src/TVSApp.Api/obj
+    working_dir: /src/TVSApp.Api
+    ports:
+      - "5001:80"
+    command: ["dotnet", "watch", "run", "--urls", "http://0.0.0.0:80"]
+    networks:
+      - appnetwork
+
+  blazor:
+    build:
+      context: ./src/TVSApp.Web
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - api
+    volumes:
+      - ./src:/src
+      - /src/TVSApp.Web/bin
+      - /src/TVSApp.Web/obj
+    working_dir: /src/TVSApp.Web
+    ports:
+      - "5002:80"
+    command: ["dotnet", "watch", "run", "--urls", "http://0.0.0.0:80"]
+    networks:
+      - appnetwork
+
+networks:
+  appnetwork:
+    driver: bridge
+
+volumes:
+  sqlserverdata:

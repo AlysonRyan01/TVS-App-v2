@@ -15,7 +15,7 @@ public static class BuilderExtension
     public static void AddServices(this WebAssemblyHostBuilder builder)
     {
         var baseAddress = builder.HostEnvironment.IsDevelopment()
-            ? "http://localhost:5119/"
+            ? "http://localhost:5001/"
             : "https://gerenciamentotvsapi-f7e9dyhyfbhrbpa8.brazilsouth-01.azurewebsites.net/";
         
         builder.Services.AddTransient<CustomerHandler>();
@@ -48,7 +48,7 @@ public static class BuilderExtension
     public static void AddHttpClient(this WebAssemblyHostBuilder builder)
     {
         var baseAddress = builder.HostEnvironment.IsDevelopment()
-            ? "http://localhost:5119/"
+            ? "http://localhost:5001/"
             : "https://gerenciamentotvsapi-f7e9dyhyfbhrbpa8.brazilsouth-01.azurewebsites.net/";
         
         builder.Services.AddHttpClient("api", client =>
