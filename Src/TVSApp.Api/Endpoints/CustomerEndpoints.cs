@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using TVS_App.Api.SignalR;
 using TVS_App.Application.DTOs;
+using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Requests.CustomerRequests.CustomerCommands;
 using TVS_App.Application.Requests.CustomerRequests.CustomersQueries;
 using TVS_App.Domain.Shared;
@@ -121,5 +122,18 @@ public static class CustomerEndpoints
         .Produces<BaseResponse<PaginatedResult<CustomerDto>>>(StatusCodes.Status200OK, "application/json")
         .Produces<BaseResponse<PaginatedResult<CustomerDto>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
+        
+        app.MapGet("/get-address-by-zip-code", async (IAddressService addressService, string zipCode) =>
+            {
+                var response = await addressService.GetAddressByCep(zipCode);
+
+                return response.IsSuccess ? Results.Ok(response) : Results.BadRequest(response);
+            })
+            .WithTags("ServiceOrder")
+            .WithName("GetAddressByCep")
+            .WithSummary("Obtem o endereço por CEP.")
+            .WithDescription("Obtem o endereço por CEP.")
+            .Produces<BaseResponse<AddressDto>>(StatusCodes.Status200OK, "application/pdf")
+            .Produces<BaseResponse<AddressDto>>(StatusCodes.Status400BadRequest, "application/json");
     }
 }

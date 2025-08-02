@@ -28,24 +28,6 @@ services:
     working_dir: /src/TVSApp.Api
     ports:
       - "5001:80"
-    command: ["dotnet", "watch", "run", "--urls", "http://0.0.0.0:80"]
-    networks:
-      - appnetwork
-
-  blazor:
-    build:
-      context: ./src/TVSApp.Web
-      dockerfile: Dockerfile.dev
-    depends_on:
-      - api
-    volumes:
-      - ./src:/src
-      - /src/TVSApp.Web/bin
-      - /src/TVSApp.Web/obj
-    working_dir: /src/TVSApp.Web
-    ports:
-      - "5002:80"
-    command: ["dotnet", "watch", "run", "--urls", "http://0.0.0.0:80"]
     networks:
       - appnetwork
 

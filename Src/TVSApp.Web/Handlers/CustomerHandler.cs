@@ -119,4 +119,21 @@ public class CustomerHandler
             return new BaseResponse<PaginatedResult<CustomerDto?>>(null, 500, "Erro ao se conectar com o servidor.");
         }
     }
+    
+    public async Task<BaseResponse<AddressDto>> GetAddressByZipCode(string zipCode)
+    {
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<AddressDto>>($"get-address-by-zip-code?zipCode={zipCode}");
+            
+            if (response == null)
+                return new BaseResponse<AddressDto>(null, 500, "Erro no servidor");
+            
+            return response;
+        }
+        catch
+        {
+            return new BaseResponse<AddressDto>(null, 500, "Erro ao se conectar ao servidor.");
+        }
+    }
 }

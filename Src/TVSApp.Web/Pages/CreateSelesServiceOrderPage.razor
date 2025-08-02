@@ -62,6 +62,13 @@
                                       Variant="Variant.Outlined"
                                       Class="w-48"
                                       Mask="@(new PatternMask("00000-000"))" />
+                        
+                        <MudIconButton Icon="@Icons.Material.Filled.Search"
+                                   Color="Color.Primary"
+                                   Variant="Variant.Filled"
+                                   OnClick="AddAddressByZipCode"
+                                   Class="self-center"
+                                   Size="Size.Large"/>
                     </div>
 
                     <MudTextField @bind-Value="CreateCustomerCommand.City"

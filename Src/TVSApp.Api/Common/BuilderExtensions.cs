@@ -26,6 +26,7 @@ using TVS_App.Infrastructure.Repositories.Notifications;
 using TVS_App.Infrastructure.Repositories.ServiceOrders;
 using TVS_App.Infrastructure.Security;
 using TVS_App.Infrastructure.Services;
+using TVS_App.Infrastructure.Services.AddressService;
 using TVS_App.Infrastructure.Services.Whatsapp;
 
 namespace TVS_App.Api.Common;
@@ -69,6 +70,7 @@ public static class BuilderExtensions
         builder.Services.AddScoped<IServiceOrderQueryRepository, ServiceOrderQueryRepository>();
         builder.Services.AddScoped<INotificationCommandRepository, NotificationCommandRepository>();
         builder.Services.AddScoped<INotificationQueryRepository, NotificationQueryRepository>();
+        builder.Services.AddTransient<IAddressService, AddressService>();
         builder.Services.AddTransient<IGenerateServiceOrderPdf, GenerateServiceOrderPdfService>();
         builder.Services.AddHttpClient<IWhatsappService, WhatsappService>();
         builder.Services.Configure<EvolutionApiSettings>(builder.Configuration.GetSection("EvolutionApiSettings"));

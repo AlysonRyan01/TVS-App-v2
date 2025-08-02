@@ -357,4 +357,6 @@ public partial class Home : ComponentBase
         Console.WriteLine($"Reconectado com ID: {connectionId}");
         await UpdateServiceOrdersAsync();
     }
+    
+    
 }

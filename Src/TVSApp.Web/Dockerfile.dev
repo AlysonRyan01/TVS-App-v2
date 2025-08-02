@@ -1,6 +1,18 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0
 
+RUN apt-get update && apt-get install -y curl \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g npm@latest
+
 WORKDIR /app
+
+COPY . ./
+
+RUN dotnet restore
+
+RUN chmod +x entrypoint.sh
+
 EXPOSE 80
 
-ENTRYPOINT ["dotnet", "watch", "run", "--urls", "http://0.0.0.0:80"]
+ENTRYPOINT ["./entrypoint.sh"]

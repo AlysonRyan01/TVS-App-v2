@@ -177,4 +177,25 @@ public partial class CreateSelesServiceOrderPage : ComponentBase
             }
         }
     }
+
+    private async Task AddAddressByZipCode()
+    {
+        try
+        {
+            var result = await CustomerHandler.GetAddressByZipCode(CreateCustomerCommand.ZipCode);
+            
+            if (!result.IsSuccess || result.Data == null)
+                Snackbar.Add($"Erro: {result.Message}", Severity.Error);
+            
+            var address = result.Data;
+
+            CreateCustomerCommand.Street = address?.Rua ?? "";
+            CreateCustomerCommand.Neighborhood = address?.Bairro ?? "";
+            CreateCustomerCommand.City = address?.Cidade ?? "";
+        }
+        catch
+        {
+            Snackbar.Add("Erro no servidor de endereços", Severity.Error);
+        }
+    }
 }
