@@ -40,7 +40,13 @@ public class ServiceOrder : Entity
     public ERepairStatus RepairStatus { get; private set; }
     public ERepairResult? RepairResult { get; private set; }
 
-    public void AddEstimate(string solution, string? guarantee, decimal partCost, decimal laborCost, ERepairResult repairResult, string estimateMessage)
+    public void AddEstimate(
+        string solution, 
+        string? guarantee, 
+        decimal partCost, 
+        decimal laborCost, 
+        ERepairResult repairResult, 
+        string estimateMessage)
     {
         Solution = new Solution(solution);
         Guarantee = new Guarantee(guarantee ?? "");
@@ -58,14 +64,12 @@ public class ServiceOrder : Entity
             ServiceOrderStatus = EServiceOrderStatus.ReadyToPickUp;
         }
 
-        if (Enterprise == EEnterprise.PhilcoBritania)
+        if (Enterprise == EEnterprise.PhilcoBritania && RepairResult == ERepairResult.Repair)
         {
-            RepairResult = ERepairResult.Repair;
             ServiceOrderStatus = EServiceOrderStatus.Evaluated;
             RepairStatus = ERepairStatus.Approved;
             ResponseDate = DateTime.UtcNow;
         }
-            
     }
 
     public void ApproveEstimate()
