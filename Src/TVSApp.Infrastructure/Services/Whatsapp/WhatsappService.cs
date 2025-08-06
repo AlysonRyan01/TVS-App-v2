@@ -47,7 +47,7 @@ public class WhatsappService : IWhatsappService
                    $"*📄 Recebemos sua ordem de serviço nº {serviceOrder} com sucesso ✅*.\n\n" +
                    $"🔍 Nossa equipe já está analisando seu aparelho 🛠️ e em breve entraremos em contato com mais informações.\n\n" +
                    $"🙏 Agradecemos a confiança!\n\n" +
-                   $"*Atenciosamente,\nEquipe TVS Eletrônica 📺🔧✨*";
+                   $"Atenciosamente,\nEquipe TVS Eletrônica 📺🔧✨";
 
         return await Send(text, phoneNumber);
     }
@@ -84,7 +84,7 @@ public class WhatsappService : IWhatsappService
                    $"🛠️ Situação: {result.GetDisplayName()}.\n" +
                    $"🔎 Detalhes: {solution}\n\n" +
                    $"Em caso de dúvidas, estamos à disposição.\n\n" +
-                   $"*Atenciosamente,\nTVS Eletrônica 📺🔧*";
+                   $"Atenciosamente,\nTVS Eletrônica 📺🔧";
                 
             return await Send(text, phoneNumber);
         }
@@ -93,11 +93,10 @@ public class WhatsappService : IWhatsappService
 
         var text1 = $"*Olá {customerName}, tudo bem? 👋*\n\n" +
                     $"*O orçamento referente à sua Ordem de Serviço nº {serviceOrder} está disponível no link abaixo.*\n\n" +
-                    $"*Nele, você pode visualizar os detalhes e aprovar ou recusar o orçamento diretamente.*\n\n" +
-                    $"*Atenciosamente,\nTVS Eletrônica 📺🔧*";
+                    $"*Nele, você pode visualizar os detalhes e aprovar ou recusar o orçamento diretamente.*";
                 
         await Send(text1, phoneNumber);
-        await Task.Delay(2000);
+        await Task.Delay(3000);
         var sendResult = await Send(link, phoneNumber);
 
         return sendResult;
