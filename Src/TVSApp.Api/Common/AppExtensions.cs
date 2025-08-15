@@ -20,6 +20,7 @@ public static class AppExtensions
         app.MapCustomerEndpoints();
         app.MapServiceOrderEndpoints();
         app.MapNotificationEndpoints();
+        app.MapEmailEndpoints();
     }
     
     public static void AddSignalR(this WebApplication app)

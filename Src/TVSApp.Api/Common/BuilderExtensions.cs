@@ -27,6 +27,7 @@ using TVS_App.Infrastructure.Repositories.ServiceOrders;
 using TVS_App.Infrastructure.Security;
 using TVS_App.Infrastructure.Services;
 using TVS_App.Infrastructure.Services.AddressService;
+using TVS_App.Infrastructure.Services.Email;
 using TVS_App.Infrastructure.Services.Whatsapp;
 
 namespace TVS_App.Api.Common;
@@ -64,6 +65,8 @@ public static class BuilderExtensions
     {
         builder.Services.AddSingleton<IWhatsAppQueue, WhatsAppQueue>();
         builder.Services.AddHostedService<WhatsAppNotificationWorker>();
+        builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
+        builder.Services.AddHostedService<EmailNotificationWorker>();
         builder.Services.AddScoped<ICustomerCommandRepository, CustomerCommandRepository>();
         builder.Services.AddScoped<ICustomerQueryRepository, CustomerQueryRepository>();
         builder.Services.AddScoped<IServiceOrderCommandRepository, ServiceOrderCommandRepository>();
@@ -73,7 +76,9 @@ public static class BuilderExtensions
         builder.Services.AddTransient<IAddressService, AddressService>();
         builder.Services.AddTransient<IGenerateServiceOrderPdf, GenerateServiceOrderPdfService>();
         builder.Services.AddHttpClient<IWhatsappService, WhatsappService>();
+        builder.Services.AddSingleton<IEmailService, EmailService>();
         builder.Services.Configure<EvolutionApiSettings>(builder.Configuration.GetSection("EvolutionApiSettings"));
+        builder.Services.Configure<EmailServiceSettings>(builder.Configuration.GetSection("EmailServiceSettings"));
         builder.Services.AddMediatR(x =>
         {
             x.RegisterServicesFromAssembly(typeof(CreateCustomerCommand).Assembly);
