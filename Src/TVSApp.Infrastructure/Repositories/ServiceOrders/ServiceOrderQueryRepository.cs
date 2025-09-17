@@ -199,13 +199,13 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         if (pageSize < 1)
             return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 400, "O tamanho da página deve ser maior que zero.");
 
-        var oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
+        var sixMountsAgo = DateTime.UtcNow.AddMonths(-6);
 
         var query = _context.ServiceOrders
             .Where(x => x.ServiceOrderStatus == EServiceOrderStatus.Evaluated &&
                         x.RepairStatus == ERepairStatus.Approved &&
                         !x.PurchasePartDate.HasValue &&
-                        x.ResponseDate >= oneMonthAgo)
+                        x.ResponseDate >= sixMountsAgo)
             .OrderByDescending(x => x.Id)
             .AsNoTracking();
 
