@@ -194,6 +194,21 @@ public class ServiceOrder : Entity
     public void EditRepairResult(ERepairResult repairResult)
         => RepairResult = repairResult;
     
+    public void EditEntryDate(DateTime entryDate)
+        => EntryDate = entryDate;
+    
+    public void EditResponseDate(DateTime? responseDate)
+        => ResponseDate = responseDate;
+    
+    public void EditInspectionDate(DateTime? inspectionDate)
+        => InspectionDate = inspectionDate;
+    
+    public void EditRepairDate(DateTime? repairDate)
+        => RepairDate = repairDate;
+    
+    public void EditPurchasePartDate(DateTime? purchasePartDate)
+        => PurchasePartDate = purchasePartDate;
+    
     public void EditDeliveryDate(DateTime? deliveryDate)
         => DeliveryDate = deliveryDate;
     

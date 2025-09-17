@@ -35,6 +35,10 @@
                 }
             </MudSelect>
         </div>
+        
+        <div class="pb-2">
+            <MudDatePicker Variant="Variant.Outlined" Label="Data de entrada" @bind-Date="_command.EntryDate" Clearable="true" Class="w-full" />
+        </div>
 
         <!-- CLIENTE -->
         <div class="py-3 bg-gray-50">
@@ -100,6 +104,17 @@
                     }
                 </MudSelect>
 
+                <MudSelect T="ERepairResult?"
+                           Label="Resultado do Reparo"
+                           @bind-Value="_command.RepairResult"
+                           Variant="Variant.Outlined"
+                           Class="w-full">
+                    @foreach (var result in Enum.GetValues(typeof(ERepairResult)).Cast<ERepairResult>())
+                    {
+                        <MudSelectItem Value="@(result as ERepairResult?)">@result.GetDisplayName()</MudSelectItem>
+                    }
+                </MudSelect>
+
                 <MudTextField Variant="Variant.Outlined" Label="Solução" @bind-Value="_command.Solution" Lines="3" Class="w-full" />
                 <MudTextField Variant="Variant.Outlined" Label="Mensagem de orçamento" @bind-Value="_command.EstimateMessage" Class="w-full" />
                 <div class="w-full">
@@ -112,18 +127,11 @@
                 </div>
                 <MudTextField Variant="Variant.Outlined" Label="Garantia" @bind-Value="_command.Guarantee" Class="w-full" />
 
-                <MudSelect T="ERepairResult?"
-                           Label="Resultado do Reparo"
-                           @bind-Value="_command.RepairResult"
-                           Variant="Variant.Outlined"
-                           Class="w-full">
-                    @foreach (var result in Enum.GetValues(typeof(ERepairResult)).Cast<ERepairResult>())
-                    {
-                        <MudSelectItem Value="@(result as ERepairResult?)">@result.GetDisplayName()</MudSelectItem>
-                    }
-                </MudSelect>
-
-                <MudDatePicker Label="Data de Entrega" @bind-Date="_command.DeliveryDate" Class="w-full" />
+                <MudDatePicker Variant="Variant.Outlined" Label="Data da vistoria" @bind-Date="_command.InspectionDate" Clearable="true" Class="w-full" />
+                <MudDatePicker Variant="Variant.Outlined" Label="Data da resposta do cliente" @bind-Date="_command.ResponseDate" Clearable="true" Class="w-full" />
+                <MudDatePicker Variant="Variant.Outlined" Label="Data do conserto" @bind-Date="_command.RepairDate" Clearable="true" Class="w-full" />
+                <MudDatePicker Variant="Variant.Outlined" Label="Data da compra da peça" @bind-Date="_command.PurchasePartDate" Clearable="true" Class="w-full" />
+                <MudDatePicker Variant="Variant.Outlined" Label="Data de Entrega" @bind-Date="_command.DeliveryDate" Clearable="true" Class="w-full" />
             </div>
         </div>
 
@@ -373,6 +381,11 @@
                 Type = ServiceOrder.Type,
                 Location = ServiceOrder.Location,
                 Enterprise = ServiceOrder.Enterprise,
+                EntryDate = ServiceOrder.EntryDate,
+                InspectionDate = ServiceOrder.InspectionDate,
+                ResponseDate = ServiceOrder.ResponseDate,
+                RepairDate = ServiceOrder.RepairDate,
+                PurchasePartDate = ServiceOrder.PurchasePartDate,
                 DeliveryDate = ServiceOrder.DeliveryDate,
                 Solution = ServiceOrder.Solution,
                 Guarantee = ServiceOrder.Guarantee,
@@ -447,6 +460,11 @@
             _command.Type,
             _command.Location,
             _command.Enterprise,
+            _command.EntryDate,
+            _command.InspectionDate,
+            _command.ResponseDate,
+            _command.RepairDate,
+            _command.PurchasePartDate,
             _command.DeliveryDate,
             _command.Solution,
             _command.Guarantee,

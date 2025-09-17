@@ -25,6 +25,11 @@ public class EditServiceOrderCommandModel
     public EProduct Type { get; set; }
     public string Location { get; set; } = string.Empty;
     public EEnterprise Enterprise { get; set; }
+    public DateTime? EntryDate { get; set; }
+    public DateTime? InspectionDate { get; set; }
+    public DateTime? ResponseDate { get; set; }
+    public DateTime? RepairDate { get; set; }
+    public DateTime? PurchasePartDate { get; set; }
     public DateTime? DeliveryDate { get; set; }
     public string? Solution { get; set; }
     public string? Guarantee { get; set; }

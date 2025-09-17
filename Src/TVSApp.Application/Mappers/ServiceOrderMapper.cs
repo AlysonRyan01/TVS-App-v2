@@ -142,6 +142,16 @@ public static class ServiceOrderMapper
         entity.EditLaborCost(new LaborCost(dto.LaborCost));
         if (dto.RepairResult != null && Enum.IsDefined(typeof(ERepairResult), dto.RepairResult.Value))
             entity.EditRepairResult(dto.RepairResult.Value);
+        if (dto.EntryDate != null)
+            entity.EditEntryDate(dto.EntryDate.Value);
+        if (dto.ResponseDate != null)
+            entity.EditResponseDate(dto.ResponseDate.Value);
+        if (dto.InspectionDate != null)
+            entity.EditInspectionDate(dto.InspectionDate.Value);
+        if (dto.RepairDate != null)
+            entity.EditRepairDate(dto.RepairDate.Value);
+        if (dto.PurchasePartDate != null)
+            entity.EditPurchasePartDate(dto.PurchasePartDate.Value);
         if (dto.DeliveryDate != null)
             entity.EditDeliveryDate(dto.DeliveryDate.Value);
     }
