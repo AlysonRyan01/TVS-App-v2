@@ -58,11 +58,14 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
 
     public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByCustomerName(string customerName)
     {
+        var searchTerm = customerName.Trim().ToUpper();
+    
         var serviceOrders = await _context.ServiceOrders
             .Include(so => so.Customer)
             .AsNoTracking()
-            .Where(so => so.Customer.Name.CustomerName.Contains(customerName))
+            .Where(so => EF.Functions.Like(so.Customer.Name.CustomerName, $"%{searchTerm}%"))
             .OrderByDescending(so => so.Id)
+            .Take(5)
             .ToListAsync();
             
         if (!serviceOrders.Any())
