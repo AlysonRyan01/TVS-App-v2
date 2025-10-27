@@ -34,13 +34,13 @@ public class CustomerQueryRepository : ICustomerQueryRepository
         if (string.IsNullOrWhiteSpace(name))
             return new BaseResponse<List<Customer>>(new List<Customer>(), 400, "O nome não pode ser vazio.");
         
-        var pattern = $"{name}%";
+        var searchTerm = name.Trim().ToUpper();
 
         var customers = await _context.Customers
             .AsNoTracking()
-            .Where(c => EF.Functions.Like(c.Name.CustomerName, pattern))
+            .Where(c => c.Name.CustomerName.Contains(searchTerm))
             .OrderBy(c => c.Name.CustomerName)
-            .Take(10)
+            .Take(6)
             .ToListAsync();
 
         return new BaseResponse<List<Customer>>(customers, 200, "Clientes obtidos com sucesso!");
