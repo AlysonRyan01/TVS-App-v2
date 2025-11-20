@@ -6,6 +6,8 @@ public enum EProduct
 {
     [Display(Name = "TV")]
     Tv = 1,
+    [Display(Name = "TV-BOX")]
+    TvBox = 2,
     [Display(Name = "CONTROLE REMOTO")]
     ControleRemoto = 5,
     [Display(Name = "SOM")]
