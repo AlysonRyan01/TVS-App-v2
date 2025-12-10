@@ -12,6 +12,6 @@ public interface IWhatsappService
     Task<BaseResponse<string>> SendProductSaleMessage(string customerName, string phoneNumber, decimal amount, string guarantee, EProduct productType);
     Task<BaseResponse<string>> SendRejectionReadyForPickupMessage(string customerName, string phoneNumber);
     Task<BaseResponse<string>> NotifyOwnerEstimateDecision(string serviceOrder, ERepairStatus result, string customerName);
-    Task<BaseResponse<string>> SendThankYouForEstimateApprovalAsync(string serviceOrder, string customerName, string phoneNumber);
+    Task<BaseResponse<string>> SendThankYouForEstimateApprovalAsync(string serviceOrder, string customerName, string phoneNumber, decimal amount);
     Task<BaseResponse<string>> SendEstimateDisapprovalAcknowledgmentAsync(string serviceOrder, string customerName, string phoneNumber);
 }

@@ -247,7 +247,8 @@ public class WhatsappService : IWhatsappService
     public async Task<BaseResponse<string>> SendThankYouForEstimateApprovalAsync(
         string serviceOrder, 
         string customerName, 
-        string phoneNumber)
+        string phoneNumber,
+        decimal amount)
     {
         if (string.IsNullOrWhiteSpace(customerName))
             return new BaseResponse<string>(null, 404, "Nome do cliente vazio");
@@ -257,13 +258,22 @@ public class WhatsappService : IWhatsappService
             
         if (_env.IsDevelopment())
             phoneNumber = "41997561468";
+        
+        var firstHalf = amount * 0.5m;
+        var secondHalf = amount * 0.5m;
 
-        var text = $"✨ *{customerName}, obrigado por confiar em nós!* ✨\n\n" +
-                   $"🛠️ OS #{serviceOrder} em andamento\n" +
-                   $"✅ Orçamento aprovado - reparo iniciado\n\n" +
-                   $"📲 Avisaremos por aqui quando estiver pronto\n" +
-                   $"📞 Dúvidas? Chame aqui mesmo!\n\n" +
-                   $"🙌 *Equipe TVS Eletrônica*";
+        var text = 
+            $"Olá, {customerName}! 🙌\n\n" +
+            $"A OS #{serviceOrder} foi *aprovada e está aguardando início*! Para começarmos o reparo, precisamos do pagamento de 50% (R$ {firstHalf:N2}).\n\n" +
+            $"💰 *Valor total:* R$ {amount:N2}\n" +
+            $"💳 *Agora (50%):* R$ {firstHalf:N2}\n" +
+            $"📅 *Na retirada:* R$ {secondHalf:N2}\n\n" +
+            $"*Qual sua forma de pagamento preferida?*\n" +
+            $"• PIX\n" +
+            $"• Cartão de crédito/débito\n" +
+            $"• Dinheiro\n\n" +
+            $"Te avisaremos assim que o reparo for concluído! Qualquer dúvida, pode chamar. 😊\n\n" +
+            $"*Equipe TVS Eletrônica*";
 
         return await Send(text, phoneNumber);
     }

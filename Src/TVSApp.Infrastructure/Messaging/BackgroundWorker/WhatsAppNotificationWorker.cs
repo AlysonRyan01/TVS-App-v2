@@ -94,7 +94,8 @@ public class WhatsAppNotificationWorker : BackgroundService
                             await _whatsappService.SendThankYouForEstimateApprovalAsync(
                                 thankYou.ServiceOrder,
                                 thankYou.CustomerName,
-                                thankYou.PhoneNumber);
+                                thankYou.PhoneNumber,
+                                thankYou.Amount);
                             break;
                         
                         case SendEstimateDisapprovalAcknowledgmentRequest estimateDisapprovalAcknowledgment:

@@ -47,7 +47,8 @@ public class AddServiceOrderApproveEstimateHandler : IRequestHandler<AddServiceO
             _whatsappQueue.Enqueue(new SendThankYouForEstimateApprovalRequest(
                 serviceOrder.Id.ToString(),
                 serviceOrder.Customer.Name.CustomerName,
-                serviceOrder.Customer.Phone.CustomerPhone));
+                serviceOrder.Customer.Phone.CustomerPhone,
+                serviceOrder.TotalAmount));
         
             _whatsappQueue.Enqueue(new NotifyOwnerEstimateDecisionRequest(
                 serviceOrder.Id.ToString(), 
