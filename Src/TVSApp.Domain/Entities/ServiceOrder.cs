@@ -39,6 +39,7 @@ public class ServiceOrder : Entity
     public EServiceOrderStatus ServiceOrderStatus { get; private set; }
     public ERepairStatus RepairStatus { get; private set; }
     public ERepairResult? RepairResult { get; private set; }
+    public List<Payment> Payments { get; private set; } = new ();
 
     public void AddEstimate(
         string solution, 
@@ -118,6 +119,34 @@ public class ServiceOrder : Entity
     {
         ServiceOrderStatus = EServiceOrderStatus.Delivered;
         DeliveryDate = DateTime.UtcNow;
+    }
+
+    public void AddPayment(Payment payment)
+    {
+        Payments.Add(payment);
+    }
+
+    public void UpdatePayment(long id, decimal amount, DateTime paymentDate)
+    {
+        var payment = Payments.FirstOrDefault(x => x.Id == id);
+        if (payment is null)
+            throw new EntityException<ServiceOrder>("Pagamento não encontrado");
+        
+        payment.Update(amount, paymentDate);
+    }
+
+    public void RemovePayment(long paymentId)
+    {
+        var payment = Payments.FirstOrDefault(x => x.Id == paymentId);
+        if (payment is null)
+            throw new EntityException<ServiceOrder>("Pagamento não encontrado");
+
+        Payments.Remove(payment);
+    }
+    
+    public decimal TotalPaid()
+    {
+        return Payments.Sum(x => x.Amount);
     }
 
     public void UpdateServiceOrder(

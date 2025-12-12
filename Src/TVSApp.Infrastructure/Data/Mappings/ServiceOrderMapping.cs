@@ -110,5 +110,10 @@ public class ServiceOrderMapping : IEntityTypeConfiguration<ServiceOrder>
         builder.Property(x => x.EstimateMessage)
             .HasColumnName("EstimateMessage")
             .IsRequired(false);
+
+        builder.HasMany(x => x.Payments)
+            .WithOne(x => x.ServiceOrder)
+            .HasForeignKey(x => x.ServiceOrderId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
