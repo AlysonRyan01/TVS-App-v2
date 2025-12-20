@@ -62,8 +62,8 @@ public static class AuthEndpoints
                              + "Se o usuário já existir ou ocorrer erro na criação, retorna uma mensagem de erro.")
             .Produces<BaseResponse<string>>(StatusCodes.Status200OK, "application/json")
             .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
-            .Produces<BaseResponse<IEnumerable<string>>>(StatusCodes.Status500InternalServerError, "application/json");
-        //.RequireAuthorization();
+            .Produces<BaseResponse<IEnumerable<string>>>(StatusCodes.Status500InternalServerError, "application/json")
+            .RequireAuthorization();
     }
 }
     
