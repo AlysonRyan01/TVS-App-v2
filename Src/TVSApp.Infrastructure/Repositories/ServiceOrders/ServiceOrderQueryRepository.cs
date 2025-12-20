@@ -23,7 +23,23 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
 
         var serviceOrder = await _context.ServiceOrders
             .Include(x => x.Customer)
+            .Include(x => x.Payments)
             .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id);
+        if (serviceOrder == null || serviceOrder.Id == 0)
+            return new BaseResponse<ServiceOrder?>(null, 404, $"A ordem de serviço com ID:{id} não existe");
+
+        return new BaseResponse<ServiceOrder?>(serviceOrder, 200, "Ordem de serviço recuperada com sucesso!");
+    }
+
+    public async Task<BaseResponse<ServiceOrder?>> GetByIdForUpdate(long id)
+    {
+        if (id <= 0)
+            return new BaseResponse<ServiceOrder?>(null, 400, "O ID não pode ser igual ou menor que 0");
+
+        var serviceOrder = await _context.ServiceOrders
+            .Include(x => x.Customer)
+            .Include(x => x.Payments)
             .FirstOrDefaultAsync(x => x.Id == id);
         if (serviceOrder == null || serviceOrder.Id == 0)
             return new BaseResponse<ServiceOrder?>(null, 404, $"A ordem de serviço com ID:{id} não existe");

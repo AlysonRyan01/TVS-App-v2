@@ -5,124 +5,140 @@
 @using TVSApp.Web.Extensions
 @using TVSApp.Web.Handlers
 @using TVSApp.Web.Models.ServiceOrders
+@using TVSApp.Web.Components
 
 <MudDialog>
     <TitleContent>
-        <h2 Color="Color.Primary" Class="font-extrabold text-[#750303] md:text-center font-sans text-xl md:text-xl max-w-[300px] md:max-w-[100vw]">
-            ADICIONAR ORÇAMENTO - OS @ServiceOrder.Id
-        </h2>
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.RequestQuote" Color="Color.Primary" />
+            <MudText Typo="Typo.h6" Color="Color.Primary">Adicionar Orçamento - OS @ServiceOrder.Id</MudText>
+        </MudStack>
     </TitleContent>
 
     <DialogContent>
-        <!-- EMPRESA -->
-        <MudPaper Class="py-4 px-2 " Elevation="0">
-            <MudText Typo="Typo.h6" Color="Color.Tertiary" Class="font-extrabold uppercase mb-2">Empresa</MudText>
-            <MudTextField Variant="Variant.Outlined" Label="Empresa" Value="@ServiceOrder.Enterprise.GetDisplayName()" ReadOnly="true" />
-        </MudPaper>
+        <MudStack Spacing="4" Class="pa-2">
+            <!-- EMPRESA -->
+            <MudPaper Class="pa-4" Elevation="1">
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.subtitle1" Color="Color.Primary"><strong>Empresa</strong></MudText>
+                    <MudTextField Variant="Variant.Outlined" Label="Empresa" Value="@ServiceOrder.Enterprise.GetDisplayName()" ReadOnly="true" />
+                </MudStack>
+            </MudPaper>
 
-        <!-- DADOS DO CLIENTE -->
-        <MudPaper Class="py-4 px-2 " Elevation="0">
-            <MudText Typo="Typo.h6" Color="Color.Tertiary" Class="font-extrabold uppercase mb-2">Dados do Cliente</MudText>
-            <MudGrid Class="mb-4"> 
+            <!-- DADOS DO CLIENTE -->
+            <MudPaper Class="pa-4" Elevation="1">
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.subtitle1" Color="Color.Primary"><strong>Dados do Cliente</strong></MudText>
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" md="6">
+                            <MudTextField Variant="Variant.Outlined" Label="Nome" Value="@ServiceOrder.Name" ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField Variant="Variant.Outlined" Label="Telefone 1" Value="@ServiceOrder.Phone" ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField Variant="Variant.Outlined" Label="Endereço" Value="@ServiceOrder.FormattedAddress" ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField Variant="Variant.Outlined" Label="Telefone 2" Value="@ServiceOrder.Phone2" ReadOnly="true" />
+                        </MudItem>
+                    </MudGrid>
+                </MudStack>
+            </MudPaper>
+
+            <!-- DADOS DO PRODUTO -->
+            <MudPaper Class="pa-4" Elevation="1">
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.subtitle1" Color="Color.Primary"><strong>Dados do Produto</strong></MudText>
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" md="6">
+                            <MudTextField Variant="Variant.Outlined" Label="Tipo" Value="@ServiceOrder.Type.GetDisplayName()" ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField Variant="Variant.Outlined" Label="Marca" Value="@ServiceOrder.Brand" ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField Variant="Variant.Outlined" Label="Modelo" Value="@ServiceOrder.Model" ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField Variant="Variant.Outlined" Label="Série" Value="@ServiceOrder.SerialNumber" ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField Variant="Variant.Outlined" Label="Defeito" Value="@ServiceOrder.Defect" ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField Variant="Variant.Outlined" Label="Data de Entrada" Value="@ServiceOrder.EntryDate.ToString("dd/MM/yyyy")" ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField Variant="Variant.Outlined" Label="Situação" Value="@Situacao" ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField Variant="Variant.Outlined" Label="Prateleira" Value="@ServiceOrder.Location" ReadOnly="true" />
+                        </MudItem>
+                    </MudGrid>
+                </MudStack>
+            </MudPaper>
+
+            <!-- PRATELEIRA E PAGAMENTOS -->
+            <MudGrid Spacing="4">
                 <MudItem xs="12" md="6">
-                    <MudTextField Variant="Variant.Text" Label="Nome" Value="@ServiceOrder.Name" ReadOnly="true" />
+                    <LocationButton ServiceOrder="ServiceOrder" OnLocationChanged="UpdateLocation" />
                 </MudItem>
                 <MudItem xs="12" md="6">
-                    <MudTextField Variant="Variant.Text" Label="Telefone 1" Value="@ServiceOrder.Phone" ReadOnly="true" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudTextField Variant="Variant.Text" Label="Endereço" Value="@ServiceOrder.FormattedAddress" ReadOnly="true" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudTextField Variant="Variant.Text" Label="Telefone 2" Value="@ServiceOrder.Phone2" ReadOnly="true" />
+                    <PaymentComponent ServiceOrderId="ServiceOrder.Id" />
                 </MudItem>
             </MudGrid>
-        </MudPaper>
 
-        <!-- DADOS DO PRODUTO -->
-        <MudPaper Class="py-4 px-2" Elevation="0">
-            <MudText Typo="Typo.h6" Color="Color.Tertiary" Class="font-extrabold uppercase mb-2">Dados do Produto</MudText>
-            <MudGrid>
-                <MudItem xs="12" md="6">
-                    <MudTextField Variant="Variant.Text" Label="Tipo" Value="@ServiceOrder.Type.GetDisplayName()" ReadOnly="true" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudTextField Variant="Variant.Text" Label="Marca" Value="@ServiceOrder.Brand" ReadOnly="true" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudTextField Variant="Variant.Text" Label="Modelo" Value="@ServiceOrder.Model" ReadOnly="true" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudTextField Variant="Variant.Text" Label="Série" Value="@ServiceOrder.SerialNumber" ReadOnly="true" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudTextField Variant="Variant.Text" Label="Defeito" Value="@ServiceOrder.Defect" ReadOnly="true" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudTextField  Variant="Variant.Text" Label="Data de Entrada" Value="@ServiceOrder.EntryDate.ToString("dd/MM/yyyy")" ReadOnly="true" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudTextField Variant="Variant.Text" Label="Situação" Value="@Situacao" ReadOnly="true" />
-                </MudItem>
-                <MudItem xs="12" md="6">
-                    <MudTextField Variant="Variant.Text" Label="Prateleira" Value="@ServiceOrder.Location" ReadOnly="true" />
-                </MudItem>
-            </MudGrid>
-            <div class="mt-3">
-                <LocationButton ServiceOrder="ServiceOrder" OnLocationChanged="UpdateLocation" />
-            </div>
-        </MudPaper>
+            <!-- FORMULÁRIO DE ORÇAMENTO -->
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Spacing="3">
+                    <MudText Typo="Typo.subtitle1" Color="Color.Primary"><strong>Adicionar Orçamento</strong></MudText>
+                    <MudForm @ref="_form">
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12" md="6">
+                                <MudTextField Label="Solução" Lines="2" @bind-Value="Model.Solution" For="@(() => Model.Solution)" Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField Label="Mensagem de orçamento" Lines="2" @bind-Value="Model.EstimateMessage" For="@(() => Model.EstimateMessage)" Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField Label="Valor total" @bind-Value="Model.LaborCost" For="@(() => Model.LaborCost)" Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField Label="Garantia" @bind-Value="Model.Guarantee" For="@(() => Model.Guarantee)" Variant="Variant.Outlined" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudSelect Variant="Variant.Outlined" T="ERepairResult" Label="Situação" @bind-Value="Model.RepairResult" Color="Color.Primary">
+                                    @foreach (var value in Enum.GetValues(typeof(ERepairResult)).Cast<ERepairResult>())
+                                    {
+                                        <MudSelectItem Value="@value">@GetPortugueseLabel(value)</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                        </MudGrid>
+                    </MudForm>
 
-        <!-- FORMULÁRIO DE ORÇAMENTO -->
-        <MudPaper Class="py-4 px-2" Elevation="0">
-            <MudText Typo="Typo.h6" Color="Color.Primary" Class="font-extrabold uppercase mb-2">Adicionar Orçamento</MudText>
-            <MudForm @ref="_form">
-                <MudGrid>
-                    <MudItem xs="12" md="6">
-                        <MudTextField Label="Solução" Lines="2" @bind-Value="Model.Solution" For="@(() => Model.Solution)" Variant="Variant.Outlined" />
-                    </MudItem>
-                    <MudItem xs="12" md="6">
-                        <MudTextField Label="Mensagem de orçamento" Lines="2" @bind-Value="Model.EstimateMessage" For="@(() => Model.EstimateMessage)" Variant="Variant.Outlined" />
-                    </MudItem>
-                    <MudItem xs="12" md="6">
-                        <MudTextField Label="Valor total" @bind-Value="Model.LaborCost" For="@(() => Model.LaborCost)" Variant="Variant.Outlined" />
-                    </MudItem>
-                    <MudItem xs="12" md="6">
-                        <MudTextField Label="Garantia" @bind-Value="Model.Guarantee" For="@(() => Model.Guarantee)" Variant="Variant.Outlined" />
-                    </MudItem>
-                    <MudItem xs="12" md="6">
-                        <MudSelect  Variant="Variant.Outlined" T="ERepairResult" Label="Situação" @bind-Value="Model.RepairResult" Color="Color.Primary">
-                            @foreach (var value in Enum.GetValues(typeof(ERepairResult)).Cast<ERepairResult>())
-                            {
-                                <MudSelectItem Value="@value">@GetPortugueseLabel(value)</MudSelectItem>
-                            }
-                        </MudSelect>
-                    </MudItem>
-                </MudGrid>
-
-                <div class="flex justify-end">
-                    @if (_isProcessing)
-                    {
-                        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
-                    }
-                    else
-                    {
-                        <MudButton @onclick="AdicionarOrcamento"
-                                   Disabled="_isProcessing"
-                                   Variant="Variant.Filled"
-                                   Color="Color.Primary"
-                                   Size="Size.Large"
-                                   Class="mt-3">
-                            Adicionar
-                        </MudButton>
-                    }
-                </div>
-            </MudForm>
-        </MudPaper>
+                    <MudStack Row="true" Justify="Justify.FlexEnd">
+                        @if (_isProcessing)
+                        {
+                            <MudProgressCircular Color="Color.Primary" Size="Size.Medium" Indeterminate="true" />
+                        }
+                        else
+                        {
+                            <MudButton OnClick="AdicionarOrcamento"
+                                       Disabled="_isProcessing"
+                                       Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.Add">
+                                Adicionar
+                            </MudButton>
+                        }
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
+        </MudStack>
     </DialogContent>
 </MudDialog>
-
-
 
 @code {
     private MudForm _form = null!;
@@ -162,7 +178,7 @@
                 Model.LaborCost,
                 Model.RepairResult,
                 Model.EstimateMessage);
-            
+
             var result = await ServiceOrderHandler.AddServiceOrderEstimate(request);
 
             if (result.IsSuccess)
@@ -197,7 +213,7 @@
     private async Task UpdateLocation()
     {
         var command = new GetServiceOrderByIdQuery(ServiceOrder.Id);
-        
+
         var result = await ServiceOrderHandler.GetServiceOrderById(command);
         if (result.IsSuccess)
         {
@@ -212,7 +228,7 @@
             }
         }
     }
-    
+
     private string GetPortugueseLabel(ERepairResult value)
     {
         return value switch

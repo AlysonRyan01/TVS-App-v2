@@ -19,9 +19,9 @@ public class AddPaymentHandler : IRequestHandler<AddPaymentCommand, BaseResponse
         _serviceOrderQueryRepository = serviceOrderQueryRepository;
     }
 
-    public async Task<BaseResponse<string>> Handle(AddPaymentCommand request, CancellationToken cancellationToken)
+    public async Task<BaseResponse<string>> Handle(AddPaymentCommand request, CancellationToken cancellationToken = default)
     {
-        var serviceOrderResult = await _serviceOrderQueryRepository.GetById(request.ServiceOrderId);
+        var serviceOrderResult = await _serviceOrderQueryRepository.GetByIdForUpdate(request.ServiceOrderId);
         if (!serviceOrderResult.IsSuccess || serviceOrderResult.Data == null)
             return new BaseResponse<string>(serviceOrderResult.Message);
 

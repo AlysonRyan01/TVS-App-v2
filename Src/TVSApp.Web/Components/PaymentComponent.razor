@@ -1,0 +1,284 @@
+@using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands
+@using TVS_App.Domain.Entities
+@using TVSApp.Web.Handlers
+
+<MudPaper Class="pa-4" Elevation="2">
+    <MudStack Spacing="3">
+        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.h6">Pagamentos</MudText>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddPaymentDialog" Disabled="_isLoading">
+                Adicionar
+            </MudButton>
+        </MudStack>
+
+        @if (_isLoading)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+        }
+        else if (_payments.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info">Nenhum pagamento registrado.</MudAlert>
+        }
+        else
+        {
+            <MudTable Items="_payments" Hover="true" Dense="true" Striped="true">
+                <HeaderContent>
+                    <MudTh>Valor</MudTh>
+                    <MudTh>Data</MudTh>
+                    <MudTh Style="width: 150px;">Ações</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Valor">@context.Amount.ToString("C", new System.Globalization.CultureInfo("pt-BR"))</MudTd>
+                    <MudTd DataLabel="Data">@context.PaidAt.ToString("dd/MM/yyyy")</MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="() => OpenEditPaymentDialog(context)" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small" OnClick="() => OpenDeleteConfirmation(context)" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+
+            <MudStack Row="true" Justify="Justify.FlexEnd">
+                <MudText Typo="Typo.subtitle1">
+                    <strong>Total: @_payments.Sum(p => p.Amount).ToString("C", new System.Globalization.CultureInfo("pt-BR"))</strong>
+                </MudText>
+            </MudStack>
+        }
+    </MudStack>
+</MudPaper>
+
+<MudDialog @bind-Visible="_showAddDialog">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Adicionar Pagamento</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudNumericField @bind-Value="_newPaymentAmount" Label="Valor (R$)" Format="N2" Min="0.01M" Variant="Variant.Outlined" />
+            <MudDatePicker @bind-Date="_newPaymentDate" Label="Data do Pagamento" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseAddDialog">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AddPayment" Disabled="_isProcessing">
+            @(_isProcessing ? "Salvando..." : "Salvar")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog @bind-Visible="_showEditDialog">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Editar Pagamento</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudNumericField @bind-Value="_editPaymentAmount" Label="Valor (R$)" Format="N2" Min="0.01M" Variant="Variant.Outlined" />
+            <MudDatePicker @bind-Date="_editPaymentDate" Label="Data do Pagamento" Variant="Variant.Outlined" DateFormat="dd/MM/yyyy" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseEditDialog">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UpdatePayment" Disabled="_isProcessing">
+            @(_isProcessing ? "Salvando..." : "Salvar")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+<MudDialog @bind-Visible="_showDeleteDialog">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Confirmar Exclusão</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>Tem certeza que deseja remover este pagamento?</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDeleteDialog">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="RemovePayment" Disabled="_isProcessing">
+            @(_isProcessing ? "Removendo..." : "Remover")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public long ServiceOrderId { get; set; }
+    [Inject] public ServiceOrderHandler ServiceOrderHandler { get; set; } = null!;
+    [Inject] public ISnackbar Snackbar { get; set; } = null!;
+
+    private List<Payment> _payments = new();
+    private bool _isLoading = true;
+    private bool _isProcessing = false;
+
+    private bool _showAddDialog = false;
+    private decimal _newPaymentAmount = 0;
+    private DateTime? _newPaymentDate = DateTime.Today;
+
+    private bool _showEditDialog = false;
+    private long _editPaymentId;
+    private decimal _editPaymentAmount = 0;
+    private DateTime? _editPaymentDate = DateTime.Today;
+
+    private bool _showDeleteDialog = false;
+    private long _deletePaymentId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPayments();
+    }
+
+    private async Task LoadPayments()
+    {
+        _isLoading = true;
+        try
+        {
+            var result = await ServiceOrderHandler.GetPaymentsAsync(ServiceOrderId);
+            if (result.IsSuccess && result.Data != null)
+                _payments = result.Data;
+            else
+                Snackbar.Add(result.Message ?? "Erro ao carregar pagamentos", Severity.Error);
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void OpenAddPaymentDialog()
+    {
+        _newPaymentAmount = 0;
+        _newPaymentDate = DateTime.Today;
+        _showAddDialog = true;
+    }
+
+    private void CloseAddDialog() => _showAddDialog = false;
+
+    private async Task AddPayment()
+    {
+        if (_newPaymentAmount <= 0)
+        {
+            Snackbar.Add("O valor deve ser maior que zero", Severity.Warning);
+            return;
+        }
+
+        if (_newPaymentDate == null)
+        {
+            Snackbar.Add("Selecione a data do pagamento", Severity.Warning);
+            return;
+        }
+
+        _isProcessing = true;
+        try
+        {
+            var command = new AddPaymentCommand(ServiceOrderId, _newPaymentAmount, _newPaymentDate.Value);
+            var result = await ServiceOrderHandler.AddPaymentAsync(command);
+
+            if (result.IsSuccess)
+            {
+                Snackbar.Add(result.Message ?? "Pagamento adicionado com sucesso!", Severity.Success);
+                CloseAddDialog();
+                await LoadPayments();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Erro ao adicionar pagamento", Severity.Error);
+            }
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+
+    private void OpenEditPaymentDialog(Payment payment)
+    {
+        _editPaymentId = payment.Id;
+        _editPaymentAmount = payment.Amount;
+        _editPaymentDate = payment.PaidAt;
+        _showEditDialog = true;
+    }
+
+    private void CloseEditDialog() => _showEditDialog = false;
+
+    private async Task UpdatePayment()
+    {
+        if (_editPaymentAmount <= 0)
+        {
+            Snackbar.Add("O valor deve ser maior que zero", Severity.Warning);
+            return;
+        }
+
+        if (_editPaymentDate == null)
+        {
+            Snackbar.Add("Selecione a data do pagamento", Severity.Warning);
+            return;
+        }
+
+        _isProcessing = true;
+        try
+        {
+            var command = new UpdatePaymentCommand(ServiceOrderId, _editPaymentId, _editPaymentAmount, _editPaymentDate.Value);
+            var result = await ServiceOrderHandler.UpdatePaymentAsync(command);
+
+            if (result.IsSuccess)
+            {
+                Snackbar.Add(result.Message ?? "Pagamento atualizado com sucesso!", Severity.Success);
+                CloseEditDialog();
+                await LoadPayments();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Erro ao atualizar pagamento", Severity.Error);
+            }
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+
+    private void OpenDeleteConfirmation(Payment payment)
+    {
+        _deletePaymentId = payment.Id;
+        _showDeleteDialog = true;
+    }
+
+    private void CloseDeleteDialog() => _showDeleteDialog = false;
+
+    private async Task RemovePayment()
+    {
+        _isProcessing = true;
+        try
+        {
+            var command = new RemovePaymentCommand(ServiceOrderId, _deletePaymentId);
+            var result = await ServiceOrderHandler.RemovePaymentAsync(command);
+
+            if (result.IsSuccess)
+            {
+                Snackbar.Add(result.Message ?? "Pagamento removido com sucesso!", Severity.Success);
+                CloseDeleteDialog();
+                await LoadPayments();
+            }
+            else
+            {
+                Snackbar.Add(result.Message ?? "Erro ao remover pagamento", Severity.Error);
+            }
+        }
+        catch (Exception e)
+        {
+            Snackbar.Add(e.Message, Severity.Error);
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+}

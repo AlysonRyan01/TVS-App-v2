@@ -579,5 +579,61 @@ public static class ServiceOrderEndpoints
         .Produces<FileResult>(StatusCodes.Status200OK, "application/pdf")
         .Produces<BaseResponse<byte[]>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
+        
+        app.MapPost("/add-payment", async (ISender handler, AddPaymentCommand command) =>
+        {
+            var addPaymentResult = await handler.Send(command);
+            
+            return Results.Ok(addPaymentResult);
+        })
+        .WithTags("ServiceOrder")
+        .WithName("AddPayment")
+        .WithSummary("Adiciona um pagamento na ordem de serviço.")
+        .WithDescription("Recebe o ID da ordem de serviço, e cria o pagamento.")
+        .Produces<BaseResponse<string>>(StatusCodes.Status200OK, "application/json")
+        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
+        .RequireAuthorization();
+        
+        app.MapDelete("/remove-payment", async (ISender handler, [AsParameters] RemovePaymentCommand command) =>
+        {
+            var removePaymentResult = await handler.Send(command);
+
+            return Results.Ok(removePaymentResult);
+        })
+        .WithTags("ServiceOrder")
+        .WithName("RemovePayment")
+        .WithSummary("Remove um pagamento de uma ordem de serviço.")
+        .WithDescription("Recebe o ID da ordem de serviço e remove o pagamento.")
+        .Produces<BaseResponse<string>>(StatusCodes.Status200OK, "application/json")
+        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
+        .RequireAuthorization();
+        
+        app.MapPut("/update-payment", async (ISender handler, UpdatePaymentCommand command) =>
+        {
+            var updatePaymentResult = await handler.Send(command);
+    
+            return Results.Ok(updatePaymentResult);
+        })
+        .WithTags("ServiceOrder")
+        .WithName("UpdatePayment")
+        .WithSummary("Atualiza um pagamento de uma ordem de serviço.")
+        .WithDescription("Recebe o ID da ordem de serviço e atualiza o pagamento.")
+        .Produces<BaseResponse<string>>(StatusCodes.Status200OK, "application/json")
+        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
+        .RequireAuthorization();
+        
+        app.MapGet("/get-payments", async (ISender handler, [AsParameters] GetPaymentsQuery command) =>
+        {
+            var getPaymentsResult = await handler.Send(command);
+
+            return Results.Ok(getPaymentsResult);
+        })
+        .WithTags("ServiceOrder")
+        .WithName("GetPayments")
+        .WithSummary("Retorna os pagamentos de uma ordem de serviço.")
+        .WithDescription("Recebe o ID da ordem de serviço e retorna os pagamentos.")
+        .Produces<BaseResponse<string>>(StatusCodes.Status200OK, "application/json")
+        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
+        .RequireAuthorization();
     }
 }

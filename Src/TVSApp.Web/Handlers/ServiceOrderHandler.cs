@@ -3,6 +3,7 @@ using TVS_App.Application.DTOs;
 using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries;
+using TVS_App.Domain.Entities;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Shared;
 
@@ -550,6 +551,98 @@ public class ServiceOrderHandler
         catch
         {
             return new BaseResponse<byte[]>(null, 500, "Erro ao se conectar ao servidor.");
+        }
+    }
+
+    public async Task<BaseResponse<List<Payment>>> GetPaymentsAsync(long serviceOrderId)
+    {
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<List<Payment>>>(
+                $"get-payments?serviceOrderId={serviceOrderId}");
+
+            if (response == null || !response.IsSuccess)
+                return new BaseResponse<List<Payment>>(null, 500, response?.Message ?? "Erro ao buscar pagamentos");
+
+            return response;
+        }
+        catch
+        {
+            return new BaseResponse<List<Payment>>(null, 500, "Erro ao se conectar ao servidor.");
+        }
+    }
+
+    public async Task<BaseResponse<string>> AddPaymentAsync(AddPaymentCommand command)
+    {
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("add-payment", command);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                return new BaseResponse<string>(null, (int)response.StatusCode,
+                    $"Erro na API: {response.StatusCode}. Detalhes: {errorContent}");
+            }
+
+            var content = await response.Content.ReadFromJsonAsync<BaseResponse<string>>();
+            if (content == null || !content.IsSuccess)
+                return new BaseResponse<string>(null, 500, content?.Message);
+
+            return content;
+        }
+        catch
+        {
+            return new BaseResponse<string>(null, 500, "Erro ao se conectar ao servidor.");
+        }
+    }
+
+    public async Task<BaseResponse<string>> UpdatePaymentAsync(UpdatePaymentCommand command)
+    {
+        try
+        {
+            var response = await _httpClient.PutAsJsonAsync("update-payment", command);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                return new BaseResponse<string>(null, (int)response.StatusCode,
+                    $"Erro na API: {response.StatusCode}. Detalhes: {errorContent}");
+            }
+
+            var content = await response.Content.ReadFromJsonAsync<BaseResponse<string>>();
+            if (content == null || !content.IsSuccess)
+                return new BaseResponse<string>(null, 500, content?.Message);
+
+            return content;
+        }
+        catch
+        {
+            return new BaseResponse<string>(null, 500, "Erro ao se conectar ao servidor.");
+        }
+    }
+
+    public async Task<BaseResponse<string>> RemovePaymentAsync(RemovePaymentCommand command)
+    {
+        try
+        {
+            var response = await _httpClient.DeleteAsync(
+                $"remove-payment?serviceOrderId={command.ServiceOrderId}&paymentId={command.PaymentId}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                return new BaseResponse<string>(null, (int)response.StatusCode,
+                    $"Erro na API: {response.StatusCode}. Detalhes: {errorContent}");
+            }
+
+            var content = await response.Content.ReadFromJsonAsync<BaseResponse<string>>();
+            if (content == null || !content.IsSuccess)
+                return new BaseResponse<string>(null, 500, content?.Message);
+
+            return content;
+        }
+        catch
+        {
+            return new BaseResponse<string>(null, 500, "Erro ao se conectar ao servidor.");
         }
     }
 }

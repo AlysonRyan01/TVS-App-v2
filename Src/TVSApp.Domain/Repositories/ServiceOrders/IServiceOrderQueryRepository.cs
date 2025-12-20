@@ -7,6 +7,7 @@ namespace TVS_App.Domain.Repositories.ServiceOrders;
 public interface IServiceOrderQueryRepository
 {
     Task<BaseResponse<ServiceOrder?>> GetById(long id);
+    Task<BaseResponse<ServiceOrder?>> GetByIdForUpdate(long id);
     Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetAllAsync(int pageNumber, int pageSize);
     Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByCustomerName(string customerName);
     Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersBySerialNumber(string serialNumber);
