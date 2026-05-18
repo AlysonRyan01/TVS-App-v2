@@ -39,4 +39,7 @@ public partial class DashboardPage : ComponentBase
 
     private static string FormatCurrency(decimal value) =>
         value.ToString("C2", new System.Globalization.CultureInfo("pt-BR"));
+
+    private static string CurrentMonthLabel =>
+        DateTime.Now.ToString("MMMM/yyyy", new System.Globalization.CultureInfo("pt-BR"));
 }

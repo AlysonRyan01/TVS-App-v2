@@ -17,30 +17,27 @@ public class MetricsService : IMetricsService
 
     public async Task<DashboardMetricsDto> GetDashboardMetricsAsync()
     {
-        var orders = await _context.ServiceOrders
+        var now = DateTime.UtcNow;
+
+        var allOrders = await _context.ServiceOrders
             .Include(x => x.Customer)
             .Include(x => x.Payments)
             .AsNoTracking()
             .ToListAsync();
 
-        var now = DateTime.UtcNow;
+        // Filtro base: apenas mês atual
+        var orders = allOrders
+            .Where(x => x.EntryDate.Year == now.Year && x.EntryDate.Month == now.Month)
+            .ToList();
+
         var repairs = orders.Where(x => x.Product.Defect != "VENDA").ToList();
         var sales = orders.Where(x => x.Product.Defect == "VENDA").ToList();
 
-        var last12Months = Enumerable.Range(0, 12)
-            .Select(i => now.AddMonths(-11 + i))
-            .ToList();
-
         // ── KPIs gerais ────────────────────────────────────────────────────────
         var totalRevenue = repairs
-            .Where(x => x.ServiceOrderStatus == EServiceOrderStatus.Delivered)
-            .Sum(x => x.TotalAmount);
-
-        var revenueThisMonth = repairs
-            .Where(x => x.ServiceOrderStatus == EServiceOrderStatus.Delivered
-                        && x.DeliveryDate.HasValue
-                        && x.DeliveryDate.Value.Year == now.Year
-                        && x.DeliveryDate.Value.Month == now.Month)
+            .Where(x => x.RepairStatus == ERepairStatus.Approved
+                        && x.RepairResult == ERepairResult.Repair
+                        && x.ServiceOrderStatus == EServiceOrderStatus.Delivered)
             .Sum(x => x.TotalAmount);
 
         var approved = repairs.Count(x => x.RepairStatus == ERepairStatus.Approved);
@@ -57,39 +54,14 @@ public class MetricsService : IMetricsService
         // ── KPIs de vendas ─────────────────────────────────────────────────────
         var totalSalesRevenue = sales.Sum(x => x.TotalAmount);
 
-        var salesRevenueThisMonth = sales
-            .Where(x => x.EntryDate.Year == now.Year && x.EntryDate.Month == now.Month)
-            .Sum(x => x.TotalAmount);
-
         // ── Gráfico: ordens por status ─────────────────────────────────────────
         var statusLabels = new List<string>();
         var statusValues = new List<double>();
-        var statusGroups = orders
-            .GroupBy(x => x.ServiceOrderStatus)
-            .OrderBy(g => (int)g.Key);
-
-        foreach (var g in statusGroups)
+        foreach (var g in orders.GroupBy(x => x.ServiceOrderStatus).OrderBy(g => (int)g.Key))
         {
             statusLabels.Add(GetStatusLabel(g.Key));
             statusValues.Add(g.Count());
         }
-
-        // ── Gráfico: receita de reparos por mês (últimos 12 meses) ────────────
-        var revenueByMonthLabels = last12Months.Select(m => m.ToString("MMM/yy")).ToList();
-        var revenueByMonthValues = last12Months.Select(m =>
-            (double)repairs
-                .Where(x => x.ServiceOrderStatus == EServiceOrderStatus.Delivered
-                            && x.DeliveryDate.HasValue
-                            && x.DeliveryDate.Value.Year == m.Year
-                            && x.DeliveryDate.Value.Month == m.Month)
-                .Sum(x => x.TotalAmount)
-        ).ToList();
-
-        // ── Gráfico: ordens de reparo criadas por mês (últimos 12 meses) ──────
-        var ordersCreatedLabels = last12Months.Select(m => m.ToString("MMM/yy")).ToList();
-        var ordersCreatedValues = last12Months.Select(m =>
-            (double)repairs.Count(x => x.EntryDate.Year == m.Year && x.EntryDate.Month == m.Month)
-        ).ToList();
 
         // ── Gráfico: reparos por tipo de produto ───────────────────────────────
         var repairsByProductLabels = new List<string>();
@@ -139,14 +111,6 @@ public class MetricsService : IMetricsService
             repairResultValues.Add(g.Count());
         }
 
-        // ── Gráfico: receita de vendas por mês (últimos 12 meses) ─────────────
-        var salesRevenueByMonthLabels = last12Months.Select(m => m.ToString("MMM/yy")).ToList();
-        var salesRevenueByMonthValues = last12Months.Select(m =>
-            (double)sales
-                .Where(x => x.EntryDate.Year == m.Year && x.EntryDate.Month == m.Month)
-                .Sum(x => x.TotalAmount)
-        ).ToList();
-
         // ── Tabela: top 10 clientes ────────────────────────────────────────────
         var topCustomers = orders
             .GroupBy(x => x.Customer.Name.CustomerName)
@@ -163,26 +127,16 @@ public class MetricsService : IMetricsService
         return new DashboardMetricsDto
         {
             TotalOrders = repairs.Count,
-            TotalOrdersThisMonth = repairs.Count(x => x.EntryDate.Year == now.Year && x.EntryDate.Month == now.Month),
             ActiveOrders = repairs.Count(x => x.ServiceOrderStatus != EServiceOrderStatus.Delivered),
             TotalRevenue = totalRevenue,
-            RevenueThisMonth = revenueThisMonth,
             ApprovalRate = approvalRate,
             AverageCycleDays = avgCycleDays,
 
             TotalSales = sales.Count,
-            TotalSalesThisMonth = sales.Count(x => x.EntryDate.Year == now.Year && x.EntryDate.Month == now.Month),
             TotalSalesRevenue = totalSalesRevenue,
-            SalesRevenueThisMonth = salesRevenueThisMonth,
 
             OrdersByStatusLabels = statusLabels,
             OrdersByStatusValues = statusValues,
-
-            RevenueByMonthLabels = revenueByMonthLabels,
-            RevenueByMonthValues = revenueByMonthValues,
-
-            OrdersCreatedPerMonthLabels = ordersCreatedLabels,
-            OrdersCreatedPerMonthValues = ordersCreatedValues,
 
             RepairsByProductTypeLabels = repairsByProductLabels,
             RepairsByProductTypeValues = repairsByProductValues,
@@ -198,9 +152,6 @@ public class MetricsService : IMetricsService
 
             RepairResultLabels = repairResultLabels,
             RepairResultValues = repairResultValues,
-
-            SalesRevenueByMonthLabels = salesRevenueByMonthLabels,
-            SalesRevenueByMonthValues = salesRevenueByMonthValues,
 
             TopCustomers = topCustomers
         };
