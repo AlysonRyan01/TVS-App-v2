@@ -75,6 +75,7 @@ public static class BuilderExtensions
         builder.Services.AddScoped<INotificationQueryRepository, NotificationQueryRepository>();
         builder.Services.AddTransient<IAddressService, AddressService>();
         builder.Services.AddTransient<IGenerateServiceOrderPdf, GenerateServiceOrderPdfService>();
+        builder.Services.AddScoped<IMetricsService, MetricsService>();
         builder.Services.AddHttpClient<IWhatsappService, WhatsappService>();
         builder.Services.AddSingleton<IEmailService, EmailService>();
         builder.Services.Configure<EvolutionApiSettings>(builder.Configuration.GetSection("EvolutionApiSettings"));

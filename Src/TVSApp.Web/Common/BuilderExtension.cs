@@ -22,6 +22,7 @@ public static class BuilderExtension
         builder.Services.AddTransient<NotificationHandler>();
         builder.Services.AddTransient<AuthorizationMessageHandler>();
         builder.Services.AddTransient<ServiceOrderHandler>();
+        builder.Services.AddTransient<DashboardHandler>();
         builder.Services.AddScoped<CustomAuthStateProvider>();
         builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<CustomAuthStateProvider>());
         builder.Services.AddSingleton<HubConnection>(sp =>

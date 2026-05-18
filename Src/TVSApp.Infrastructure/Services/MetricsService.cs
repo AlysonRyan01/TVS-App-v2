@@ -1,0 +1,252 @@
+using Microsoft.EntityFrameworkCore;
+using TVS_App.Application.DTOs.Dashboard;
+using TVS_App.Application.Interfaces.Services;
+using TVS_App.Domain.Enums;
+using TVS_App.Infrastructure.Data;
+
+namespace TVS_App.Infrastructure.Services;
+
+public class MetricsService : IMetricsService
+{
+    private readonly ApplicationDataContext _context;
+
+    public MetricsService(ApplicationDataContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<DashboardMetricsDto> GetDashboardMetricsAsync()
+    {
+        var orders = await _context.ServiceOrders
+            .Include(x => x.Customer)
+            .Include(x => x.Payments)
+            .AsNoTracking()
+            .ToListAsync();
+
+        var now = DateTime.UtcNow;
+        var repairs = orders.Where(x => x.Product.Defect != "VENDA").ToList();
+        var sales = orders.Where(x => x.Product.Defect == "VENDA").ToList();
+
+        var last12Months = Enumerable.Range(0, 12)
+            .Select(i => now.AddMonths(-11 + i))
+            .ToList();
+
+        // ── KPIs gerais ────────────────────────────────────────────────────────
+        var totalRevenue = repairs
+            .Where(x => x.ServiceOrderStatus == EServiceOrderStatus.Delivered)
+            .Sum(x => x.TotalAmount);
+
+        var revenueThisMonth = repairs
+            .Where(x => x.ServiceOrderStatus == EServiceOrderStatus.Delivered
+                        && x.DeliveryDate.HasValue
+                        && x.DeliveryDate.Value.Year == now.Year
+                        && x.DeliveryDate.Value.Month == now.Month)
+            .Sum(x => x.TotalAmount);
+
+        var approved = repairs.Count(x => x.RepairStatus == ERepairStatus.Approved);
+        var disapproved = repairs.Count(x => x.RepairStatus == ERepairStatus.Disapproved);
+        var approvalRate = (approved + disapproved) > 0
+            ? Math.Round(approved * 100.0 / (approved + disapproved), 1)
+            : 0.0;
+
+        var deliveredRepairs = repairs.Where(x => x.DeliveryDate.HasValue).ToList();
+        var avgCycleDays = deliveredRepairs.Count > 0
+            ? Math.Round(deliveredRepairs.Average(x => (x.DeliveryDate!.Value - x.EntryDate).TotalDays), 1)
+            : 0.0;
+
+        // ── KPIs de vendas ─────────────────────────────────────────────────────
+        var totalSalesRevenue = sales.Sum(x => x.TotalAmount);
+
+        var salesRevenueThisMonth = sales
+            .Where(x => x.EntryDate.Year == now.Year && x.EntryDate.Month == now.Month)
+            .Sum(x => x.TotalAmount);
+
+        // ── Gráfico: ordens por status ─────────────────────────────────────────
+        var statusLabels = new List<string>();
+        var statusValues = new List<double>();
+        var statusGroups = orders
+            .GroupBy(x => x.ServiceOrderStatus)
+            .OrderBy(g => (int)g.Key);
+
+        foreach (var g in statusGroups)
+        {
+            statusLabels.Add(GetStatusLabel(g.Key));
+            statusValues.Add(g.Count());
+        }
+
+        // ── Gráfico: receita de reparos por mês (últimos 12 meses) ────────────
+        var revenueByMonthLabels = last12Months.Select(m => m.ToString("MMM/yy")).ToList();
+        var revenueByMonthValues = last12Months.Select(m =>
+            (double)repairs
+                .Where(x => x.ServiceOrderStatus == EServiceOrderStatus.Delivered
+                            && x.DeliveryDate.HasValue
+                            && x.DeliveryDate.Value.Year == m.Year
+                            && x.DeliveryDate.Value.Month == m.Month)
+                .Sum(x => x.TotalAmount)
+        ).ToList();
+
+        // ── Gráfico: ordens de reparo criadas por mês (últimos 12 meses) ──────
+        var ordersCreatedLabels = last12Months.Select(m => m.ToString("MMM/yy")).ToList();
+        var ordersCreatedValues = last12Months.Select(m =>
+            (double)repairs.Count(x => x.EntryDate.Year == m.Year && x.EntryDate.Month == m.Month)
+        ).ToList();
+
+        // ── Gráfico: reparos por tipo de produto ───────────────────────────────
+        var repairsByProductLabels = new List<string>();
+        var repairsByProductValues = new List<double>();
+        foreach (var g in repairs.GroupBy(x => x.Product.Type).OrderByDescending(g => g.Count()))
+        {
+            repairsByProductLabels.Add(GetProductLabel(g.Key));
+            repairsByProductValues.Add(g.Count());
+        }
+
+        // ── Gráfico: vendas por tipo de produto ────────────────────────────────
+        var salesByProductLabels = new List<string>();
+        var salesByProductValues = new List<double>();
+        foreach (var g in sales.GroupBy(x => x.Product.Type).OrderByDescending(g => g.Count()))
+        {
+            salesByProductLabels.Add(GetProductLabel(g.Key));
+            salesByProductValues.Add(g.Count());
+        }
+
+        // ── Gráfico: reparos por empresa ───────────────────────────────────────
+        var repairsByEnterpriseLabels = new List<string>();
+        var repairsByEnterpriseValues = new List<double>();
+        foreach (var g in repairs.GroupBy(x => x.Enterprise).OrderByDescending(g => g.Count()))
+        {
+            repairsByEnterpriseLabels.Add(GetEnterpriseLabel(g.Key));
+            repairsByEnterpriseValues.Add(g.Count());
+        }
+
+        // ── Gráfico: vendas por empresa ────────────────────────────────────────
+        var salesByEnterpriseLabels = new List<string>();
+        var salesByEnterpriseValues = new List<double>();
+        foreach (var g in sales.GroupBy(x => x.Enterprise).OrderByDescending(g => g.Count()))
+        {
+            salesByEnterpriseLabels.Add(GetEnterpriseLabel(g.Key));
+            salesByEnterpriseValues.Add(g.Count());
+        }
+
+        // ── Gráfico: resultado dos reparos ─────────────────────────────────────
+        var repairResultLabels = new List<string>();
+        var repairResultValues = new List<double>();
+        foreach (var g in repairs
+                     .Where(x => x.RepairResult.HasValue)
+                     .GroupBy(x => x.RepairResult!.Value)
+                     .OrderByDescending(g => g.Count()))
+        {
+            repairResultLabels.Add(GetRepairResultLabel(g.Key));
+            repairResultValues.Add(g.Count());
+        }
+
+        // ── Gráfico: receita de vendas por mês (últimos 12 meses) ─────────────
+        var salesRevenueByMonthLabels = last12Months.Select(m => m.ToString("MMM/yy")).ToList();
+        var salesRevenueByMonthValues = last12Months.Select(m =>
+            (double)sales
+                .Where(x => x.EntryDate.Year == m.Year && x.EntryDate.Month == m.Month)
+                .Sum(x => x.TotalAmount)
+        ).ToList();
+
+        // ── Tabela: top 10 clientes ────────────────────────────────────────────
+        var topCustomers = orders
+            .GroupBy(x => x.Customer.Name.CustomerName)
+            .OrderByDescending(g => g.Count())
+            .Take(10)
+            .Select(g => new TopCustomerDto
+            {
+                CustomerName = g.Key,
+                OrderCount = g.Count(),
+                TotalSpent = g.Sum(x => x.TotalAmount)
+            })
+            .ToList();
+
+        return new DashboardMetricsDto
+        {
+            TotalOrders = repairs.Count,
+            TotalOrdersThisMonth = repairs.Count(x => x.EntryDate.Year == now.Year && x.EntryDate.Month == now.Month),
+            ActiveOrders = repairs.Count(x => x.ServiceOrderStatus != EServiceOrderStatus.Delivered),
+            TotalRevenue = totalRevenue,
+            RevenueThisMonth = revenueThisMonth,
+            ApprovalRate = approvalRate,
+            AverageCycleDays = avgCycleDays,
+
+            TotalSales = sales.Count,
+            TotalSalesThisMonth = sales.Count(x => x.EntryDate.Year == now.Year && x.EntryDate.Month == now.Month),
+            TotalSalesRevenue = totalSalesRevenue,
+            SalesRevenueThisMonth = salesRevenueThisMonth,
+
+            OrdersByStatusLabels = statusLabels,
+            OrdersByStatusValues = statusValues,
+
+            RevenueByMonthLabels = revenueByMonthLabels,
+            RevenueByMonthValues = revenueByMonthValues,
+
+            OrdersCreatedPerMonthLabels = ordersCreatedLabels,
+            OrdersCreatedPerMonthValues = ordersCreatedValues,
+
+            RepairsByProductTypeLabels = repairsByProductLabels,
+            RepairsByProductTypeValues = repairsByProductValues,
+
+            SalesByProductTypeLabels = salesByProductLabels,
+            SalesByProductTypeValues = salesByProductValues,
+
+            RepairsByEnterpriseLabels = repairsByEnterpriseLabels,
+            RepairsByEnterpriseValues = repairsByEnterpriseValues,
+
+            SalesByEnterpriseLabels = salesByEnterpriseLabels,
+            SalesByEnterpriseValues = salesByEnterpriseValues,
+
+            RepairResultLabels = repairResultLabels,
+            RepairResultValues = repairResultValues,
+
+            SalesRevenueByMonthLabels = salesRevenueByMonthLabels,
+            SalesRevenueByMonthValues = salesRevenueByMonthValues,
+
+            TopCustomers = topCustomers
+        };
+    }
+
+    private static string GetStatusLabel(EServiceOrderStatus status) => status switch
+    {
+        EServiceOrderStatus.Entered => "Entrada",
+        EServiceOrderStatus.Evaluated => "Avaliado",
+        EServiceOrderStatus.Repaired => "Consertado",
+        EServiceOrderStatus.Delivered => "Entregue",
+        EServiceOrderStatus.OrderPart => "Aguardando Peça",
+        EServiceOrderStatus.ReadyToPickUp => "Pronto p/ Retirada",
+        _ => status.ToString()
+    };
+
+    private static string GetProductLabel(EProduct product) => product switch
+    {
+        EProduct.Tv => "TV",
+        EProduct.TvBox => "TV Box",
+        EProduct.ControleRemoto => "Controle Remoto",
+        EProduct.Som => "Som",
+        EProduct.CaixaAcustica => "Caixa Acústica",
+        EProduct.Microondas => "Microondas",
+        EProduct.Fonte => "Fonte",
+        EProduct.Bases => "Bases",
+        EProduct.PlacaFonte => "Placa Fonte",
+        EProduct.PlacaPrincipal => "Placa Principal",
+        _ => product.ToString()
+    };
+
+    private static string GetEnterpriseLabel(EEnterprise enterprise) => enterprise switch
+    {
+        EEnterprise.Particular => "Particular",
+        EEnterprise.Cocel => "Cocel",
+        EEnterprise.Seguradora => "Seguradora",
+        EEnterprise.PhilcoBritania => "Philco/Britania",
+        EEnterprise.Copel => "Copel",
+        _ => enterprise.ToString()
+    };
+
+    private static string GetRepairResultLabel(ERepairResult result) => result switch
+    {
+        ERepairResult.Repair => "Tem conserto",
+        ERepairResult.Unrepaired => "Não tem conserto",
+        ERepairResult.NoDefectFound => "Não apresentou defeito",
+        _ => result.ToString()
+    };
+}
