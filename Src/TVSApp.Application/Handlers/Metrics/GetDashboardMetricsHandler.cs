@@ -19,7 +19,7 @@ public class GetDashboardMetricsHandler : IRequestHandler<GetDashboardMetricsQue
         GetDashboardMetricsQuery request,
         CancellationToken cancellationToken)
     {
-        var data = await _metricsService.GetDashboardMetricsAsync();
+        var data = await _metricsService.GetDashboardMetricsAsync(request.Month, request.Year);
         return new BaseResponse<DashboardMetricsDto>(data, 200, "Métricas carregadas com sucesso.");
     }
 }

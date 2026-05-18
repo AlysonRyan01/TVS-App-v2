@@ -13,6 +13,22 @@ public partial class DashboardPage : ComponentBase
     private DashboardMetricsDto? _metrics;
     private bool _isBusy;
 
+    private int _selectedMonth = DateTime.Now.Month;
+    private int _selectedYear = DateTime.Now.Year;
+
+    private static readonly List<(int Value, string Label)> Months =
+    [
+        (1, "Janeiro"), (2, "Fevereiro"), (3, "Março"), (4, "Abril"),
+        (5, "Maio"), (6, "Junho"), (7, "Julho"), (8, "Agosto"),
+        (9, "Setembro"), (10, "Outubro"), (11, "Novembro"), (12, "Dezembro")
+    ];
+
+    private static List<int> Years =>
+        Enumerable.Range(DateTime.Now.Year - 3, 4).Reverse().ToList();
+
+    private string PeriodLabel =>
+        $"{Months.First(m => m.Value == _selectedMonth).Label}/{_selectedYear}";
+
     protected override async Task OnInitializedAsync()
     {
         await LoadAsync();
@@ -23,7 +39,7 @@ public partial class DashboardPage : ComponentBase
         _isBusy = true;
         StateHasChanged();
 
-        var result = await Handler.GetDashboardMetricsAsync();
+        var result = await Handler.GetDashboardMetricsAsync(_selectedMonth, _selectedYear);
 
         if (result.IsSuccess && result.Data != null)
             _metrics = result.Data;
@@ -34,12 +50,21 @@ public partial class DashboardPage : ComponentBase
         StateHasChanged();
     }
 
-    private List<ChartSeries> SingleSeries(string name, List<double> values) =>
+    private async Task OnMonthChanged(int month)
+    {
+        _selectedMonth = month;
+        await LoadAsync();
+    }
+
+    private async Task OnYearChanged(int year)
+    {
+        _selectedYear = year;
+        await LoadAsync();
+    }
+
+    private static List<ChartSeries> SingleSeries(string name, List<double> values) =>
         [new ChartSeries { Name = name, Data = values.ToArray() }];
 
     private static string FormatCurrency(decimal value) =>
         value.ToString("C2", new System.Globalization.CultureInfo("pt-BR"));
-
-    private static string CurrentMonthLabel =>
-        DateTime.Now.ToString("MMMM/yyyy", new System.Globalization.CultureInfo("pt-BR"));
 }

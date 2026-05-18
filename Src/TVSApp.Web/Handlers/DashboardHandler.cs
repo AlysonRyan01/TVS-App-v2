@@ -13,12 +13,12 @@ public class DashboardHandler
         _httpClient = clientFactory.CreateClient("api");
     }
 
-    public async Task<BaseResponse<DashboardMetricsDto>> GetDashboardMetricsAsync()
+    public async Task<BaseResponse<DashboardMetricsDto>> GetDashboardMetricsAsync(int month, int year)
     {
         try
         {
             var response = await _httpClient.GetFromJsonAsync<BaseResponse<DashboardMetricsDto>>(
-                "get-dashboard-metrics");
+                $"get-dashboard-metrics?month={month}&year={year}");
 
             if (response == null)
                 return new BaseResponse<DashboardMetricsDto>(null, 500, "Resposta inválida do servidor.");

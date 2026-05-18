@@ -15,19 +15,17 @@ public class MetricsService : IMetricsService
         _context = context;
     }
 
-    public async Task<DashboardMetricsDto> GetDashboardMetricsAsync()
+    public async Task<DashboardMetricsDto> GetDashboardMetricsAsync(int month, int year)
     {
-        var now = DateTime.UtcNow;
-
         var allOrders = await _context.ServiceOrders
             .Include(x => x.Customer)
             .Include(x => x.Payments)
             .AsNoTracking()
             .ToListAsync();
 
-        // Filtro base: apenas mês atual
+        // Filtro base: apenas o mês/ano selecionado
         var orders = allOrders
-            .Where(x => x.EntryDate.Year == now.Year && x.EntryDate.Month == now.Month)
+            .Where(x => x.EntryDate.Year == year && x.EntryDate.Month == month)
             .ToList();
 
         var repairs = orders.Where(x => x.Product.Defect != "VENDA").ToList();

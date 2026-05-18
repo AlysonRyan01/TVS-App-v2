@@ -19,12 +19,32 @@
     }
     else
     {
-        <!-- ── Título ─────────────────────────────────────────────────────────── -->
-        <div class="flex items-center gap-3 mb-2">
-            <MudIcon Icon="@Icons.Material.Filled.BarChart" Color="Color.Primary" Size="Size.Large" />
-            <div>
-                <p class="text-2xl font-bold font-sans text-[#750303]">Dashboard de Métricas</p>
-                <p class="text-sm text-gray-500 font-sans capitalize">@CurrentMonthLabel</p>
+        <!-- ── Título + Seletor de Período ──────────────────────────────────── -->
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-2">
+            <div class="flex items-center gap-3">
+                <MudIcon Icon="@Icons.Material.Filled.BarChart" Color="Color.Primary" Size="Size.Large" />
+                <div>
+                    <p class="text-2xl font-bold font-sans text-[#750303]">Dashboard de Métricas</p>
+                    <p class="text-sm text-gray-500 font-sans">@PeriodLabel</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <MudSelect T="int" Value="_selectedMonth" ValueChanged="OnMonthChanged"
+                           Label="Mês" Variant="Variant.Outlined" Dense="true"
+                           Style="min-width:150px" Disabled="_isBusy">
+                    @foreach (var m in Months)
+                    {
+                        <MudSelectItem Value="@m.Value">@m.Label</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudSelect T="int" Value="_selectedYear" ValueChanged="OnYearChanged"
+                           Label="Ano" Variant="Variant.Outlined" Dense="true"
+                           Style="min-width:100px" Disabled="_isBusy">
+                    @foreach (var y in Years)
+                    {
+                        <MudSelectItem Value="@y">@y</MudSelectItem>
+                    }
+                </MudSelect>
             </div>
         </div>
 

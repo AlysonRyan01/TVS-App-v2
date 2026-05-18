@@ -7,9 +7,12 @@ public static class DashboardEndpoints
 {
     public static void MapDashboardEndpoints(this WebApplication app)
     {
-        app.MapGet("/get-dashboard-metrics", async (ISender mediator) =>
+        app.MapGet("/get-dashboard-metrics", async (ISender mediator, int? month, int? year) =>
         {
-            var result = await mediator.Send(new GetDashboardMetricsQuery());
+            var now = DateTime.UtcNow;
+            var m = month ?? now.Month;
+            var y = year ?? now.Year;
+            var result = await mediator.Send(new GetDashboardMetricsQuery(m, y));
             return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
         })
         .WithTags("Dashboard")

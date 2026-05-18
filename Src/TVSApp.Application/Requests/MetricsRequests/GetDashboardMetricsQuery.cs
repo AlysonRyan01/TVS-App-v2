@@ -4,4 +4,4 @@ using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Requests.MetricsRequests;
 
-public record GetDashboardMetricsQuery : IRequest<BaseResponse<DashboardMetricsDto>>;
+public record GetDashboardMetricsQuery(int Month, int Year) : IRequest<BaseResponse<DashboardMetricsDto>>;
