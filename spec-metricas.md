@@ -171,7 +171,8 @@ var last12  = Enumerable.Range(0, 12)
 - KPIs: contagens/somas/médias diretas sobre as listas
 - `ApprovalRate`: `repairs.Count(x => x.RepairStatus == ERepairStatus.Approved) * 100.0 / (aprovados + reprovados)`
 - `AverageCycleDays`: `repairs.Where(x => x.DeliveryDate.HasValue).Average(x => (x.DeliveryDate!.Value - x.EntryDate).TotalDays)`
-- Séries mensais: iterar `last12`, para cada mês filtrar por `EntryDate.Year == m.Year && EntryDate.Month == m.Month`
+- Séries mensais de **ordens criadas** (`OrdersCreatedPerMonth`): filtrar por `EntryDate.Year == m.Year && EntryDate.Month == m.Month`
+- Séries mensais de **receita** (`RevenueByMonth`, `SalesRevenueByMonth`): filtrar por `DeliveryDate.HasValue && DeliveryDate.Value.Year == m.Year && DeliveryDate.Value.Month == m.Month` — faturamento é reconhecido na data de entrega
 - `RepairResults`: `Where(x => x.RepairResult.HasValue).GroupBy(x => x.RepairResult!.Value)`
 - `TopCustomers`: `GroupBy(x => x.Customer.Name.CustomerName).OrderByDescending(g => g.Count()).Take(10)`
 

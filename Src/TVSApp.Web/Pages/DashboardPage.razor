@@ -113,6 +113,15 @@
                     </div>
                 </MudPaper>
             </MudItem>
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudPaper Class="pa-4 h-full" Elevation="3">
+                    <div class="flex flex-col gap-1">
+                        <p class="text-xs font-sans text-gray-500 uppercase tracking-wide">A Receber (Prontos Ainda Não Entregues)</p>
+                        <p class="text-3xl font-bold text-[#750303]">@FormatCurrency(_metrics.PendingDeliveryRevenue)</p>
+                        <p class="text-xs text-gray-400">Prontos ainda não entregues</p>
+                    </div>
+                </MudPaper>
+            </MudItem>
         </MudGrid>
 
         <!-- ── Linha 1: Status (Donut) + Resultado reparos (Donut) ───────────── -->
@@ -223,38 +232,236 @@
             </MudItem>
         </MudGrid>
 
-        <!-- ── Tabela: Top 10 Clientes ─────────────────────────────────────────── -->
+        <!-- ── Seção: Consulta por Intervalo de Datas ───────────────────────── -->
+        <MudDivider Class="my-2" />
+
         <MudPaper Class="pa-4" Elevation="3">
-            <p class="text-base font-bold font-sans text-[#750303] mb-3">Top 10 Clientes</p>
-            @if (_metrics.TopCustomers.Any())
-            {
-                <MudTable Items="@_metrics.TopCustomers" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true">
-                    <HeaderContent>
-                        <MudTh><p class="text-sm text-[#750303] font-bold uppercase">#</p></MudTh>
-                        <MudTh><p class="text-sm text-[#750303] font-bold uppercase">Cliente</p></MudTh>
-                        <MudTh><p class="text-sm text-[#750303] font-bold uppercase">Ordens</p></MudTh>
-                        <MudTh><p class="text-sm text-[#750303] font-bold uppercase">Total Gasto</p></MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="#">
-                            <p class="text-sm font-sans">@(_metrics.TopCustomers.IndexOf(context) + 1)º</p>
-                        </MudTd>
-                        <MudTd DataLabel="Cliente">
-                            <p class="text-sm font-sans font-semibold uppercase">@context.CustomerName</p>
-                        </MudTd>
-                        <MudTd DataLabel="Ordens">
-                            <p class="text-sm font-sans font-bold">@context.OrderCount</p>
-                        </MudTd>
-                        <MudTd DataLabel="Total Gasto">
-                            <p class="text-sm font-sans font-bold">@FormatCurrency(context.TotalSpent)</p>
-                        </MudTd>
-                    </RowTemplate>
-                </MudTable>
-            }
-            else
-            {
-                <p class="text-sm text-gray-400 text-center py-6">Sem dados no mês atual</p>
-            }
+            <div class="flex flex-wrap items-center gap-3 mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.DateRange" Color="Color.Primary" />
+                <p class="text-lg font-bold font-sans text-[#750303]">Consulta por Intervalo de Datas</p>
+            </div>
+            <div class="flex flex-wrap items-end gap-4">
+                <MudDatePicker Label="Data Inicial"
+                               Date="_rangeStartDate"
+                               DateChanged="@(d => _rangeStartDate = d)"
+                               Variant="Variant.Outlined"
+                               Culture='@(new System.Globalization.CultureInfo("pt-BR"))'
+                               DateFormat="dd/MM/yyyy"
+                               MaxDate="DateTime.Today"
+                               Disabled="_isRangeBusy" />
+                <MudDatePicker Label="Data Final"
+                               Date="_rangeEndDate"
+                               DateChanged="@(d => _rangeEndDate = d)"
+                               Variant="Variant.Outlined"
+                               Culture='@(new System.Globalization.CultureInfo("pt-BR"))'
+                               DateFormat="dd/MM/yyyy"
+                               MaxDate="DateTime.Today"
+                               Disabled="_isRangeBusy" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           OnClick="LoadByRangeAsync"
+                           Disabled="_isRangeBusy"
+                           StartIcon="@Icons.Material.Filled.Search">
+                    Consultar
+                </MudButton>
+            </div>
         </MudPaper>
+
+        @if (_isRangeBusy)
+        {
+            <div class="w-full flex justify-center items-center py-10">
+                <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+            </div>
+        }
+        else if (_rangeMetrics is not null)
+        {
+            <div class="flex items-center gap-2 mt-2">
+                <MudIcon Icon="@Icons.Material.Filled.FilterAlt" Color="Color.Secondary" Size="Size.Small" />
+                <p class="text-sm text-gray-500 font-sans">
+                    @(_rangeStartDate!.Value.ToString("dd/MM/yyyy")) até @(_rangeEndDate!.Value.ToString("dd/MM/yyyy"))
+                </p>
+            </div>
+
+            <!-- KPI Cards do intervalo -->
+            <MudGrid Spacing="3">
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudPaper Class="pa-4 h-full" Elevation="3">
+                        <div class="flex flex-col gap-1">
+                            <p class="text-xs font-sans text-gray-500 uppercase tracking-wide">Total de Ordens</p>
+                            <p class="text-3xl font-bold text-[#750303]">@_rangeMetrics.TotalOrders</p>
+                            <p class="text-xs text-gray-400">Ordens de reparo criadas</p>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudPaper Class="pa-4 h-full" Elevation="3">
+                        <div class="flex flex-col gap-1">
+                            <p class="text-xs font-sans text-gray-500 uppercase tracking-wide">Ordens Ativas</p>
+                            <p class="text-3xl font-bold text-[#750303]">@_rangeMetrics.ActiveOrders</p>
+                            <p class="text-xs text-gray-400">Não entregues</p>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudPaper Class="pa-4 h-full" Elevation="3">
+                        <div class="flex flex-col gap-1">
+                            <p class="text-xs font-sans text-gray-500 uppercase tracking-wide">Receita de Reparos</p>
+                            <p class="text-3xl font-bold text-[#750303]">@FormatCurrency(_rangeMetrics.TotalRevenue)</p>
+                            <p class="text-xs text-gray-400">Aprovado + consertado + entregue</p>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudPaper Class="pa-4 h-full" Elevation="3">
+                        <div class="flex flex-col gap-1">
+                            <p class="text-xs font-sans text-gray-500 uppercase tracking-wide">Taxa de Aprovação</p>
+                            <p class="text-3xl font-bold text-[#750303]">@_rangeMetrics.ApprovalRate%</p>
+                            <p class="text-xs text-gray-400">Orçamentos aprovados vs reprovados</p>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudPaper Class="pa-4 h-full" Elevation="3">
+                        <div class="flex flex-col gap-1">
+                            <p class="text-xs font-sans text-gray-500 uppercase tracking-wide">Tempo Médio de Ciclo</p>
+                            <p class="text-3xl font-bold text-[#750303]">@_rangeMetrics.AverageCycleDays dias</p>
+                            <p class="text-xs text-gray-400">Entrada até entrega</p>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudPaper Class="pa-4 h-full" Elevation="3">
+                        <div class="flex flex-col gap-1">
+                            <p class="text-xs font-sans text-gray-500 uppercase tracking-wide">Total de Vendas</p>
+                            <p class="text-3xl font-bold text-[#750303]">@_rangeMetrics.TotalSales</p>
+                            <p class="text-xs text-gray-400">Vendas realizadas</p>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudPaper Class="pa-4 h-full" Elevation="3">
+                        <div class="flex flex-col gap-1">
+                            <p class="text-xs font-sans text-gray-500 uppercase tracking-wide">Receita de Vendas</p>
+                            <p class="text-3xl font-bold text-[#750303]">@FormatCurrency(_rangeMetrics.TotalSalesRevenue)</p>
+                            <p class="text-xs text-gray-400">Total faturado em vendas</p>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" sm="6" md="4" lg="3">
+                    <MudPaper Class="pa-4 h-full" Elevation="3">
+                        <div class="flex flex-col gap-1">
+                            <p class="text-xs font-sans text-gray-500 uppercase tracking-wide">A Receber (Prontos Ainda Não Entregues)</p>
+                            <p class="text-3xl font-bold text-[#750303]">@FormatCurrency(_rangeMetrics.PendingDeliveryRevenue)</p>
+                            <p class="text-xs text-gray-400">Prontos ainda não entregues</p>
+                        </div>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+
+            <MudGrid Spacing="3">
+                <MudItem xs="12" md="6">
+                    <MudPaper Class="pa-4" Elevation="3">
+                        <p class="text-base font-bold font-sans text-[#750303] mb-3">Ordens por Status</p>
+                        @if (_rangeMetrics.OrdersByStatusValues.Any(v => v > 0))
+                        {
+                            <MudChart ChartType="ChartType.Donut"
+                                      InputData="@_rangeMetrics.OrdersByStatusValues.ToArray()"
+                                      InputLabels="@_rangeMetrics.OrdersByStatusLabels.ToArray()"
+                                      Width="100%" Height="300px" />
+                        }
+                        else
+                        {
+                            <p class="text-sm text-gray-400 text-center py-10">Sem dados no período</p>
+                        }
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudPaper Class="pa-4" Elevation="3">
+                        <p class="text-base font-bold font-sans text-[#750303] mb-3">Resultado dos Reparos</p>
+                        @if (_rangeMetrics.RepairResultValues.Any(v => v > 0))
+                        {
+                            <MudChart ChartType="ChartType.Donut"
+                                      InputData="@_rangeMetrics.RepairResultValues.ToArray()"
+                                      InputLabels="@_rangeMetrics.RepairResultLabels.ToArray()"
+                                      Width="100%" Height="300px" />
+                        }
+                        else
+                        {
+                            <p class="text-sm text-gray-400 text-center py-10">Sem dados no período</p>
+                        }
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+
+            <MudGrid Spacing="3">
+                <MudItem xs="12" md="6">
+                    <MudPaper Class="pa-4" Elevation="3">
+                        <p class="text-base font-bold font-sans text-[#750303] mb-3">Reparos por Tipo de Produto</p>
+                        @if (_rangeMetrics.RepairsByProductTypeValues.Any(v => v > 0))
+                        {
+                            <MudChart ChartType="ChartType.Bar"
+                                      ChartSeries="@SingleSeries("Reparos", _rangeMetrics.RepairsByProductTypeValues)"
+                                      XAxisLabels="@_rangeMetrics.RepairsByProductTypeLabels.ToArray()"
+                                      Width="100%" Height="300px" />
+                        }
+                        else
+                        {
+                            <p class="text-sm text-gray-400 text-center py-10">Sem dados no período</p>
+                        }
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudPaper Class="pa-4" Elevation="3">
+                        <p class="text-base font-bold font-sans text-[#750303] mb-3">Vendas por Tipo de Produto</p>
+                        @if (_rangeMetrics.SalesByProductTypeValues.Any(v => v > 0))
+                        {
+                            <MudChart ChartType="ChartType.Bar"
+                                      ChartSeries="@SingleSeries("Vendas", _rangeMetrics.SalesByProductTypeValues)"
+                                      XAxisLabels="@_rangeMetrics.SalesByProductTypeLabels.ToArray()"
+                                      Width="100%" Height="300px" />
+                        }
+                        else
+                        {
+                            <p class="text-sm text-gray-400 text-center py-10">Sem dados no período</p>
+                        }
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+
+            <MudGrid Spacing="3">
+                <MudItem xs="12" md="6">
+                    <MudPaper Class="pa-4" Elevation="3">
+                        <p class="text-base font-bold font-sans text-[#750303] mb-3">Reparos por Empresa</p>
+                        @if (_rangeMetrics.RepairsByEnterpriseValues.Any(v => v > 0))
+                        {
+                            <MudChart ChartType="ChartType.Bar"
+                                      ChartSeries="@SingleSeries("Reparos", _rangeMetrics.RepairsByEnterpriseValues)"
+                                      XAxisLabels="@_rangeMetrics.RepairsByEnterpriseLabels.ToArray()"
+                                      Width="100%" Height="300px" />
+                        }
+                        else
+                        {
+                            <p class="text-sm text-gray-400 text-center py-10">Sem dados no período</p>
+                        }
+                    </MudPaper>
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudPaper Class="pa-4" Elevation="3">
+                        <p class="text-base font-bold font-sans text-[#750303] mb-3">Vendas por Empresa</p>
+                        @if (_rangeMetrics.SalesByEnterpriseValues.Any(v => v > 0))
+                        {
+                            <MudChart ChartType="ChartType.Bar"
+                                      ChartSeries="@SingleSeries("Vendas", _rangeMetrics.SalesByEnterpriseValues)"
+                                      XAxisLabels="@_rangeMetrics.SalesByEnterpriseLabels.ToArray()"
+                                      Width="100%" Height="300px" />
+                        }
+                        else
+                        {
+                            <p class="text-sm text-gray-400 text-center py-10">Sem dados no período</p>
+                        }
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+
+        }
     }
 </div>

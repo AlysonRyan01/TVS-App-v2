@@ -13,6 +13,9 @@ public class DashboardMetricsDto
     public int TotalSales { get; set; }
     public decimal TotalSalesRevenue { get; set; }
 
+    // KPI: reparos aprovados ainda não entregues
+    public decimal PendingDeliveryRevenue { get; set; }
+
     // Gráfico: ordens por status
     public List<string> OrdersByStatusLabels { get; set; } = [];
     public List<double> OrdersByStatusValues { get; set; } = [];
@@ -36,14 +39,4 @@ public class DashboardMetricsDto
     // Gráfico: resultado dos reparos
     public List<string> RepairResultLabels { get; set; } = [];
     public List<double> RepairResultValues { get; set; } = [];
-
-    // Tabela: top clientes
-    public List<TopCustomerDto> TopCustomers { get; set; } = [];
-}
-
-public class TopCustomerDto
-{
-    public string CustomerName { get; set; } = string.Empty;
-    public int OrderCount { get; set; }
-    public decimal TotalSpent { get; set; }
 }

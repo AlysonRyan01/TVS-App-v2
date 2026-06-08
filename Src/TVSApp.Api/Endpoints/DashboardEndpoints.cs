@@ -17,7 +17,17 @@ public static class DashboardEndpoints
         })
         .WithTags("Dashboard")
         .WithName("GetDashboardMetrics")
-        .WithSummary("Retorna todas as métricas do dashboard.")
+        .WithSummary("Retorna métricas do dashboard filtradas por mês/ano.")
+        .RequireAuthorization();
+
+        app.MapGet("/get-dashboard-metrics-by-range", async (ISender mediator, DateTime startDate, DateTime endDate) =>
+        {
+            var result = await mediator.Send(new GetDashboardMetricsByRangeQuery(startDate, endDate));
+            return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+        })
+        .WithTags("Dashboard")
+        .WithName("GetDashboardMetricsByRange")
+        .WithSummary("Retorna métricas do dashboard filtradas por intervalo de datas.")
         .RequireAuthorization();
     }
 }

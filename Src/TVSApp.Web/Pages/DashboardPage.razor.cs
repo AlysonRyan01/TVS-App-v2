@@ -16,6 +16,11 @@ public partial class DashboardPage : ComponentBase
     private int _selectedMonth = DateTime.Now.Month;
     private int _selectedYear = DateTime.Now.Year;
 
+    private DashboardMetricsDto? _rangeMetrics;
+    private bool _isRangeBusy;
+    private DateTime? _rangeStartDate;
+    private DateTime? _rangeEndDate;
+
     private static readonly List<(int Value, string Label)> Months =
     [
         (1, "Janeiro"), (2, "Fevereiro"), (3, "Março"), (4, "Abril"),
@@ -60,6 +65,34 @@ public partial class DashboardPage : ComponentBase
     {
         _selectedYear = year;
         await LoadAsync();
+    }
+
+    private async Task LoadByRangeAsync()
+    {
+        if (_rangeStartDate is null || _rangeEndDate is null)
+        {
+            Snackbar.Add("Selecione as duas datas para consultar.", Severity.Warning);
+            return;
+        }
+
+        if (_rangeEndDate < _rangeStartDate)
+        {
+            Snackbar.Add("A data final deve ser maior ou igual à data inicial.", Severity.Warning);
+            return;
+        }
+
+        _isRangeBusy = true;
+        StateHasChanged();
+
+        var result = await Handler.GetDashboardMetricsByRangeAsync(_rangeStartDate.Value, _rangeEndDate.Value);
+
+        if (result.IsSuccess && result.Data != null)
+            _rangeMetrics = result.Data;
+        else
+            Snackbar.Add(result.Message ?? "Erro ao carregar métricas.", Severity.Error);
+
+        _isRangeBusy = false;
+        StateHasChanged();
     }
 
     private static List<ChartSeries> SingleSeries(string name, List<double> values) =>
