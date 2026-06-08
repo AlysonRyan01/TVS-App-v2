@@ -65,8 +65,8 @@ public class MetricsService : IMetricsService
             .ToListAsync();
 
         var repairedNotPickedUp = orders
-            .Where(x => x.RepairResult == ERepairResult.Repair)
-            .OrderBy(x => x.RepairDate ?? x.EntryDate)
+            .Where(x => x.RepairResult == ERepairResult.Repair && x.RepairDate.HasValue)
+            .OrderBy(x => x.RepairDate)
             .Select(x => new AbandonedOrderDto
             {
                 Id = x.Id,
@@ -78,8 +78,8 @@ public class MetricsService : IMetricsService
             .ToList();
 
         var unrepairedNotPickedUp = orders
-            .Where(x => x.RepairResult == ERepairResult.Unrepaired)
-            .OrderBy(x => x.InspectionDate ?? x.EntryDate)
+            .Where(x => x.RepairResult == ERepairResult.Unrepaired && x.InspectionDate.HasValue)
+            .OrderBy(x => x.InspectionDate)
             .Select(x => new AbandonedOrderDto
             {
                 Id = x.Id,
