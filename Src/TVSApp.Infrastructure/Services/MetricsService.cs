@@ -17,38 +17,50 @@ public class MetricsService : IMetricsService
 
     public async Task<DashboardMetricsDto> GetDashboardMetricsAsync(int month, int year)
     {
-        var allOrders = await _context.ServiceOrders
-            .Include(x => x.Payments)
+        var start = new DateTime(year, month, 1);
+        var end = start.AddMonths(1);
+
+        var orders = await _context.ServiceOrders
             .AsNoTracking()
+            .Where(x => x.EntryDate >= start && x.EntryDate < end)
             .ToListAsync();
 
-        // Filtro base: ordens criadas no mês/ano selecionado
-        var orders = allOrders
-            .Where(x => x.EntryDate.Year == year && x.EntryDate.Month == month)
-            .ToList();
+        var deliveredOrders = await _context.ServiceOrders
+            .AsNoTracking()
+            .Where(x => x.DeliveryDate.HasValue && x.DeliveryDate >= start && x.DeliveryDate < end)
+            .ToListAsync();
 
+        return BuildMetrics(orders, deliveredOrders);
+    }
+
+    public async Task<DashboardMetricsDto> GetDashboardMetricsByRangeAsync(DateTime startDate, DateTime endDate)
+    {
+        var start = startDate.Date;
+        var end = endDate.Date.AddDays(1);
+
+        var orders = await _context.ServiceOrders
+            .AsNoTracking()
+            .Where(x => x.EntryDate >= start && x.EntryDate < end)
+            .ToListAsync();
+
+        var deliveredOrders = await _context.ServiceOrders
+            .AsNoTracking()
+            .Where(x => x.DeliveryDate.HasValue && x.DeliveryDate >= start && x.DeliveryDate < end)
+            .ToListAsync();
+
+        return BuildMetrics(orders, deliveredOrders);
+    }
+
+    private static DashboardMetricsDto BuildMetrics(List<TVS_App.Domain.Entities.ServiceOrder> orders, List<TVS_App.Domain.Entities.ServiceOrder> deliveredOrders)
+    {
         var repairs = orders.Where(x => x.Product.Defect != "VENDA").ToList();
         var sales = orders.Where(x => x.Product.Defect == "VENDA").ToList();
-
-        // Filtro de receita: ordens entregues no mês/ano selecionado
-        var deliveredRepairs = allOrders
-            .Where(x => x.Product.Defect != "VENDA"
-                        && x.DeliveryDate.HasValue
-                        && x.DeliveryDate.Value.Year == year
-                        && x.DeliveryDate.Value.Month == month)
-            .ToList();
-
-        var deliveredSales = allOrders
-            .Where(x => x.Product.Defect == "VENDA"
-                        && x.DeliveryDate.HasValue
-                        && x.DeliveryDate.Value.Year == year
-                        && x.DeliveryDate.Value.Month == month)
-            .ToList();
+        var deliveredRepairs = deliveredOrders.Where(x => x.Product.Defect != "VENDA").ToList();
+        var deliveredSales = deliveredOrders.Where(x => x.Product.Defect == "VENDA").ToList();
 
         // ── KPIs gerais ────────────────────────────────────────────────────────
         var totalRevenue = deliveredRepairs
-            .Where(x => x.RepairStatus == ERepairStatus.Approved
-                        && x.RepairResult == ERepairResult.Repair)
+            .Where(x => x.RepairStatus == ERepairStatus.Approved && x.RepairResult == ERepairResult.Repair)
             .Sum(x => x.TotalAmount);
 
         var approved = repairs.Count(x => x.RepairStatus == ERepairStatus.Approved);
@@ -117,143 +129,6 @@ public class MetricsService : IMetricsService
         }
 
         // ── Gráfico: resultado dos reparos ─────────────────────────────────────
-        var repairResultLabels = new List<string>();
-        var repairResultValues = new List<double>();
-        foreach (var g in repairs
-                     .Where(x => x.RepairResult.HasValue)
-                     .GroupBy(x => x.RepairResult!.Value)
-                     .OrderByDescending(g => g.Count()))
-        {
-            repairResultLabels.Add(GetRepairResultLabel(g.Key));
-            repairResultValues.Add(g.Count());
-        }
-
-        return new DashboardMetricsDto
-        {
-            TotalOrders = repairs.Count,
-            ActiveOrders = repairs.Count(x => x.ServiceOrderStatus != EServiceOrderStatus.Delivered),
-            TotalRevenue = totalRevenue,
-            ApprovalRate = approvalRate,
-            AverageCycleDays = avgCycleDays,
-
-            TotalSales = sales.Count,
-            TotalSalesRevenue = totalSalesRevenue,
-            PendingDeliveryRevenue = pendingDeliveryRevenue,
-
-            OrdersByStatusLabels = statusLabels,
-            OrdersByStatusValues = statusValues,
-
-            RepairsByProductTypeLabels = repairsByProductLabels,
-            RepairsByProductTypeValues = repairsByProductValues,
-
-            SalesByProductTypeLabels = salesByProductLabels,
-            SalesByProductTypeValues = salesByProductValues,
-
-            RepairsByEnterpriseLabels = repairsByEnterpriseLabels,
-            RepairsByEnterpriseValues = repairsByEnterpriseValues,
-
-            SalesByEnterpriseLabels = salesByEnterpriseLabels,
-            SalesByEnterpriseValues = salesByEnterpriseValues,
-
-            RepairResultLabels = repairResultLabels,
-            RepairResultValues = repairResultValues,
-        };
-    }
-
-    public async Task<DashboardMetricsDto> GetDashboardMetricsByRangeAsync(DateTime startDate, DateTime endDate)
-    {
-        var start = startDate.Date;
-        var end = endDate.Date;
-
-        var allOrders = await _context.ServiceOrders
-            .Include(x => x.Payments)
-            .AsNoTracking()
-            .ToListAsync();
-
-        var orders = allOrders
-            .Where(x => x.EntryDate.Date >= start && x.EntryDate.Date <= end)
-            .ToList();
-
-        var repairs = orders.Where(x => x.Product.Defect != "VENDA").ToList();
-        var sales = orders.Where(x => x.Product.Defect == "VENDA").ToList();
-
-        var deliveredRepairs = allOrders
-            .Where(x => x.Product.Defect != "VENDA"
-                        && x.DeliveryDate.HasValue
-                        && x.DeliveryDate.Value.Date >= start
-                        && x.DeliveryDate.Value.Date <= end)
-            .ToList();
-
-        var deliveredSales = allOrders
-            .Where(x => x.Product.Defect == "VENDA"
-                        && x.DeliveryDate.HasValue
-                        && x.DeliveryDate.Value.Date >= start
-                        && x.DeliveryDate.Value.Date <= end)
-            .ToList();
-
-        var totalRevenue = deliveredRepairs
-            .Where(x => x.RepairStatus == ERepairStatus.Approved && x.RepairResult == ERepairResult.Repair)
-            .Sum(x => x.TotalAmount);
-
-        var approved = repairs.Count(x => x.RepairStatus == ERepairStatus.Approved);
-        var disapproved = repairs.Count(x => x.RepairStatus == ERepairStatus.Disapproved);
-        var approvalRate = (approved + disapproved) > 0
-            ? Math.Round(approved * 100.0 / (approved + disapproved), 1)
-            : 0.0;
-
-        var repairsWithDelivery = repairs.Where(x => x.DeliveryDate.HasValue).ToList();
-        var avgCycleDays = repairsWithDelivery.Count > 0
-            ? Math.Round(repairsWithDelivery.Average(x => (x.DeliveryDate!.Value - x.EntryDate).TotalDays), 1)
-            : 0.0;
-
-        var totalSalesRevenue = deliveredSales.Sum(x => x.TotalAmount);
-
-        var pendingDeliveryRevenue = repairs
-            .Where(x => x.RepairStatus == ERepairStatus.Approved
-                        && x.RepairResult == ERepairResult.Repair
-                        && x.ServiceOrderStatus != EServiceOrderStatus.Delivered)
-            .Sum(x => x.TotalAmount);
-
-        var statusLabels = new List<string>();
-        var statusValues = new List<double>();
-        foreach (var g in orders.GroupBy(x => x.ServiceOrderStatus).OrderBy(g => (int)g.Key))
-        {
-            statusLabels.Add(GetStatusLabel(g.Key));
-            statusValues.Add(g.Count());
-        }
-
-        var repairsByProductLabels = new List<string>();
-        var repairsByProductValues = new List<double>();
-        foreach (var g in repairs.GroupBy(x => x.Product.Type).OrderByDescending(g => g.Count()))
-        {
-            repairsByProductLabels.Add(GetProductLabel(g.Key));
-            repairsByProductValues.Add(g.Count());
-        }
-
-        var salesByProductLabels = new List<string>();
-        var salesByProductValues = new List<double>();
-        foreach (var g in sales.GroupBy(x => x.Product.Type).OrderByDescending(g => g.Count()))
-        {
-            salesByProductLabels.Add(GetProductLabel(g.Key));
-            salesByProductValues.Add(g.Count());
-        }
-
-        var repairsByEnterpriseLabels = new List<string>();
-        var repairsByEnterpriseValues = new List<double>();
-        foreach (var g in repairs.GroupBy(x => x.Enterprise).OrderByDescending(g => g.Count()))
-        {
-            repairsByEnterpriseLabels.Add(GetEnterpriseLabel(g.Key));
-            repairsByEnterpriseValues.Add(g.Count());
-        }
-
-        var salesByEnterpriseLabels = new List<string>();
-        var salesByEnterpriseValues = new List<double>();
-        foreach (var g in sales.GroupBy(x => x.Enterprise).OrderByDescending(g => g.Count()))
-        {
-            salesByEnterpriseLabels.Add(GetEnterpriseLabel(g.Key));
-            salesByEnterpriseValues.Add(g.Count());
-        }
-
         var repairResultLabels = new List<string>();
         var repairResultValues = new List<double>();
         foreach (var g in repairs

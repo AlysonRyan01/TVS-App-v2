@@ -16,10 +16,10 @@ public partial class DashboardPage : ComponentBase
     private int _selectedMonth = DateTime.Now.Month;
     private int _selectedYear = DateTime.Now.Year;
 
-    private DashboardMetricsDto? _rangeMetrics;
-    private bool _isRangeBusy;
     private DateTime? _rangeStartDate;
     private DateTime? _rangeEndDate;
+
+    private bool _isRangeMode => _rangeStartDate.HasValue && _rangeEndDate.HasValue;
 
     private static readonly List<(int Value, string Label)> Months =
     [
@@ -31,8 +31,9 @@ public partial class DashboardPage : ComponentBase
     private static List<int> Years =>
         Enumerable.Range(DateTime.Now.Year - 3, 4).Reverse().ToList();
 
-    private string PeriodLabel =>
-        $"{Months.First(m => m.Value == _selectedMonth).Label}/{_selectedYear}";
+    private string PeriodLabel => _isRangeMode
+        ? $"{_rangeStartDate!.Value:dd/MM/yyyy} até {_rangeEndDate!.Value:dd/MM/yyyy}"
+        : $"{Months.First(m => m.Value == _selectedMonth).Label}/{_selectedYear}";
 
     protected override async Task OnInitializedAsync()
     {
@@ -58,12 +59,16 @@ public partial class DashboardPage : ComponentBase
     private async Task OnMonthChanged(int month)
     {
         _selectedMonth = month;
+        _rangeStartDate = null;
+        _rangeEndDate = null;
         await LoadAsync();
     }
 
     private async Task OnYearChanged(int year)
     {
         _selectedYear = year;
+        _rangeStartDate = null;
+        _rangeEndDate = null;
         await LoadAsync();
     }
 
@@ -81,17 +86,17 @@ public partial class DashboardPage : ComponentBase
             return;
         }
 
-        _isRangeBusy = true;
+        _isBusy = true;
         StateHasChanged();
 
         var result = await Handler.GetDashboardMetricsByRangeAsync(_rangeStartDate.Value, _rangeEndDate.Value);
 
         if (result.IsSuccess && result.Data != null)
-            _rangeMetrics = result.Data;
+            _metrics = result.Data;
         else
             Snackbar.Add(result.Message ?? "Erro ao carregar métricas.", Severity.Error);
 
-        _isRangeBusy = false;
+        _isBusy = false;
         StateHasChanged();
     }
 
