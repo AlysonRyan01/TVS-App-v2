@@ -256,3 +256,109 @@
 
     }
 </div>
+
+<!-- ── Seção: Aparelhos Não Retirados ──────────────────────────────────── -->
+<div class="flex flex-col gap-6 p-4">
+    <div class="flex items-center gap-3">
+        <MudIcon Icon="@Icons.Material.Filled.WarningAmber" Color="Color.Warning" Size="Size.Large" />
+        <div>
+            <p class="text-2xl font-bold font-sans text-[#750303]">Aparelhos Não Retirados</p>
+            <p class="text-sm text-gray-500 font-sans">A partir de janeiro de 2025</p>
+        </div>
+    </div>
+
+    @if (_isAbandonedBusy)
+    {
+        <div class="w-full flex justify-center items-center py-10">
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
+        </div>
+    }
+    else if (_abandonedOrders is not null)
+    {
+        <MudGrid Spacing="3">
+            <!-- Lista 1: Consertados e não retirados -->
+            <MudItem xs="12" lg="6">
+                <MudPaper Class="pa-4" Elevation="3">
+                    <p class="text-base font-bold font-sans text-[#750303] mb-3">
+                        Consertados — Não Retirados (@_abandonedOrders.RepairedNotPickedUp.Count)
+                    </p>
+                    @if (_abandonedOrders.RepairedNotPickedUp.Any())
+                    {
+                        <MudTable Items="@_abandonedOrders.RepairedNotPickedUp" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+                            <HeaderContent>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Ordem</p></MudTh>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Modelo</p></MudTh>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Cliente</p></MudTh>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Telefone</p></MudTh>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Consertado em</p></MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Ordem">
+                                    <p class="text-sm font-mono font-bold">#@context.Id</p>
+                                </MudTd>
+                                <MudTd DataLabel="Modelo">
+                                    <p class="text-sm font-sans">@context.Model</p>
+                                </MudTd>
+                                <MudTd DataLabel="Cliente">
+                                    <p class="text-sm font-sans font-semibold uppercase">@context.CustomerName</p>
+                                </MudTd>
+                                <MudTd DataLabel="Telefone">
+                                    <p class="text-sm font-sans">@context.Phone</p>
+                                </MudTd>
+                                <MudTd DataLabel="Consertado em">
+                                    <p class="text-sm font-sans">@(context.Date?.ToString("dd/MM/yyyy") ?? "—")</p>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                    else
+                    {
+                        <p class="text-sm text-gray-400 text-center py-6">Nenhuma ordem nessa situação.</p>
+                    }
+                </MudPaper>
+            </MudItem>
+
+            <!-- Lista 2: Sem conserto e não retirados -->
+            <MudItem xs="12" lg="6">
+                <MudPaper Class="pa-4" Elevation="3">
+                    <p class="text-base font-bold font-sans text-[#750303] mb-3">
+                        Sem Conserto — Não Retirados (@_abandonedOrders.UnrepairedNotPickedUp.Count)
+                    </p>
+                    @if (_abandonedOrders.UnrepairedNotPickedUp.Any())
+                    {
+                        <MudTable Items="@_abandonedOrders.UnrepairedNotPickedUp" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+                            <HeaderContent>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Ordem</p></MudTh>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Modelo</p></MudTh>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Cliente</p></MudTh>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Telefone</p></MudTh>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Orçamento em</p></MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Ordem">
+                                    <p class="text-sm font-mono font-bold">#@context.Id</p>
+                                </MudTd>
+                                <MudTd DataLabel="Modelo">
+                                    <p class="text-sm font-sans">@context.Model</p>
+                                </MudTd>
+                                <MudTd DataLabel="Cliente">
+                                    <p class="text-sm font-sans font-semibold uppercase">@context.CustomerName</p>
+                                </MudTd>
+                                <MudTd DataLabel="Telefone">
+                                    <p class="text-sm font-sans">@context.Phone</p>
+                                </MudTd>
+                                <MudTd DataLabel="Orçamento em">
+                                    <p class="text-sm font-sans">@(context.Date?.ToString("dd/MM/yyyy") ?? "—")</p>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                    else
+                    {
+                        <p class="text-sm text-gray-400 text-center py-6">Nenhuma ordem nessa situação.</p>
+                    }
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</div>

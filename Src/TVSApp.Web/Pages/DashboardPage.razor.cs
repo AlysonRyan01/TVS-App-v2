@@ -13,6 +13,9 @@ public partial class DashboardPage : ComponentBase
     private DashboardMetricsDto? _metrics;
     private bool _isBusy;
 
+    private AbandonedOrdersDto? _abandonedOrders;
+    private bool _isAbandonedBusy;
+
     private int _selectedMonth = DateTime.Now.Month;
     private int _selectedYear = DateTime.Now.Year;
 
@@ -38,6 +41,7 @@ public partial class DashboardPage : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         await LoadAsync();
+        await LoadAbandonedAsync();
     }
 
     private async Task LoadAsync()
@@ -97,6 +101,22 @@ public partial class DashboardPage : ComponentBase
             Snackbar.Add(result.Message ?? "Erro ao carregar métricas.", Severity.Error);
 
         _isBusy = false;
+        StateHasChanged();
+    }
+
+    private async Task LoadAbandonedAsync()
+    {
+        _isAbandonedBusy = true;
+        StateHasChanged();
+
+        var result = await Handler.GetAbandonedOrdersAsync();
+
+        if (result.IsSuccess && result.Data != null)
+            _abandonedOrders = result.Data;
+        else
+            Snackbar.Add(result.Message ?? "Erro ao carregar ordens abandonadas.", Severity.Error);
+
+        _isAbandonedBusy = false;
         StateHasChanged();
     }
 

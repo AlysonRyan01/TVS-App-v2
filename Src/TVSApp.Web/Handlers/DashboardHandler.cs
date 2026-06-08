@@ -50,4 +50,21 @@ public class DashboardHandler
             return new BaseResponse<DashboardMetricsDto>(null, 500, $"Erro ao carregar métricas: {ex.Message}");
         }
     }
+
+    public async Task<BaseResponse<AbandonedOrdersDto>> GetAbandonedOrdersAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<BaseResponse<AbandonedOrdersDto>>("get-abandoned-orders");
+
+            if (response == null)
+                return new BaseResponse<AbandonedOrdersDto>(null, 500, "Resposta inválida do servidor.");
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            return new BaseResponse<AbandonedOrdersDto>(null, 500, $"Erro ao carregar ordens: {ex.Message}");
+        }
+    }
 }

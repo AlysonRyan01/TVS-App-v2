@@ -29,5 +29,15 @@ public static class DashboardEndpoints
         .WithName("GetDashboardMetricsByRange")
         .WithSummary("Retorna métricas do dashboard filtradas por intervalo de datas.")
         .RequireAuthorization();
+
+        app.MapGet("/get-abandoned-orders", async (ISender mediator) =>
+        {
+            var result = await mediator.Send(new GetAbandonedOrdersQuery());
+            return result.IsSuccess ? Results.Ok(result) : Results.BadRequest(result);
+        })
+        .WithTags("Dashboard")
+        .WithName("GetAbandonedOrders")
+        .WithSummary("Retorna ordens com reparo/sem conserto que não foram retiradas.")
+        .RequireAuthorization();
     }
 }

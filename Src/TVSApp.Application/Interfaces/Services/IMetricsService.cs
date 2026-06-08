@@ -6,4 +6,5 @@ public interface IMetricsService
 {
     Task<DashboardMetricsDto> GetDashboardMetricsAsync(int month, int year);
     Task<DashboardMetricsDto> GetDashboardMetricsByRangeAsync(DateTime startDate, DateTime endDate);
+    Task<AbandonedOrdersDto> GetAbandonedOrdersAsync();
 }
