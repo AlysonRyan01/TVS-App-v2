@@ -40,6 +40,7 @@ public record ServiceOrderDto
     public string? Guarantee { get; init; }
     public decimal PartCost { get; set; }
     public decimal LaborCost { get; set; }
+    public decimal PartPurchaseCost { get; set; }
     public decimal TotalAmount => PartCost + LaborCost;
     
     public EServiceOrderStatus ServiceOrderStatus { get; init; }

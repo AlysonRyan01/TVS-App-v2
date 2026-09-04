@@ -16,6 +16,12 @@ public class DashboardMetricsDto
     // KPI: reparos aprovados ainda não entregues
     public decimal PendingDeliveryRevenue { get; set; }
 
+    // KPI: gasto com peças (produtos entregues no período)
+    public decimal TotalPartsSpend { get; set; }
+
+    // Lista: produtos entregues no período (reparos + vendas)
+    public List<DeliveredProductDto> DeliveredProducts { get; set; } = [];
+
     // Gráfico: ordens por status
     public List<string> OrdersByStatusLabels { get; set; } = [];
     public List<double> OrdersByStatusValues { get; set; } = [];

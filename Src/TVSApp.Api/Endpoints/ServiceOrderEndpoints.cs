@@ -518,6 +518,21 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
+        app.MapPut("/update-service-order-part-purchase-cost", async (
+                ISender handler,
+                UpdatePartPurchaseCostCommand command) =>
+        {
+            var updatePartPurchaseCostResult = await handler.Send(command);
+            return Results.Ok(updatePartPurchaseCostResult);
+        })
+        .WithTags("ServiceOrder")
+        .WithName("UpdateServiceOrderPartPurchaseCost")
+        .WithSummary("Atualiza o valor pago na compra da peça de uma ordem de serviço.")
+        .WithDescription("Recebe o ID da ordem de serviço e o valor pago pela peça, usado para calcular o gasto com peças no dashboard de métricas.")
+        .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status200OK, "application/json")
+        .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
+        .RequireAuthorization();
+
         app.MapPut("/add-service-order-repair", async (
                 ISender handler, 
                 AddServiceOrderRepairCommand command, 

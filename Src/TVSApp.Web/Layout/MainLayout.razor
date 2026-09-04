@@ -1,4 +1,6 @@
 ﻿@inject IBrowserViewportService BrowserViewportService
+@inject NavigationManager NavigationManager
+@inject TVSApp.Web.Services.CustomAuthStateProvider AuthStateProvider
 @using TVSApp.Web.Themes
 @inherits LayoutComponentBase
 <MudThemeProvider Theme="MudThemes.MyThemes"/>
@@ -27,6 +29,8 @@
                     <MudNavLink Href="/geral" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Settings" IconColor="Color.Primary"><p class="font-sans text-titlecolor text-base font-bold">Geral</p></MudNavLink>
                     <MudNavLink Href="/notificacoes" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Notifications" IconColor="Color.Primary"><p class="font-sans text-titlecolor text-base font-bold">Notificações</p></MudNavLink>
                     <MudNavLink Href="/metricas" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.BarChart" IconColor="Color.Primary"><p class="font-sans text-titlecolor text-base font-bold">Métricas</p></MudNavLink>
+                    <MudDivider Class="my-2" />
+                    <MudNavLink OnClick="LogoutAsync" Icon="@Icons.Material.Filled.Logout" IconColor="Color.Primary"><p class="font-sans text-titlecolor text-base font-bold">Sair</p></MudNavLink>
                 </MudNavMenu>
             </div>
         </div>
@@ -62,5 +66,11 @@
     private void ToggleDrawer()
     {
         _drawer = !_drawer;
+    }
+
+    private async Task LogoutAsync()
+    {
+        await AuthStateProvider.LogoutAsync();
+        NavigationManager.NavigateTo("/entrar", forceLoad: true);
     }
 }

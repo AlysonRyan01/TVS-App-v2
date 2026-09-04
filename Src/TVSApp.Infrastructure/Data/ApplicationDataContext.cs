@@ -16,6 +16,7 @@ public class ApplicationDataContext : IdentityDbContext<User>
     public DbSet<Customer> Customers { get; set; } = null!;
     public DbSet<ServiceOrder> ServiceOrders { get; set; } = null!;
     public DbSet<Notification> Notifications { get; set; } = null!;
+    public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

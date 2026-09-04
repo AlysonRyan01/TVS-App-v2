@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Text.Json;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
+using TVS_App.Application.DTOs.Auth;
 using TVS_App.Application.Requests.AuthRequests;
 using TVS_App.Domain.Shared;
 
@@ -13,41 +14,54 @@ namespace TVSApp.Web.Services;
 
 public class CustomAuthStateProvider : AuthenticationStateProvider
 {
+    private const string AccessTokenKey = "jwtToken";
+    private const string RefreshTokenKey = "refreshToken";
+
     private readonly HttpClient _httpClient;
     private readonly ISyncLocalStorageService _localStorage;
+    private readonly TokenRefreshService _tokenRefreshService;
 
-    public CustomAuthStateProvider(IHttpClientFactory httpClientFactory, ISyncLocalStorageService localStorageService)
+    public CustomAuthStateProvider(
+        IHttpClientFactory httpClientFactory,
+        ISyncLocalStorageService localStorageService,
+        TokenRefreshService tokenRefreshService)
     {
         _httpClient = httpClientFactory.CreateClient("api");
         _localStorage = localStorageService;
+        _tokenRefreshService = tokenRefreshService;
 
-        var token = _localStorage.GetItem<string>("jwtToken");
+        var token = _localStorage.GetItem<string>(AccessTokenKey);
         if (!string.IsNullOrEmpty(token) && !IsTokenExpired(token))
         {
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
     }
 
-    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        var token = _localStorage.GetItem<string>("jwtToken");
-        
+        var token = _localStorage.GetItem<string>(AccessTokenKey);
         var anonymous = new ClaimsPrincipal(new ClaimsIdentity());
 
         if (string.IsNullOrEmpty(token) || IsTokenExpired(token))
         {
-            _localStorage.RemoveItem("jwtToken");
-            _httpClient.DefaultRequestHeaders.Authorization = null;
-            return Task.FromResult(new AuthenticationState(anonymous));
+            token = await _tokenRefreshService.TryRefreshAsync();
+
+            if (string.IsNullOrEmpty(token))
+            {
+                ClearSession();
+                return new AuthenticationState(anonymous);
+            }
+
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
-        
+
         var handler = new JwtSecurityTokenHandler();
         var jwtToken = handler.ReadJwtToken(token);
 
         var identity = new ClaimsIdentity(jwtToken.Claims, "jwt");
         var user = new ClaimsPrincipal(identity);
 
-        return Task.FromResult(new AuthenticationState(user));
+        return new AuthenticationState(user);
     }
 
     public async Task<BaseResponse<string>> Login(LoginRequest request)
@@ -58,19 +72,16 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
             if (!response.IsSuccessStatusCode)
             {
-                var errorResponse = await response.Content.ReadFromJsonAsync<BaseResponse<string>>();
+                var errorResponse = await response.Content.ReadFromJsonAsync<BaseResponse<AuthTokensDto>>();
                 var errorMessage = errorResponse?.Message ?? "Falha no login";
                 return new BaseResponse<string>(errorMessage, (int)response.StatusCode, errorMessage);
             }
 
-            var baseResponse = await response.Content.ReadFromJsonAsync<BaseResponse<string>>();
-            if (baseResponse == null || string.IsNullOrWhiteSpace(baseResponse.Data))
-                return new BaseResponse<string>("Token inválido", 500, baseResponse?.Message ?? "Falha no login");
+            var baseResponse = await response.Content.ReadFromJsonAsync<BaseResponse<AuthTokensDto>>();
+            if (baseResponse is not { IsSuccess: true } || baseResponse.Data is null)
+                return new BaseResponse<string>("Token inválido", baseResponse?.Code ?? 500, baseResponse?.Message ?? "Falha no login");
 
-            var jwtToken = baseResponse.Data;
-            
-            _localStorage.SetItem("jwtToken", jwtToken);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+            SaveSession(baseResponse.Data.AccessToken, baseResponse.Data.RefreshToken);
 
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
 
@@ -100,6 +111,40 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         {
             return new BaseResponse<string>("Falha no login", 500, $"Erro durante o login: {ex.Message}");
         }
+    }
+
+    public async Task LogoutAsync()
+    {
+        var refreshToken = _localStorage.GetItem<string>(RefreshTokenKey);
+
+        if (!string.IsNullOrWhiteSpace(refreshToken))
+        {
+            try
+            {
+                await _httpClient.PostAsJsonAsync("/logout", new RefreshTokenRequest(refreshToken));
+            }
+            catch
+            {
+                // best-effort — mesmo se a revogação no servidor falhar, a sessão local é encerrada
+            }
+        }
+
+        ClearSession();
+        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+    }
+
+    private void SaveSession(string accessToken, string refreshToken)
+    {
+        _localStorage.SetItem(AccessTokenKey, accessToken);
+        _localStorage.SetItem(RefreshTokenKey, refreshToken);
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+    }
+
+    private void ClearSession()
+    {
+        _localStorage.RemoveItem(AccessTokenKey);
+        _localStorage.RemoveItem(RefreshTokenKey);
+        _httpClient.DefaultRequestHeaders.Authorization = null;
     }
 
     private static bool IsTokenExpired(string token)

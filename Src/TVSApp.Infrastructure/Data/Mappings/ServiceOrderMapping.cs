@@ -107,6 +107,13 @@ public class ServiceOrderMapping : IEntityTypeConfiguration<ServiceOrder>
                 .HasPrecision(18, 2);
         });
 
+        builder.OwnsOne(x => x.PartPurchaseCost, ppc =>
+        {
+            ppc.Property(x => x.ServiceOrderPartPurchaseCost)
+                .HasColumnName("PartPurchaseCost")
+                .HasPrecision(18, 2);
+        });
+
         builder.Property(x => x.EstimateMessage)
             .HasColumnName("EstimateMessage")
             .IsRequired(false);

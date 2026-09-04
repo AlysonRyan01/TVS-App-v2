@@ -26,6 +26,7 @@ public class MetricsService : IMetricsService
             .ToListAsync();
 
         var deliveredOrders = await _context.ServiceOrders
+            .Include(x => x.Customer)
             .AsNoTracking()
             .Where(x => x.DeliveryDate.HasValue && x.DeliveryDate >= start && x.DeliveryDate < end)
             .ToListAsync();
@@ -44,6 +45,7 @@ public class MetricsService : IMetricsService
             .ToListAsync();
 
         var deliveredOrders = await _context.ServiceOrders
+            .Include(x => x.Customer)
             .AsNoTracking()
             .Where(x => x.DeliveryDate.HasValue && x.DeliveryDate >= start && x.DeliveryDate < end)
             .ToListAsync();
@@ -174,6 +176,26 @@ public class MetricsService : IMetricsService
             salesByEnterpriseValues.Add(g.Count());
         }
 
+        // ── Produtos entregues no período (reparos + vendas) ────────────────────
+        var totalPartsSpend = deliveredOrders.Sum(x => x.PartPurchaseCost.ServiceOrderPartPurchaseCost);
+
+        var deliveredProducts = deliveredOrders
+            .OrderByDescending(x => x.DeliveryDate)
+            .Select(x => new DeliveredProductDto
+            {
+                Id = x.Id,
+                CustomerName = x.Customer.Name.CustomerName,
+                Brand = x.Product.Brand,
+                Model = x.Product.Model,
+                TypeLabel = GetProductLabel(x.Product.Type),
+                StatusLabel = x.Product.Defect == "VENDA" ? "Venda" : "Reparo",
+                EnterpriseLabel = GetEnterpriseLabel(x.Enterprise),
+                DeliveryDate = x.DeliveryDate!.Value,
+                TotalAmount = x.TotalAmount,
+                PartPurchaseCost = x.PartPurchaseCost.ServiceOrderPartPurchaseCost
+            })
+            .ToList();
+
         // ── Gráfico: resultado dos reparos ─────────────────────────────────────
         var repairResultLabels = new List<string>();
         var repairResultValues = new List<double>();
@@ -197,6 +219,8 @@ public class MetricsService : IMetricsService
             TotalSales = sales.Count,
             TotalSalesRevenue = totalSalesRevenue,
             PendingDeliveryRevenue = pendingDeliveryRevenue,
+            TotalPartsSpend = totalPartsSpend,
+            DeliveredProducts = deliveredProducts,
 
             OrdersByStatusLabels = statusLabels,
             OrdersByStatusValues = statusValues,

@@ -23,6 +23,7 @@ public static class BuilderExtension
         builder.Services.AddTransient<AuthorizationMessageHandler>();
         builder.Services.AddTransient<ServiceOrderHandler>();
         builder.Services.AddTransient<DashboardHandler>();
+        builder.Services.AddScoped<TokenRefreshService>();
         builder.Services.AddScoped<CustomAuthStateProvider>();
         builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<CustomAuthStateProvider>());
         builder.Services.AddSingleton<HubConnection>(sp =>
@@ -57,5 +58,13 @@ public static class BuilderExtension
             client.BaseAddress = new Uri(baseAddress);
             client.Timeout = TimeSpan.FromSeconds(60);
         }).AddHttpMessageHandler<AuthorizationMessageHandler>();
+
+        // Client sem AuthorizationMessageHandler, usado só pra renovar o access token —
+        // evita dependência circular (o handler dependeria do serviço que o usa pra criar o client "api").
+        builder.Services.AddHttpClient("api-raw", client =>
+        {
+            client.BaseAddress = new Uri(baseAddress);
+            client.Timeout = TimeSpan.FromSeconds(60);
+        });
     }
 }

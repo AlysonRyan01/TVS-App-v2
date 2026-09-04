@@ -144,6 +144,33 @@
                     </div>
                 </MudPaper>
             </MudItem>
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudPaper Class="pa-4 h-full" Elevation="3">
+                    <div class="flex flex-col gap-1">
+                        <p class="text-xs font-sans text-gray-500 uppercase tracking-wide">Gasto com Peças</p>
+                        <p class="text-3xl font-bold text-[#750303]">@FormatCurrency(_metrics.TotalPartsSpend)</p>
+                        <p class="text-xs text-gray-400">Peças dos produtos entregues no período</p>
+                    </div>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudPaper Class="pa-4 h-full" Elevation="3">
+                    <div class="flex flex-col gap-1">
+                        <p class="text-xs font-sans text-gray-500 uppercase tracking-wide">Valor Total</p>
+                        <p class="text-3xl font-bold text-[#750303]">@FormatCurrency(TotalRevenueCombined)</p>
+                        <p class="text-xs text-gray-400">Receita de reparos + vendas</p>
+                    </div>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4" lg="3">
+                <MudPaper Class="pa-4 h-full" Elevation="3">
+                    <div class="flex flex-col gap-1">
+                        <p class="text-xs font-sans text-gray-500 uppercase tracking-wide">Total Líquido</p>
+                        <p class="text-3xl font-bold text-[#750303]">@FormatCurrency(NetTotal)</p>
+                        <p class="text-xs text-gray-400">Valor total menos gasto com peças</p>
+                    </div>
+                </MudPaper>
+            </MudItem>
         </MudGrid>
 
         <!-- ── Linha 1: Status (Donut) + Resultado reparos (Donut) ───────────── -->
@@ -182,183 +209,73 @@
             </MudItem>
         </MudGrid>
 
-        <!-- ── Linha 2: Reparos por produto (Bar) + Vendas por produto (Bar) ─── -->
+        <!-- ── Linha 2: Produtos Entregues no Período ──────────────────────────── -->
         <MudGrid Spacing="3">
-            <MudItem xs="12" md="6">
-                <MudPaper Class="pa-4" Elevation="3">
-                    <p class="text-base font-bold font-sans text-[#750303] mb-3">Reparos por Tipo de Produto</p>
-                    @if (_metrics.RepairsByProductTypeValues.Any(v => v > 0))
-                    {
-                        <MudChart ChartType="ChartType.Bar"
-                                  ChartSeries="@SingleSeries("Reparos", _metrics.RepairsByProductTypeValues)"
-                                  XAxisLabels="@_metrics.RepairsByProductTypeLabels.ToArray()"
-                                  Width="100%" Height="300px" />
-                    }
-                    else
-                    {
-                        <p class="text-sm text-gray-400 text-center py-10">Sem dados no mês atual</p>
-                    }
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" md="6">
-                <MudPaper Class="pa-4" Elevation="3">
-                    <p class="text-base font-bold font-sans text-[#750303] mb-3">Vendas por Tipo de Produto</p>
-                    @if (_metrics.SalesByProductTypeValues.Any(v => v > 0))
-                    {
-                        <MudChart ChartType="ChartType.Bar"
-                                  ChartSeries="@SingleSeries("Vendas", _metrics.SalesByProductTypeValues)"
-                                  XAxisLabels="@_metrics.SalesByProductTypeLabels.ToArray()"
-                                  Width="100%" Height="300px" />
-                    }
-                    else
-                    {
-                        <p class="text-sm text-gray-400 text-center py-10">Sem dados no mês atual</p>
-                    }
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
-
-        <!-- ── Linha 3: Reparos por empresa (Bar) + Vendas por empresa (Bar) ─── -->
-        <MudGrid Spacing="3">
-            <MudItem xs="12" md="6">
-                <MudPaper Class="pa-4" Elevation="3">
-                    <p class="text-base font-bold font-sans text-[#750303] mb-3">Reparos por Empresa</p>
-                    @if (_metrics.RepairsByEnterpriseValues.Any(v => v > 0))
-                    {
-                        <MudChart ChartType="ChartType.Bar"
-                                  ChartSeries="@SingleSeries("Reparos", _metrics.RepairsByEnterpriseValues)"
-                                  XAxisLabels="@_metrics.RepairsByEnterpriseLabels.ToArray()"
-                                  Width="100%" Height="300px" />
-                    }
-                    else
-                    {
-                        <p class="text-sm text-gray-400 text-center py-10">Sem dados no mês atual</p>
-                    }
-                </MudPaper>
-            </MudItem>
-            <MudItem xs="12" md="6">
-                <MudPaper Class="pa-4" Elevation="3">
-                    <p class="text-base font-bold font-sans text-[#750303] mb-3">Vendas por Empresa</p>
-                    @if (_metrics.SalesByEnterpriseValues.Any(v => v > 0))
-                    {
-                        <MudChart ChartType="ChartType.Bar"
-                                  ChartSeries="@SingleSeries("Vendas", _metrics.SalesByEnterpriseValues)"
-                                  XAxisLabels="@_metrics.SalesByEnterpriseLabels.ToArray()"
-                                  Width="100%" Height="300px" />
-                    }
-                    else
-                    {
-                        <p class="text-sm text-gray-400 text-center py-10">Sem dados no mês atual</p>
-                    }
-                </MudPaper>
-            </MudItem>
-        </MudGrid>
-
-    }
-</div>
-
-<!-- ── Seção: Aparelhos Não Retirados ──────────────────────────────────── -->
-<div class="flex flex-col gap-6 p-4">
-    <div class="flex items-center gap-3">
-        <MudIcon Icon="@Icons.Material.Filled.WarningAmber" Color="Color.Warning" Size="Size.Large" />
-        <div>
-            <p class="text-2xl font-bold font-sans text-[#750303]">Aparelhos Não Retirados</p>
-            <p class="text-sm text-gray-500 font-sans">A partir de janeiro de 2025</p>
-        </div>
-    </div>
-
-    @if (_isAbandonedBusy)
-    {
-        <div class="w-full flex justify-center items-center py-10">
-            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" />
-        </div>
-    }
-    else if (_abandonedOrders is not null)
-    {
-        <MudGrid Spacing="3">
-            <!-- Lista 1: Consertados e não retirados -->
-            <MudItem xs="12" lg="6">
+            <MudItem xs="12">
                 <MudPaper Class="pa-4" Elevation="3">
                     <p class="text-base font-bold font-sans text-[#750303] mb-3">
-                        Consertados — Não Retirados (@_abandonedOrders.RepairedNotPickedUp.Count)
+                        Produtos Entregues no Período (@_metrics.DeliveredProducts.Count)
                     </p>
-                    @if (_abandonedOrders.RepairedNotPickedUp.Any())
+                    @if (_metrics.DeliveredProducts.Any())
                     {
-                        <MudTable Items="@_abandonedOrders.RepairedNotPickedUp" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
+                        <MudTable Items="@_metrics.DeliveredProducts" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
                             <HeaderContent>
                                 <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Ordem</p></MudTh>
-                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Modelo</p></MudTh>
                                 <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Cliente</p></MudTh>
-                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Telefone</p></MudTh>
-                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Consertado em</p></MudTh>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Produto</p></MudTh>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Tipo</p></MudTh>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Status</p></MudTh>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Empresa</p></MudTh>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Entregue em</p></MudTh>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Valor Total</p></MudTh>
+                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Valor da Peça</p></MudTh>
                             </HeaderContent>
                             <RowTemplate>
                                 <MudTd DataLabel="Ordem">
                                     <p class="text-sm font-mono font-bold">#@context.Id</p>
                                 </MudTd>
-                                <MudTd DataLabel="Modelo">
-                                    <p class="text-sm font-sans">@context.Model</p>
-                                </MudTd>
                                 <MudTd DataLabel="Cliente">
                                     <p class="text-sm font-sans font-semibold uppercase">@context.CustomerName</p>
                                 </MudTd>
-                                <MudTd DataLabel="Telefone">
-                                    <p class="text-sm font-sans">@context.Phone</p>
+                                <MudTd DataLabel="Produto">
+                                    <p class="text-sm font-sans">@context.Brand @context.Model</p>
                                 </MudTd>
-                                <MudTd DataLabel="Consertado em">
-                                    <p class="text-sm font-sans">@(context.Date?.ToString("dd/MM/yyyy") ?? "—")</p>
+                                <MudTd DataLabel="Tipo">
+                                    <p class="text-sm font-sans">@context.TypeLabel</p>
+                                </MudTd>
+                                <MudTd DataLabel="Status">
+                                    <MudChip T="string" Size="Size.Small"
+                                             Color="@(context.StatusLabel == "Venda" ? Color.Info : Color.Success)">
+                                        @context.StatusLabel
+                                    </MudChip>
+                                </MudTd>
+                                <MudTd DataLabel="Empresa">
+                                    <p class="text-sm font-sans">@context.EnterpriseLabel</p>
+                                </MudTd>
+                                <MudTd DataLabel="Entregue em">
+                                    <p class="text-sm font-sans">@context.DeliveryDate.ToString("dd/MM/yyyy")</p>
+                                </MudTd>
+                                <MudTd DataLabel="Valor Total">
+                                    <p class="text-sm font-sans">@FormatCurrency(context.TotalAmount)</p>
+                                </MudTd>
+                                <MudTd DataLabel="Valor da Peça">
+                                    <MudNumericField T="decimal" Value="@context.PartPurchaseCost"
+                                                      ValueChanged="@(v => SavePartPurchaseCostAsync(context, v))"
+                                                      Immediate="false"
+                                                      Variant="Variant.Outlined"
+                                                      Adornment="Adornment.Start" AdornmentText="R$"
+                                                      Min="0" Style="min-width:130px" />
                                 </MudTd>
                             </RowTemplate>
                         </MudTable>
                     }
                     else
                     {
-                        <p class="text-sm text-gray-400 text-center py-6">Nenhuma ordem nessa situação.</p>
-                    }
-                </MudPaper>
-            </MudItem>
-
-            <!-- Lista 2: Sem conserto e não retirados -->
-            <MudItem xs="12" lg="6">
-                <MudPaper Class="pa-4" Elevation="3">
-                    <p class="text-base font-bold font-sans text-[#750303] mb-3">
-                        Sem Conserto — Não Retirados (@_abandonedOrders.UnrepairedNotPickedUp.Count)
-                    </p>
-                    @if (_abandonedOrders.UnrepairedNotPickedUp.Any())
-                    {
-                        <MudTable Items="@_abandonedOrders.UnrepairedNotPickedUp" Hover="true" Dense="true" Breakpoint="Breakpoint.Sm">
-                            <HeaderContent>
-                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Ordem</p></MudTh>
-                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Modelo</p></MudTh>
-                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Cliente</p></MudTh>
-                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Telefone</p></MudTh>
-                                <MudTh><p class="text-xs text-[#750303] font-bold uppercase">Orçamento em</p></MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="Ordem">
-                                    <p class="text-sm font-mono font-bold">#@context.Id</p>
-                                </MudTd>
-                                <MudTd DataLabel="Modelo">
-                                    <p class="text-sm font-sans">@context.Model</p>
-                                </MudTd>
-                                <MudTd DataLabel="Cliente">
-                                    <p class="text-sm font-sans font-semibold uppercase">@context.CustomerName</p>
-                                </MudTd>
-                                <MudTd DataLabel="Telefone">
-                                    <p class="text-sm font-sans">@context.Phone</p>
-                                </MudTd>
-                                <MudTd DataLabel="Orçamento em">
-                                    <p class="text-sm font-sans">@(context.Date?.ToString("dd/MM/yyyy") ?? "—")</p>
-                                </MudTd>
-                            </RowTemplate>
-                        </MudTable>
-                    }
-                    else
-                    {
-                        <p class="text-sm text-gray-400 text-center py-6">Nenhuma ordem nessa situação.</p>
+                        <p class="text-sm text-gray-400 text-center py-10">Sem produtos entregues no período</p>
                     }
                 </MudPaper>
             </MudItem>
         </MudGrid>
+
     }
 </div>

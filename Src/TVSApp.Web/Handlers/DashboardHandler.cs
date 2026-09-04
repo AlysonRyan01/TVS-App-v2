@@ -1,5 +1,7 @@
 using System.Net.Http.Json;
 using TVS_App.Application.DTOs.Dashboard;
+using TVS_App.Application.DTOs.ServiceOrder;
+using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 using TVS_App.Domain.Shared;
 
 namespace TVSApp.Web.Handlers;
@@ -51,20 +53,27 @@ public class DashboardHandler
         }
     }
 
-    public async Task<BaseResponse<AbandonedOrdersDto>> GetAbandonedOrdersAsync()
+    public async Task<BaseResponse<ServiceOrderDto?>> UpdatePartPurchaseCostAsync(UpdatePartPurchaseCostCommand command)
     {
         try
         {
-            var response = await _httpClient.GetFromJsonAsync<BaseResponse<AbandonedOrdersDto>>("get-abandoned-orders");
+            var response = await _httpClient.PutAsJsonAsync("update-service-order-part-purchase-cost", command);
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                return new BaseResponse<ServiceOrderDto?>(null, (int)response.StatusCode,
+                    $"Erro na API: {response.StatusCode}. Detalhes: {errorContent}");
+            }
 
-            if (response == null)
-                return new BaseResponse<AbandonedOrdersDto>(null, 500, "Resposta inválida do servidor.");
+            var content = await response.Content.ReadFromJsonAsync<BaseResponse<ServiceOrderDto?>>();
+            if (content == null || !content.IsSuccess)
+                return new BaseResponse<ServiceOrderDto?>(null, 500, content?.Message);
 
-            return response;
+            return content;
         }
         catch (Exception ex)
         {
-            return new BaseResponse<AbandonedOrdersDto>(null, 500, $"Erro ao carregar ordens: {ex.Message}");
+            return new BaseResponse<ServiceOrderDto?>(null, 500, $"Erro ao atualizar valor da peça: {ex.Message}");
         }
     }
 }

@@ -282,6 +282,46 @@ namespace TVS_App.Infrastructure.Migrations
                     b.ToTable("ServiceOrders", (string)null);
                 });
 
+            modelBuilder.Entity("TVS_App.Infrastructure.Models.RefreshToken", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedByIp")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens", (string)null);
+                });
+
             modelBuilder.Entity("TVS_App.Infrastructure.Models.User", b =>
                 {
                     b.Property<string>("Id")
@@ -400,6 +440,42 @@ namespace TVS_App.Infrastructure.Migrations
 
             modelBuilder.Entity("TVS_App.Domain.Entities.Customer", b =>
                 {
+                    b.OwnsOne("TVS_App.Domain.ValueObjects.Customer.Phone", "Phone", b1 =>
+                        {
+                            b1.Property<long>("CustomerId")
+                                .HasColumnType("bigint");
+
+                            b1.Property<string>("CustomerPhone")
+                                .HasMaxLength(20)
+                                .HasColumnType("nvarchar(20)")
+                                .HasColumnName("Phone");
+
+                            b1.HasKey("CustomerId");
+
+                            b1.ToTable("Customers");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CustomerId");
+                        });
+
+                    b.OwnsOne("TVS_App.Domain.ValueObjects.Customer.Phone", "Phone2", b1 =>
+                        {
+                            b1.Property<long>("CustomerId")
+                                .HasColumnType("bigint");
+
+                            b1.Property<string>("CustomerPhone")
+                                .HasMaxLength(20)
+                                .HasColumnType("nvarchar(20)")
+                                .HasColumnName("Phone2");
+
+                            b1.HasKey("CustomerId");
+
+                            b1.ToTable("Customers");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CustomerId");
+                        });
+
                     b.OwnsOne("TVS_App.Domain.ValueObjects.Customer.Address", "Address", b1 =>
                         {
                             b1.Property<long>("CustomerId")
@@ -437,7 +513,7 @@ namespace TVS_App.Infrastructure.Migrations
 
                             b1.HasKey("CustomerId");
 
-                            b1.ToTable("Customers", (string)null);
+                            b1.ToTable("Customers");
 
                             b1.WithOwner()
                                 .HasForeignKey("CustomerId");
@@ -456,7 +532,7 @@ namespace TVS_App.Infrastructure.Migrations
 
                             b1.HasKey("CustomerId");
 
-                            b1.ToTable("Customers", (string)null);
+                            b1.ToTable("Customers");
 
                             b1.WithOwner()
                                 .HasForeignKey("CustomerId");
@@ -475,7 +551,7 @@ namespace TVS_App.Infrastructure.Migrations
 
                             b1.HasKey("CustomerId");
 
-                            b1.ToTable("Customers", (string)null);
+                            b1.ToTable("Customers");
 
                             b1.WithOwner()
                                 .HasForeignKey("CustomerId");
@@ -494,43 +570,7 @@ namespace TVS_App.Infrastructure.Migrations
 
                             b1.HasKey("CustomerId");
 
-                            b1.ToTable("Customers", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("CustomerId");
-                        });
-
-                    b.OwnsOne("TVS_App.Domain.ValueObjects.Customer.Phone", "Phone", b1 =>
-                        {
-                            b1.Property<long>("CustomerId")
-                                .HasColumnType("bigint");
-
-                            b1.Property<string>("CustomerPhone")
-                                .HasMaxLength(20)
-                                .HasColumnType("nvarchar(20)")
-                                .HasColumnName("Phone");
-
-                            b1.HasKey("CustomerId");
-
-                            b1.ToTable("Customers", (string)null);
-
-                            b1.WithOwner()
-                                .HasForeignKey("CustomerId");
-                        });
-
-                    b.OwnsOne("TVS_App.Domain.ValueObjects.Customer.Phone", "Phone2", b1 =>
-                        {
-                            b1.Property<long>("CustomerId")
-                                .HasColumnType("bigint");
-
-                            b1.Property<string>("CustomerPhone")
-                                .HasMaxLength(20)
-                                .HasColumnType("nvarchar(20)")
-                                .HasColumnName("Phone2");
-
-                            b1.HasKey("CustomerId");
-
-                            b1.ToTable("Customers", (string)null);
+                            b1.ToTable("Customers");
 
                             b1.WithOwner()
                                 .HasForeignKey("CustomerId");
@@ -586,7 +626,7 @@ namespace TVS_App.Infrastructure.Migrations
 
                             b1.HasKey("ServiceOrderId");
 
-                            b1.ToTable("ServiceOrders", (string)null);
+                            b1.ToTable("ServiceOrders");
 
                             b1.WithOwner()
                                 .HasForeignKey("ServiceOrderId");
@@ -604,7 +644,7 @@ namespace TVS_App.Infrastructure.Migrations
 
                             b1.HasKey("ServiceOrderId");
 
-                            b1.ToTable("ServiceOrders", (string)null);
+                            b1.ToTable("ServiceOrders");
 
                             b1.WithOwner()
                                 .HasForeignKey("ServiceOrderId");
@@ -622,7 +662,25 @@ namespace TVS_App.Infrastructure.Migrations
 
                             b1.HasKey("ServiceOrderId");
 
-                            b1.ToTable("ServiceOrders", (string)null);
+                            b1.ToTable("ServiceOrders");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ServiceOrderId");
+                        });
+
+                    b.OwnsOne("TVS_App.Domain.ValueObjects.ServiceOrder.PartPurchaseCost", "PartPurchaseCost", b1 =>
+                        {
+                            b1.Property<long>("ServiceOrderId")
+                                .HasColumnType("bigint");
+
+                            b1.Property<decimal>("ServiceOrderPartPurchaseCost")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("PartPurchaseCost");
+
+                            b1.HasKey("ServiceOrderId");
+
+                            b1.ToTable("ServiceOrders");
 
                             b1.WithOwner()
                                 .HasForeignKey("ServiceOrderId");
@@ -673,7 +731,7 @@ namespace TVS_App.Infrastructure.Migrations
 
                             b1.HasKey("ServiceOrderId");
 
-                            b1.ToTable("ServiceOrders", (string)null);
+                            b1.ToTable("ServiceOrders");
 
                             b1.WithOwner()
                                 .HasForeignKey("ServiceOrderId");
@@ -692,7 +750,7 @@ namespace TVS_App.Infrastructure.Migrations
 
                             b1.HasKey("ServiceOrderId");
 
-                            b1.ToTable("ServiceOrders", (string)null);
+                            b1.ToTable("ServiceOrders");
 
                             b1.WithOwner()
                                 .HasForeignKey("ServiceOrderId");
@@ -708,10 +766,22 @@ namespace TVS_App.Infrastructure.Migrations
                     b.Navigation("PartCost")
                         .IsRequired();
 
+                    b.Navigation("PartPurchaseCost")
+                        .IsRequired();
+
                     b.Navigation("Product")
                         .IsRequired();
 
                     b.Navigation("Solution");
+                });
+
+            modelBuilder.Entity("TVS_App.Infrastructure.Models.RefreshToken", b =>
+                {
+                    b.HasOne("TVS_App.Infrastructure.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("TVS_App.Domain.Entities.Customer", b =>

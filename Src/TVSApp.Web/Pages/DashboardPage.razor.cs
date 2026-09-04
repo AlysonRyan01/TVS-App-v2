@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 using TVS_App.Application.DTOs.Dashboard;
+using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 using TVSApp.Web.Handlers;
 
 namespace TVSApp.Web.Pages;
@@ -12,9 +13,6 @@ public partial class DashboardPage : ComponentBase
 
     private DashboardMetricsDto? _metrics;
     private bool _isBusy;
-
-    private AbandonedOrdersDto? _abandonedOrders;
-    private bool _isAbandonedBusy;
 
     private int _selectedMonth = DateTime.Now.Month;
     private int _selectedYear = DateTime.Now.Year;
@@ -34,6 +32,9 @@ public partial class DashboardPage : ComponentBase
     private static List<int> Years =>
         Enumerable.Range(DateTime.Now.Year - 3, 4).Reverse().ToList();
 
+    private decimal TotalRevenueCombined => _metrics!.TotalRevenue + _metrics.TotalSalesRevenue;
+    private decimal NetTotal => TotalRevenueCombined - _metrics!.TotalPartsSpend;
+
     private string PeriodLabel => _isRangeMode
         ? $"{_rangeStartDate!.Value:dd/MM/yyyy} até {_rangeEndDate!.Value:dd/MM/yyyy}"
         : $"{Months.First(m => m.Value == _selectedMonth).Label}/{_selectedYear}";
@@ -41,7 +42,6 @@ public partial class DashboardPage : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         await LoadAsync();
-        await LoadAbandonedAsync();
     }
 
     private async Task LoadAsync()
@@ -104,24 +104,32 @@ public partial class DashboardPage : ComponentBase
         StateHasChanged();
     }
 
-    private async Task LoadAbandonedAsync()
+    private async Task SavePartPurchaseCostAsync(DeliveredProductDto product, decimal newValue)
     {
-        _isAbandonedBusy = true;
-        StateHasChanged();
+        if (newValue < 0)
+        {
+            Snackbar.Add("O valor da peça não pode ser negativo.", Severity.Warning);
+            return;
+        }
 
-        var result = await Handler.GetAbandonedOrdersAsync();
+        if (newValue == product.PartPurchaseCost)
+            return;
 
-        if (result.IsSuccess && result.Data != null)
-            _abandonedOrders = result.Data;
+        var result = await Handler.UpdatePartPurchaseCostAsync(new UpdatePartPurchaseCostCommand(product.Id, newValue));
+
+        if (!result.IsSuccess)
+        {
+            Snackbar.Add(result.Message ?? "Erro ao atualizar o valor da peça.", Severity.Error);
+            return;
+        }
+
+        Snackbar.Add("Valor da peça atualizado com sucesso!", Severity.Success);
+
+        if (_isRangeMode)
+            await LoadByRangeAsync();
         else
-            Snackbar.Add(result.Message ?? "Erro ao carregar ordens abandonadas.", Severity.Error);
-
-        _isAbandonedBusy = false;
-        StateHasChanged();
+            await LoadAsync();
     }
-
-    private static List<ChartSeries> SingleSeries(string name, List<double> values) =>
-        [new ChartSeries { Name = name, Data = values.ToArray() }];
 
     private static string FormatCurrency(decimal value) =>
         value.ToString("C2", new System.Globalization.CultureInfo("pt-BR"));

@@ -56,6 +56,7 @@ public static class ServiceOrderMapper
             Guarantee = string.IsNullOrWhiteSpace(serviceOrder.Guarantee?.ServiceOrderGuarantee) ? null : serviceOrder.Guarantee.ServiceOrderGuarantee,
             PartCost = serviceOrder.PartCost.ServiceOrderPartCost,
             LaborCost = serviceOrder.LaborCost.ServiceOrderLaborCost,
+            PartPurchaseCost = serviceOrder.PartPurchaseCost.ServiceOrderPartPurchaseCost,
             ServiceOrderStatus = serviceOrder.ServiceOrderStatus,
             RepairStatus = serviceOrder.RepairStatus,
             RepairResult = serviceOrder.RepairResult

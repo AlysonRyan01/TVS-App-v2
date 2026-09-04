@@ -35,6 +35,7 @@ public class ServiceOrder : Entity
     public Guarantee? Guarantee { get; private set; }
     public PartCost PartCost { get; private set; } = new(0m);
     public LaborCost LaborCost { get; private set; } = new(0m);
+    public PartPurchaseCost PartPurchaseCost { get; private set; } = new(0m);
     public decimal TotalAmount => PartCost.ServiceOrderPartCost + LaborCost.ServiceOrderLaborCost;
     public EServiceOrderStatus ServiceOrderStatus { get; private set; }
     public ERepairStatus RepairStatus { get; private set; }
@@ -210,6 +211,9 @@ public class ServiceOrder : Entity
     
     public void EditPartCost(PartCost partCost)
         => PartCost = partCost;
+
+    public void EditPartPurchaseCost(PartPurchaseCost partPurchaseCost)
+        => PartPurchaseCost = partPurchaseCost;
 
     public void EditLaborCost(LaborCost laborCost)
         => LaborCost = laborCost;
