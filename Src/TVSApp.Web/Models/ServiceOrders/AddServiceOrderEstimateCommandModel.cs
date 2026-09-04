@@ -9,6 +9,7 @@ public class AddServiceOrderEstimateCommandModel
     public string Solution { get; set; } = string.Empty;
     public decimal PartCost { get; set; }
     public decimal LaborCost { get; set; }
+    public decimal PartPurchaseCost { get; set; }
     public ERepairResult RepairResult { get; set; }
     public string EstimateMessage { get; set; } = string.Empty;
 }

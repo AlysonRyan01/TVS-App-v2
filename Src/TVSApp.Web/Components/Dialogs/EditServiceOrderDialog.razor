@@ -216,6 +216,9 @@
                                     <MudNumericField T="decimal" Label="Valor da mão de obra" @bind-Value="_addEstimateCommand.LaborCost" Format="N2" Variant="Variant.Outlined" />
                                 </MudItem>
                                 <MudItem xs="12" md="6">
+                                    <MudNumericField T="decimal" Label="Valor pago na peça" @bind-Value="_addEstimateCommand.PartPurchaseCost" Format="N2" Variant="Variant.Outlined" />
+                                </MudItem>
+                                <MudItem xs="12" md="6">
                                     <MudTextField Label="Garantia" @bind-Value="_addEstimateCommand.Guarantee" For="@(() => _addEstimateCommand.Guarantee)" Variant="Variant.Outlined" />
                                 </MudItem>
                                 <MudItem xs="12" md="6">
@@ -482,7 +485,8 @@
                 _addEstimateCommand.PartCost,
                 _addEstimateCommand.LaborCost,
                 _addEstimateCommand.RepairResult,
-                _addEstimateCommand.EstimateMessage);
+                _addEstimateCommand.EstimateMessage,
+                _addEstimateCommand.PartPurchaseCost);
 
             var result = await ServiceOrderHandler.AddServiceOrderEstimate(command);
             if (result.IsSuccess)

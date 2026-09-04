@@ -7,6 +7,7 @@ using TVS_App.Application.Requests.WhatsAppQueueRequests;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Domain.Shared;
+using TVS_App.Domain.ValueObjects.ServiceOrder;
 
 namespace TVS_App.Application.Handlers.ServiceOrders;
 
@@ -40,12 +41,14 @@ public class AddServiceOrderEstimateHandler : IRequestHandler<AddServiceOrderEst
         var serviceOrder = result.Data;
 
         serviceOrder.AddEstimate(
-            normalized.Solution, 
-            normalized.Guarantee, 
-            normalized.PartCost, 
-            normalized.LaborCost, 
+            normalized.Solution,
+            normalized.Guarantee,
+            normalized.PartCost,
+            normalized.LaborCost,
             normalized.RepairResult,
             normalized.EstimateMessage);
+
+        serviceOrder.EditPartPurchaseCost(new PartPurchaseCost(normalized.PartPurchaseCost));
 
         await _serviceOrderCommandRepository.UpdateAsync(serviceOrder);
 

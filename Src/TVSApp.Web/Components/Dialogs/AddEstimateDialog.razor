@@ -108,6 +108,11 @@
                                 <MudTextField Label="Garantia" @bind-Value="Model.Guarantee" For="@(() => Model.Guarantee)" Variant="Variant.Outlined" />
                             </MudItem>
                             <MudItem xs="12" md="6">
+                                <MudNumericField T="decimal" Label="Valor pago na peça" @bind-Value="Model.PartPurchaseCost"
+                                                  For="@(() => Model.PartPurchaseCost)" Variant="Variant.Outlined"
+                                                  Adornment="Adornment.Start" AdornmentText="R$" Min="0" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
                                 <MudSelect Variant="Variant.Outlined" T="ERepairResult" Label="Situação" @bind-Value="Model.RepairResult" Color="Color.Primary">
                                     @foreach (var value in Enum.GetValues(typeof(ERepairResult)).Cast<ERepairResult>())
                                     {
@@ -153,6 +158,7 @@
     protected override Task OnInitializedAsync()
     {
         Model.RepairResult = ERepairResult.Repair;
+        Model.PartPurchaseCost = ServiceOrder.PartPurchaseCost;
         return Task.CompletedTask;
     }
 
@@ -177,7 +183,8 @@
                 Model.PartCost,
                 Model.LaborCost,
                 Model.RepairResult,
-                Model.EstimateMessage);
+                Model.EstimateMessage,
+                Model.PartPurchaseCost);
 
             var result = await ServiceOrderHandler.AddServiceOrderEstimate(request);
 

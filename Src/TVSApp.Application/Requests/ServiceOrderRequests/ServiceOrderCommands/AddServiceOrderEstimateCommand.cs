@@ -13,7 +13,8 @@ public record AddServiceOrderEstimateCommand(
     decimal PartCost,
     decimal LaborCost,
     ERepairResult RepairResult,
-    string EstimateMessage
+    string EstimateMessage,
+    decimal PartPurchaseCost = 0
 ) : IRequest<BaseResponse<ServiceOrderDto?>>
 {
     public AddServiceOrderEstimateCommand() : this(
@@ -23,7 +24,8 @@ public record AddServiceOrderEstimateCommand(
         0,
         0,
         default,
-        string.Empty
+        string.Empty,
+        0
     ) { }
 
     public AddServiceOrderEstimateCommand Normalize()
@@ -48,6 +50,9 @@ public record AddServiceOrderEstimateCommand(
 
         if (LaborCost < 0)
             throw new CommandException<AddServiceOrderEstimateCommand>("O valor da mão de obra da ordem de serviço não pode ser menor que 0");
+
+        if (PartPurchaseCost < 0)
+            throw new CommandException<AddServiceOrderEstimateCommand>("O valor de compra da peça não pode ser menor que 0");
 
         if (!Enum.IsDefined(typeof(ERepairResult), RepairResult))
             throw new CommandException<AddServiceOrderEstimateCommand>("O resultado do orçamento da ordem de serviço é inválido");
