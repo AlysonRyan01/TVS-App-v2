@@ -101,6 +101,8 @@ public class MetricsService : IMetricsService
 
     private static DashboardMetricsDto BuildMetrics(List<TVS_App.Domain.Entities.ServiceOrder> orders, List<TVS_App.Domain.Entities.ServiceOrder> deliveredOrders)
     {
+        deliveredOrders = deliveredOrders.Where(x => x.RepairStatus == ERepairStatus.Approved).ToList();
+
         var repairs = orders.Where(x => x.Product.Defect != "VENDA").ToList();
         var sales = orders.Where(x => x.Product.Defect == "VENDA").ToList();
         var deliveredRepairs = deliveredOrders.Where(x => x.Product.Defect != "VENDA").ToList();
