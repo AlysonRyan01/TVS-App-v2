@@ -1,0 +1,48 @@
+import { Component, HostListener, inject, input, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../../core/auth/auth.service';
+
+interface NavItem {
+  label: string;
+  icon: string;
+  // Sem rota, o item aparece desabilitado: a tela ainda não existe neste app.
+  route?: string;
+}
+
+@Component({
+  selector: 'app-base-layout',
+  styleUrl: 'base-layout.component.scss',
+  templateUrl: 'base-layout.component.html',
+  imports: [RouterLink, RouterLinkActive],
+})
+export class BaseLayoutComponent {
+  private _auth = inject(AuthService);
+  private _router = inject(Router);
+
+  title = input.required<string>();
+  menuOpen = signal(false);
+
+  navItems: NavItem[] = [
+    { label: 'Gerenciar', icon: 'dashboard', route: '/' },
+    { label: 'Adicionar OS', icon: 'add' },
+    { label: 'Vender', icon: 'sell' },
+    { label: 'Buscar OS', icon: 'search' },
+    { label: 'Geral', icon: 'settings' },
+    { label: 'Notificações', icon: 'notifications' },
+    { label: 'Métricas', icon: 'bar_chart' },
+  ];
+
+  @HostListener('document:keydown.escape')
+  closeMenu() {
+    this.menuOpen.set(false);
+  }
+
+  toggleMenu() {
+    this.menuOpen.update((open) => !open);
+  }
+
+  logout() {
+    this._auth.logout();
+    this._router.navigate(['/login']);
+  }
+}

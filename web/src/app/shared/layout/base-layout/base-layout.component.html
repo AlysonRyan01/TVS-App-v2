@@ -1,0 +1,47 @@
+<div class="layout">
+  <header class="topbar">
+    <img class="topbar-logo" src="tvs-logo-branco.png" alt="TVS Eletrônica" width="375" height="96">
+    <button class="menu-toggle" type="button" aria-controls="sidebar"
+            [attr.aria-expanded]="menuOpen()"
+            [attr.aria-label]="menuOpen() ? 'Fechar menu' : 'Abrir menu'"
+            (click)="toggleMenu()">
+      <span class="material-symbols-outlined" aria-hidden="true">{{ menuOpen() ? 'close' : 'menu' }}</span>
+    </button>
+  </header>
+
+  @if (menuOpen()) {
+    <div class="scrim" (click)="closeMenu()"></div>
+  }
+
+  <aside id="sidebar" class="sidebar" [class.open]="menuOpen()">
+    <img class="sidebar-logo" src="tvs-logo-branco.png" alt="TVS Eletrônica" width="375" height="96">
+
+    <nav class="nav" aria-label="Principal">
+      @for (item of navItems; track item.label) {
+        @if (item.route) {
+          <a class="nav-item" [routerLink]="item.route" routerLinkActive="active"
+             ariaCurrentWhenActive="page" [routerLinkActiveOptions]="{ exact: true }"
+             (click)="closeMenu()">
+            <span class="material-symbols-outlined" aria-hidden="true">{{ item.icon }}</span>
+            {{ item.label }}
+          </a>
+        } @else {
+          <span class="nav-item disabled" aria-disabled="true">
+            <span class="material-symbols-outlined" aria-hidden="true">{{ item.icon }}</span>
+            {{ item.label }}
+          </span>
+        }
+      }
+    </nav>
+
+    <button class="nav-item logout" type="button" (click)="logout()">
+      <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+      Sair
+    </button>
+  </aside>
+
+  <main class="content">
+    <h1>{{ title() }}</h1>
+    <ng-content />
+  </main>
+</div>

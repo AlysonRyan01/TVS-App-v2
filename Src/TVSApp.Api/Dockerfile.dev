@@ -8,4 +8,4 @@ RUN dotnet restore
 
 EXPOSE 80
 
-ENTRYPOINT ["dotnet", "watch", "run", "--urls", "http://0.0.0.0:80"]
+ENTRYPOINT ["dotnet", "run", "--urls", "http://0.0.0.0:80"]
