@@ -5,7 +5,6 @@ import { AuthService } from '../../../core/auth/auth.service';
 interface NavItem {
   label: string;
   icon: string;
-  // Sem rota, o item aparece desabilitado: a tela ainda não existe neste app.
   route?: string;
 }
 
