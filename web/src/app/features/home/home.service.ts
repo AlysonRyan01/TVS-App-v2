@@ -5,11 +5,11 @@ import { WaitingPartServiceOrder } from "./models/waiting-part-service-orders.in
 import { ApprovedServiceOrder } from "./models/approved-service-orders.interface";
 import { RefusedServiceOrder } from "./models/refused-service-orders.interface";
 import { ReadyServiceOrder } from "./models/ready-service-orders.interface";
-import { PaginationParams } from "../../shared/models/PaginationParams.interface";
+import { PaginationParams } from "../../shared/models/pagination-params.interface";
 import { Observable } from "rxjs";
-import { BaseResponse } from "../../shared/models/BaseResponse.interface";
+import { BaseResponse } from "../../shared/models/base-response.interface";
 import { environment } from "../../../environments/environment";
-import { PaginatedResult } from "../../shared/models/PaginatedResult.interface";
+import { PaginatedResult } from "../../shared/models/paginated-result.interface";
 import { WaitingResponseServiceOrder } from "./models/waiting-response-service-orders.interface";
 
 @Injectable({

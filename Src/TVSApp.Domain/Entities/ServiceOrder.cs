@@ -45,15 +45,14 @@ public class ServiceOrder : Entity
     public void AddEstimate(
         string solution, 
         string? guarantee, 
-        decimal partCost, 
-        decimal laborCost, 
+        decimal totalCost, 
         ERepairResult repairResult, 
         string estimateMessage)
     {
         Solution = new Solution(solution);
         Guarantee = new Guarantee(guarantee ?? "");
-        PartCost = new PartCost(partCost);
-        LaborCost = new LaborCost(laborCost);
+        PartCost = new PartCost(0);
+        LaborCost = new LaborCost(totalCost);
         ServiceOrderStatus = EServiceOrderStatus.Evaluated;
         RepairStatus = ERepairStatus.Waiting;
         RepairResult = repairResult;

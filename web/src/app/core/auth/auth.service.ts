@@ -1,6 +1,6 @@
 import { computed, inject, Service, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BaseResponse } from '../../shared/models/BaseResponse.interface';
+import { BaseResponse } from '../../shared/models/base-response.interface';
 import { AuthTokens } from '../models/AuthTokens.interface';
 import { environment } from '../../../environments/environment';
 import { catchError, map, Observable, tap, throwError } from 'rxjs';

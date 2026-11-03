@@ -10,8 +10,7 @@ public record AddServiceOrderEstimateCommand(
     long ServiceOrderId,
     string Guarantee,
     string Solution,
-    decimal PartCost,
-    decimal LaborCost,
+    decimal TotalCost,
     ERepairResult RepairResult,
     string EstimateMessage,
     decimal PartPurchaseCost = 0
@@ -21,7 +20,6 @@ public record AddServiceOrderEstimateCommand(
         0,
         string.Empty,
         string.Empty,
-        0,
         0,
         default,
         string.Empty,
@@ -45,11 +43,8 @@ public record AddServiceOrderEstimateCommand(
         if (string.IsNullOrWhiteSpace(EstimateMessage))
             throw new CommandException<AddServiceOrderEstimateCommand>("A mensagem de orçamento não pode estar vazia");
 
-        if (PartCost < 0)
-            throw new CommandException<AddServiceOrderEstimateCommand>("O valor da peça da ordem de serviço não pode ser menor que 0");
-
-        if (LaborCost < 0)
-            throw new CommandException<AddServiceOrderEstimateCommand>("O valor da mão de obra da ordem de serviço não pode ser menor que 0");
+        if (TotalCost < 0)
+            throw new CommandException<AddServiceOrderEstimateCommand>("O valor da ordem de serviço não pode ser menor que 0");
 
         if (PartPurchaseCost < 0)
             throw new CommandException<AddServiceOrderEstimateCommand>("O valor de compra da peça não pode ser menor que 0");

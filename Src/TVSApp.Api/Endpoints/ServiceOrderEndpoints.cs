@@ -98,16 +98,8 @@ public static class ServiceOrderEndpoints
 
                 var getOrderResult = await handler.Send(command);
 
-                return Results.Ok(getOrderResult);
-            })
-        .WithTags("ServiceOrder")
-        .WithName("GetServiceOrderById")
-        .WithSummary("Busca uma ordem de serviço pelo ID.")
-        .WithDescription("Recebe o ID da ordem de serviço via rota, executa a validação e busca os dados no banco. "
-                         + "Retorna a ordem de serviço encontrada ou uma mensagem de erro.")
-        .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
+                return getOrderResult.ToResult();
+            }).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapGet("/get-service-orders-by-customer-name", async (
                 ISender handler, 
@@ -361,19 +353,12 @@ public static class ServiceOrderEndpoints
 
             var addServiceOrderEstimateResult = await handler.Send(normalizedCommand);
             if (!addServiceOrderEstimateResult.IsSuccess)
-                return Results.Ok(addServiceOrderEstimateResult);
+                return addServiceOrderEstimateResult.ToResult();
 
             await hubContext.Clients.All.SendAsync("Atualizar", addServiceOrderEstimateResult.Message);
 
-            return Results.Ok(addServiceOrderEstimateResult);
-        })
-        .WithTags("ServiceOrder")
-        .WithName("AddServiceOrderEstimate")
-        .WithSummary("Adiciona um orçamento a uma ordem de serviço.")
-        .WithDescription("Recebe os dados do orçamento para uma ordem de serviço específica, salva a informação e notifica os clientes conectados via SignalR.")
-        .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
+            return addServiceOrderEstimateResult.ToResult();
+        }).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPut("/add-service-order-approve-estimate", async (
                 ISender handler, 

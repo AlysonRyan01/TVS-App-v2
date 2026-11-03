@@ -43,8 +43,7 @@ public class AddServiceOrderEstimateHandler : IRequestHandler<AddServiceOrderEst
         serviceOrder.AddEstimate(
             normalized.Solution,
             normalized.Guarantee,
-            normalized.PartCost,
-            normalized.LaborCost,
+            normalized.TotalCost,
             normalized.RepairResult,
             normalized.EstimateMessage);
 
