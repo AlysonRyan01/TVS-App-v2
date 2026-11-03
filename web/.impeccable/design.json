@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-02T00:00:00Z",
+  "title": "Design System: TVS App",
+  "extensions": {
+    "colorMeta": {
+      "oficina-red": { "role": "primary", "displayName": "Vermelho Oficina", "canonical": "#750303", "tonalRamp": ["#2b0101", "#4a0202", "#5e0202", "#750303", "#9a2a26", "#c2645e", "#e6aca6", "#fbe3df"] },
+      "oficina-red-deep": { "role": "primary", "displayName": "Vermelho Oficina Profundo", "canonical": "#5e0202", "tonalRamp": ["#220101", "#3a0101", "#5e0202", "#7a1a18", "#9e4440", "#c47e79", "#e5bcb8", "#f9e6e3"] },
+      "oficina-red-bright": { "role": "primary", "displayName": "Vermelho Vivo", "canonical": "#be0405", "tonalRamp": ["#3a0101", "#640202", "#8f0304", "#be0405", "#dc3b36", "#ef7a72", "#f9b7b0", "#fde6e3"] },
+      "signal-amber": { "role": "tertiary", "displayName": "Âmbar Sinal", "canonical": "#ffd166", "tonalRamp": ["#3d2a00", "#664700", "#8f6400", "#bd8700", "#e6a91f", "#ffd166", "#ffe4a3", "#fff4d9"] },
+      "pink-paper": { "role": "neutral", "displayName": "Papel Rosado", "canonical": "#f6efed" },
+      "field-blush": { "role": "neutral", "displayName": "Campo Rubor", "canonical": "#fff7f5" },
+      "burnt-ink": { "role": "neutral", "displayName": "Tinta Queimada", "canonical": "#2b0a0a", "tonalRamp": ["#2b0a0a", "#462120", "#5f3a38", "#6b4a47", "#8c6d6a", "#b39693", "#d9c4c1", "#f6efed"] },
+      "muted-ink": { "role": "neutral", "displayName": "Tinta Apagada", "canonical": "#6b4a47" },
+      "on-red": { "role": "neutral", "displayName": "Texto Sobre Vermelho", "canonical": "#ffe9e5" },
+      "on-red-muted": { "role": "neutral", "displayName": "Texto Sobre Vermelho Apagado", "canonical": "#e9b9b3" },
+      "white": { "role": "neutral", "displayName": "Branco", "canonical": "#ffffff" }
+    },
+    "typographyMeta": {
+      "headline": { "displayName": "Headline", "purpose": "Título da página (h1) em Vermelho Oficina, um por tela; desktop." },
+      "headline-mobile": { "displayName": "Headline (celular)", "purpose": "Título da página abaixo de 56rem." },
+      "title": { "displayName": "Title", "purpose": "Títulos de formulário e seção." },
+      "body": { "displayName": "Body", "purpose": "Texto corrido e valor de campos; 1rem evita o zoom do iOS." },
+      "label": { "displayName": "Label", "purpose": "Rótulos de campo e itens de navegação." },
+      "caption": { "displayName": "Caption", "purpose": "Mensagens de erro e texto auxiliar." }
+    },
+    "shadows": [],
+    "motion": [],
+    "breakpoints": [
+      { "name": "desktop", "value": "56rem" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button (sobre vermelho)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação principal sobre a moldura vermelha, como Entrar no login.",
+      "html": "<div class=\"ds-red-surface\"><button class=\"ds-btn-primary\" type=\"button\">Entrar</button> <button class=\"ds-btn-primary\" type=\"button\" disabled>Entrar</button></div>",
+      "css": ".ds-red-surface { display: flex; gap: 12px; padding: 24px; background: #5e0202; } .ds-btn-primary { min-height: 48px; padding: 0 24px; border: 0; border-radius: 4px; background: #ffffff; color: #750303; font: 600 1rem/1 Roboto, Arial, sans-serif; cursor: pointer; } .ds-btn-primary:hover:not(:disabled) { background: #ffdcd6; } .ds-btn-primary:active:not(:disabled) { background: #ffc4ba; } .ds-btn-primary:focus-visible { outline: 3px solid #ffd166; outline-offset: 2px; } .ds-btn-primary:disabled { background: #7f2a2a; color: #e9b9b3; cursor: not-allowed; }"
+    },
+    {
+      "name": "Icon Button (menu)",
+      "kind": "button",
+      "description": "Botão de abrir/fechar menu no cabeçalho vermelho do celular.",
+      "html": "<div class=\"ds-topbar\"><button class=\"ds-icon-btn\" type=\"button\" aria-label=\"Abrir menu\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z\"/></svg></button></div>",
+      "css": ".ds-topbar { display: flex; justify-content: flex-end; align-items: center; min-height: 3.5rem; padding: 0 8px; background: #750303; } .ds-icon-btn { display: grid; place-items: center; width: 48px; height: 48px; border: 0; border-radius: 4px; background: none; color: #ffffff; cursor: pointer; } .ds-icon-btn:hover { background: #5e0202; } .ds-icon-btn:focus-visible { outline: 3px solid #ffd166; outline-offset: -3px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-on-red",
+      "description": "Campo de texto com rótulo e erro em âmbar, sobre fundo vermelho.",
+      "html": "<div class=\"ds-field-wrap\"><label class=\"ds-label\" for=\"ds-email\">E-mail</label><input class=\"ds-input\" id=\"ds-email\" type=\"email\" value=\"atendimento@tvs\"><label class=\"ds-label\" for=\"ds-pass\">Senha</label><input class=\"ds-input ds-input-invalid\" id=\"ds-pass\" type=\"password\" aria-invalid=\"true\" aria-describedby=\"ds-pass-err\"><small class=\"ds-error\" id=\"ds-pass-err\">A senha precisa ter ao menos 6 caracteres</small></div>",
+      "css": ".ds-field-wrap { display: flex; flex-direction: column; max-width: 24rem; padding: 24px; background: #5e0202; color: #ffe9e5; } .ds-label { margin-bottom: 6px; font: 500 0.9375rem/1.4 Roboto, Arial, sans-serif; } .ds-input { box-sizing: border-box; width: 100%; min-height: 48px; margin-bottom: 20px; padding: 0 14px; border: 2px solid transparent; border-radius: 4px; background: #fff7f5; color: #2b0a0a; font: 400 1rem/1.4 Roboto, Arial, sans-serif; } .ds-input:focus-visible { outline: 3px solid #ffd166; outline-offset: 2px; } .ds-input-invalid { margin-bottom: 0; border-color: #ffd166; } .ds-error { margin: 6px 0 20px; color: #ffd166; font: 400 0.875rem/1.4 Roboto, Arial, sans-serif; }"
+    },
+    {
+      "name": "Sidebar Navigation",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Barra lateral vermelha com itens ativo, hover e desabilitado.",
+      "html": "<nav class=\"ds-sidebar\" aria-label=\"Principal\"><a class=\"ds-nav-item ds-nav-active\" href=\"#\" aria-current=\"page\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z\"/></svg>Gerenciar</a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z\"/></svg>Adicionar OS</a><span class=\"ds-nav-item ds-nav-disabled\" aria-disabled=\"true\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z\"/></svg>Buscar OS</span></nav>",
+      "css": ".ds-sidebar { display: flex; flex-direction: column; gap: 4px; width: 16rem; padding: 24px 12px; background: #750303; } .ds-nav-item { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 12px; border-radius: 4px; color: #ffe9e5; font: 500 0.9375rem/1.2 Roboto, Arial, sans-serif; text-decoration: none; } a.ds-nav-item:hover { background: #5e0202; color: #ffffff; } a.ds-nav-item:focus-visible { outline: 3px solid #ffd166; outline-offset: -3px; } .ds-nav-active, .ds-nav-active:hover { background: #ffffff !important; color: #750303 !important; } .ds-nav-disabled { color: #e9b9b3; font-weight: 400; cursor: not-allowed; }"
+    },
+    {
+      "name": "Page Header",
+      "kind": "custom",
+      "description": "Título da página em Archivo expandido sobre o papel claro.",
+      "html": "<div class=\"ds-content\"><h1 class=\"ds-h1\">Gerenciar</h1><p class=\"ds-body\">Ordens de serviço por etapa.</p></div>",
+      "css": ".ds-content { padding: 40px; background: #f6efed; color: #2b0a0a; } .ds-h1 { margin: 0 0 24px; color: #750303; font-family: Archivo, Arial, sans-serif; font-size: 2.25rem; font-weight: 600; font-stretch: 112%; line-height: 1.15; } .ds-body { margin: 0; color: #6b4a47; font: 400 1rem/1.4 Roboto, Arial, sans-serif; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A Bancada da Loja",
+    "overview": "O TVS App é uma ferramenta de oficina. Ele é usado entre um atendimento e outro, no balcão ou na bancada, por gente com as mãos ocupadas. O visual segue essa realidade: firme, direto, sem enfeite. O vermelho da TVS Eletrônica é a marca na parede (barra lateral, cabeçalho no celular, painel de login); a área de trabalho é um papel claro e calmo, onde tabelas e status falam mais alto que a decoração.\n\nA densidade é de ferramenta, não de vitrine: alvos de toque generosos (44–48px), cantos quase retos, nenhuma sombra decorativa e um foco âmbar impossível de perder. A expressividade fica concentrada em poucos detalhes precisos: o Archivo levemente expandido nos títulos e o contraste entre a moldura vermelha e o conteúdo claro.\n\nOs vermelhos vêm do sistema anterior (Blazor/MudBlazor) e são compromisso de identidade, não escolha provisória.",
+    "keyCharacteristics": [
+      "Moldura vermelho-escura fixa; conteúdo sobre papel rosado claro.",
+      "Cantos de 4px em tudo que é interativo.",
+      "Plano: profundidade só por cor e sobreposição (scrim), nunca por sombra.",
+      "Foco âmbar de 3px como único sinal de foco, legível tanto sobre vermelho quanto sobre claro.",
+      "Títulos em Archivo expandido; todo o resto em Roboto."
+    ],
+    "rules": [
+      { "name": "A Regra da Moldura Vermelha", "body": "O vermelho emoldura; ele não preenche a área de trabalho. Dentro do conteúdo, vermelho aparece só em títulos e em ações, nunca como fundo de bloco.", "section": "colors" },
+      { "name": "A Regra do Âmbar Só Para Sinal", "body": "O âmbar marca foco e erro. Usá-lo como enfeite tira dele o poder de chamar atenção.", "section": "colors" },
+      { "name": "A Regra do Archivo Só no Topo", "body": "Archivo é só para títulos. Tabelas, botões, campos e menus usam Roboto.", "section": "typography" },
+      { "name": "A Regra do Plano Por Padrão", "body": "Nada de box-shadow decorativo. Se um elemento precisa se destacar, ele muda de cor, não flutua. As sombras que o Angular Material aplica por padrão devem ser zeradas ao re-tematizar.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do usar Vermelho Oficina para a moldura (barra lateral, cabeçalho no celular) e para o h1 de cada página.",
+      "Do dar a todo elemento interativo um foco visível em Âmbar Sinal de 3px.",
+      "Do manter alvos de toque com pelo menos 44px de altura (48px em botões e campos).",
+      "Do manter cantos de 4px em tudo que é interativo.",
+      "Do re-tematizar componentes do Angular Material para a família vermelha antes de usá-los em tela nova."
+    ],
+    "donts": [
+      "Don't usar o azul padrão do Angular Material (azure/blue) como cor do sistema.",
+      "Don't adicionar sombras para criar hierarquia; usar tom e contraste.",
+      "Don't usar vermelho como fundo de blocos dentro da área de conteúdo.",
+      "Don't usar Archivo em tabelas, campos ou botões.",
+      "Don't usar outro vermelho para erro sobre a moldura vermelha; erro sobre vermelho é âmbar."
+    ]
+  }
+}

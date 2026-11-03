@@ -1,13 +1,13 @@
 using MediatR;
-using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Exceptions;
 using TVS_App.Application.Requests.CustomerRequests.CustomersQueries;
+using TVS_App.Domain.Repositories;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries;
 
 public record GetRejectedEstimateServiceOrdersQuery(int PageNumber, int PageSize) 
-    : IRequest<BaseResponse<PaginatedResult<ServiceOrderDto>>>
+    : IRequest<BaseResponse<PaginatedResult<RefusedServiceOrder>>>
 {
     public void Validate()
     {

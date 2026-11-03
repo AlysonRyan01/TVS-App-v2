@@ -14,11 +14,11 @@ public interface IServiceOrderQueryRepository
     Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByModel(string model);
     Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByEnterprise(EEnterprise enterprise);
     Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByDate(DateTime startDate, DateTime endDate);
-    Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetPendingEstimatesAsync(int pageNumber, int pageSize);
-    Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetWaitingResponseAsync(int pageNumber, int pageSize);
-    Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetPendingPartPurchase(int pageNumber, int pageSize);
-    Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetRejectedEstimateServiceOrders(int pageNumber, int pageSize);
-    Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetWaitingPartsAsync(int pageNumber, int pageSize);
-    Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetWaitingPickupAsync(int pageNumber, int pageSize);
+    Task<BaseResponse<PaginatedResult<PendingEstimateServiceOrder?>>> GetPendingEstimatesAsync(int pageNumber, int pageSize);
+    Task<BaseResponse<PaginatedResult<WaitingResponseServiceOrder?>>> GetWaitingResponseAsync(int pageNumber, int pageSize);
+    Task<BaseResponse<PaginatedResult<ApprovedServiceOrder?>>> GetPendingPartPurchase(int pageNumber, int pageSize);
+    Task<BaseResponse<PaginatedResult<RefusedServiceOrder?>>> GetRejectedEstimateServiceOrders(int pageNumber, int pageSize);
+    Task<BaseResponse<PaginatedResult<WaitingPartServiceOrder?>>> GetWaitingPartsAsync(int pageNumber, int pageSize);
+    Task<BaseResponse<PaginatedResult<ReadyServiceOrder?>>> GetWaitingPickupAsync(int pageNumber, int pageSize);
     Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetDeliveredAsync(int pageNumber, int pageSize);
 }

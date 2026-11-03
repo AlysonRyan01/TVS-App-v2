@@ -1,10 +1,9 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using TVS_App.Api.Extensions;
 using TVS_App.Api.SignalR;
-using TVS_App.Application.DTOs;
 using TVS_App.Application.DTOs.ServiceOrder;
-using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Requests.NotificationRequests.NotificationCommands;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries;
@@ -240,45 +239,25 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-pending-estimates-service-orders/{pageNumber}/{pageSize}", async (
-                ISender handler, 
-                int pageNumber, 
-                int pageSize) =>
+        app.MapGet("/get-pending-estimates-service-orders/{pageNumber}/{pageSize}", async (ISender handler, int pageNumber, int pageSize) =>
         {
             var command = new GetPendingEstimatesQuery(pageNumber, pageSize);
             command.Validate();
 
             var getOrderResult = await handler.Send(command);
 
-            return Results.Ok(getOrderResult);
-        })
-        .WithTags("ServiceOrder")
-        .WithName("GetPendingEstimatesServiceOrders")
-        .WithSummary("Lista ordens de serviço com orçamentos pendentes.")
-        .WithDescription("Retorna uma lista paginada de ordens de serviço cujo orçamento está pendente.")
-        .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
+            return getOrderResult.ToResult();
+        }).WithTags("ServiceOrder").RequireAuthorization();
 
-        app.MapGet("/get-waiting-response-service-orders/{pageNumber}/{pageSize}", async (
-                ISender handler, 
-                int pageNumber, 
-                int pageSize) =>
+        app.MapGet("/get-waiting-response-service-orders/{pageNumber}/{pageSize}", async (ISender handler, int pageNumber, int pageSize) =>
         {
             var command = new GetWaitingResponseQuery(pageNumber, pageSize);
             command.Validate();
 
             var getOrderResult = await handler.Send(command);
 
-            return Results.Ok(getOrderResult);
-        })
-        .WithTags("ServiceOrder")
-        .WithName("GetWaitingResponseServiceOrders")
-        .WithSummary("Lista ordens de serviço aguardando resposta do cliente (aprovação ou reprovação).")
-        .WithDescription("Retorna uma lista paginada de ordens de serviço cujo status está aguardando a resposta do cliente para aprovação ou reprovação do orçamento ou serviço.")
-        .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
+            return getOrderResult.ToResult();
+        }).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapGet("/get-pending-purchase-service-orders/{pageNumber}/{pageSize}", async (
                 ISender handler, 
@@ -290,15 +269,8 @@ public static class ServiceOrderEndpoints
 
             var getOrderResult = await handler.Send(command);
 
-            return Results.Ok(getOrderResult);
-        })
-        .WithTags("ServiceOrder")
-        .WithName("GetPendingPurchaseServiceOrders")
-        .WithSummary("Lista ordens de serviço com compra de peça pendente.")
-        .WithDescription("Retorna uma lista paginada de ordens de serviço que estão aguardando a compra de peças para continuidade do conserto.")
-        .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
+            return getOrderResult.ToResult();
+        }).WithTags("ServiceOrder").RequireAuthorization();
         
         app.MapGet("/get-rejected-estimate-service-orders/{pageNumber}/{pageSize}", async (
                 ISender handler, 
@@ -310,15 +282,8 @@ public static class ServiceOrderEndpoints
 
                 var getOrderResult = await handler.Send(command);
 
-                return Results.Ok(getOrderResult);
-            })
-            .WithTags("ServiceOrder")
-            .WithName("GetRejectedEstimateServiceOrders")
-            .WithSummary("Lista ordens de serviço com orçamentos rejeitados.")
-            .WithDescription("Retorna uma lista paginada de ordens de serviço que estão com orçamento rejeitado.")
-            .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status200OK, "application/json")
-            .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
-            .RequireAuthorization();
+                return getOrderResult.ToResult();
+            }).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapGet("/get-waiting-parts-service-orders/{pageNumber}/{pageSize}", async (
                 ISender handler, 
@@ -330,15 +295,8 @@ public static class ServiceOrderEndpoints
 
             var getOrderResult = await handler.Send(command);
 
-            return Results.Ok(getOrderResult);
-        })
-        .WithTags("ServiceOrder")
-        .WithName("GetWaitingPartsServiceOrders")
-        .WithSummary("Lista ordens de serviço aguardando chegada das peças.")
-        .WithDescription("Retorna uma lista paginada de ordens de serviço cujo status indica que estão aguardando a chegada das peças necessárias para o conserto.")
-        .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
+            return getOrderResult.ToResult();
+        }).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapGet("/get-waiting-pickup-service-orders/{pageNumber}/{pageSize}", async (
                 ISender handler, 
@@ -350,15 +308,8 @@ public static class ServiceOrderEndpoints
 
             var getOrderResult = await handler.Send(command);
 
-            return Results.Ok(getOrderResult);
-        })
-        .WithTags("ServiceOrder")
-        .WithName("GetWaitingPickupServiceOrders")
-        .WithSummary("Lista ordens de serviço aguardando retirada pelo cliente.")
-        .WithDescription("Retorna uma lista paginada de ordens de serviço cujo status indica que estão prontas e aguardando o cliente retirar o equipamento.")
-        .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
+            return getOrderResult.ToResult();
+        }).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapGet("/get-delivered-service-orders/{pageNumber}/{pageSize}", async (
                 ISender handler,

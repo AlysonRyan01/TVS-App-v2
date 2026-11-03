@@ -1,3 +1,333 @@
 <app-base-layout title="Gerenciar">
-  <p class="empty">Nenhum conteúdo nesta tela ainda.</p>
+  <mat-tab-group class="queues" mat-stretch-tabs="false" mat-align-tabs="start" animationDuration="150ms"
+                 (selectedTabChange)="myTabSelectedTabChange($event)">
+    <mat-tab label="Orçamentos pendentes">
+      <ng-template matTabContent>
+        <section class="sheet">
+          @if (isLoadingPendingEstimateServiceOrders()) {
+            <div class="loading" role="status">
+              <mat-spinner diameter="36" aria-label="Carregando ordens de serviço"></mat-spinner>
+            </div>
+          } @else {
+            <div class="scroll">
+              <table mat-table [dataSource]="pendingEstimateServiceOrders()">
+              <ng-container matColumnDef="number">
+                <th mat-header-cell *matHeaderCellDef class="cell-number">Nº OS</th>
+                <td mat-cell *matCellDef="let element" class="cell-number">{{ element.number }}</td>
+              </ng-container>
+              <ng-container matColumnDef="customer">
+                <th mat-header-cell *matHeaderCellDef class="cell-customer">Cliente</th>
+                <td mat-cell *matCellDef="let element" class="cell-customer">{{ element.customer }}</td>
+              </ng-container>
+              <ng-container matColumnDef="company">
+                <th mat-header-cell *matHeaderCellDef>Empresa</th>
+                <td mat-cell *matCellDef="let element">{{ element.company | enumLabel: 'enterprise' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="model">
+                <th mat-header-cell *matHeaderCellDef>Modelo</th>
+                <td mat-cell *matCellDef="let element">{{ element.model }}</td>
+              </ng-container>
+              <ng-container matColumnDef="defect">
+                <th mat-header-cell *matHeaderCellDef class="cell-long">Defeito</th>
+                <td mat-cell *matCellDef="let element" class="cell-long"><span class="clamp" [attr.title]="element.defect">{{ element.defect }}</span></td>
+              </ng-container>
+              <ng-container matColumnDef="entryDate">
+                <th mat-header-cell *matHeaderCellDef class="cell-date">Entrada</th>
+                <td mat-cell *matCellDef="let element" class="cell-date">{{ element.entryDate | date:'dd/MM/yyyy' }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="pendingColumns; sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; columns: pendingColumns;"></tr>
+              <tr class="mat-mdc-row empty-row" *matNoDataRow>
+                <td class="empty" [attr.colspan]="pendingColumns.length">Nenhum aparelho esperando orçamento.</td>
+              </tr>
+              </table>
+            </div>
+            @if (pendingServiceOrdersPagination().totalCount > 0) {
+              <mat-paginator
+                [length]="pendingServiceOrdersPagination().totalCount"
+                [pageSize]="pendingServiceOrdersPagination().pageSize"
+                [pageIndex]="pendingServiceOrdersPagination().pageNumber - 1"
+                [pageSizeOptions]="[15, 25, 100]"
+                aria-label="Selecionar página"
+                (page)="onPendingPageChange($event)">
+              </mat-paginator>
+            }
+          }
+        </section>
+      </ng-template>
+    </mat-tab>
+    <mat-tab label="Aguardando resposta">
+      <ng-template matTabContent>
+        <section class="sheet">
+          @if (isLoadingWaitingResponseServiceOrders()) {
+            <div class="loading" role="status">
+              <mat-spinner diameter="36" aria-label="Carregando ordens de serviço"></mat-spinner>
+            </div>
+          } @else {
+            <div class="scroll">
+              <table mat-table [dataSource]="waitingResponseServiceOrders()">
+              <ng-container matColumnDef="number">
+                <th mat-header-cell *matHeaderCellDef class="cell-number">Nº OS</th>
+                <td mat-cell *matCellDef="let element" class="cell-number">{{ element.number }}</td>
+              </ng-container>
+              <ng-container matColumnDef="customer">
+                <th mat-header-cell *matHeaderCellDef class="cell-customer">Cliente</th>
+                <td mat-cell *matCellDef="let element" class="cell-customer">{{ element.customer }}</td>
+              </ng-container>
+              <ng-container matColumnDef="model">
+                <th mat-header-cell *matHeaderCellDef>Modelo</th>
+                <td mat-cell *matCellDef="let element">{{ element.model }}</td>
+              </ng-container>
+              <ng-container matColumnDef="solution">
+                <th mat-header-cell *matHeaderCellDef class="cell-long">Solução</th>
+                <td mat-cell *matCellDef="let element" class="cell-long"><span class="clamp" [attr.title]="element.solution">{{ element.solution }}</span></td>
+              </ng-container>
+              <ng-container matColumnDef="amount">
+                <th mat-header-cell *matHeaderCellDef class="cell-amount">Valor</th>
+                <td mat-cell *matCellDef="let element" class="cell-amount">{{ element.amount | currency:'BRL':'symbol':'1.2-2' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="inspectionIn">
+                <th mat-header-cell *matHeaderCellDef class="cell-date">Inspeção</th>
+                <td mat-cell *matCellDef="let element" class="cell-date">{{ element.inspectionIn | date:'dd/MM/yyyy' }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="waitingResponseColumns; sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; columns: waitingResponseColumns;"></tr>
+              <tr class="mat-mdc-row empty-row" *matNoDataRow>
+                <td class="empty" [attr.colspan]="waitingResponseColumns.length">Nenhum orçamento esperando resposta do cliente.</td>
+              </tr>
+              </table>
+            </div>
+            @if (waitingResponseServiceOrdersPagination().totalCount > 0) {
+              <mat-paginator
+                [length]="waitingResponseServiceOrdersPagination().totalCount"
+                [pageSize]="waitingResponseServiceOrdersPagination().pageSize"
+                [pageIndex]="waitingResponseServiceOrdersPagination().pageNumber - 1"
+                [pageSizeOptions]="[15, 25, 100]"
+                aria-label="Selecionar página"
+                (page)="onWaitingResponsePageChange($event)">
+              </mat-paginator>
+            }
+          }
+        </section>
+      </ng-template>
+    </mat-tab>
+    <mat-tab label="Aprovados">
+      <ng-template matTabContent>
+        <section class="sheet">
+          @if (isLoadingApprovedServiceOrders()) {
+            <div class="loading" role="status">
+              <mat-spinner diameter="36" aria-label="Carregando ordens de serviço"></mat-spinner>
+            </div>
+          } @else {
+            <div class="scroll">
+              <table mat-table [dataSource]="approvedServiceOrders()">
+              <ng-container matColumnDef="number">
+                <th mat-header-cell *matHeaderCellDef class="cell-number">Nº OS</th>
+                <td mat-cell *matCellDef="let element" class="cell-number">{{ element.number }}</td>
+              </ng-container>
+              <ng-container matColumnDef="company">
+                <th mat-header-cell *matHeaderCellDef>Empresa</th>
+                <td mat-cell *matCellDef="let element">{{ element.company | enumLabel: 'enterprise' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="customer">
+                <th mat-header-cell *matHeaderCellDef class="cell-customer">Cliente</th>
+                <td mat-cell *matCellDef="let element" class="cell-customer">{{ element.customer }}</td>
+              </ng-container>
+              <ng-container matColumnDef="model">
+                <th mat-header-cell *matHeaderCellDef>Modelo</th>
+                <td mat-cell *matCellDef="let element">{{ element.model }}</td>
+              </ng-container>
+              <ng-container matColumnDef="solution">
+                <th mat-header-cell *matHeaderCellDef class="cell-long">Solução</th>
+                <td mat-cell *matCellDef="let element" class="cell-long"><span class="clamp" [attr.title]="element.solution">{{ element.solution }}</span></td>
+              </ng-container>
+              <ng-container matColumnDef="approvedIn">
+                <th mat-header-cell *matHeaderCellDef class="cell-date">Aprovação</th>
+                <td mat-cell *matCellDef="let element" class="cell-date">{{ element.approvedIn | date:'dd/MM/yyyy' }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="approvedColumns; sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; columns: approvedColumns;"></tr>
+              <tr class="mat-mdc-row empty-row" *matNoDataRow>
+                <td class="empty" [attr.colspan]="approvedColumns.length">Nenhum orçamento aprovado no momento.</td>
+              </tr>
+              </table>
+            </div>
+            @if (approvedServiceOrdersPagination().totalCount > 0) {
+              <mat-paginator
+                [length]="approvedServiceOrdersPagination().totalCount"
+                [pageSize]="approvedServiceOrdersPagination().pageSize"
+                [pageIndex]="approvedServiceOrdersPagination().pageNumber - 1"
+                [pageSizeOptions]="[15, 25, 100]"
+                aria-label="Selecionar página"
+                (page)="onApprovedPageChange($event)">
+              </mat-paginator>
+            }
+          }
+        </section>
+      </ng-template>
+    </mat-tab>
+    <mat-tab label="Reprovados">
+      <ng-template matTabContent>
+        <section class="sheet">
+          @if (isLoadingReprovedServiceOrders()) {
+            <div class="loading" role="status">
+              <mat-spinner diameter="36" aria-label="Carregando ordens de serviço"></mat-spinner>
+            </div>
+          } @else {
+            <div class="scroll">
+              <table mat-table [dataSource]="refusedServiceOrders()">
+              <ng-container matColumnDef="number">
+                <th mat-header-cell *matHeaderCellDef class="cell-number">Nº OS</th>
+                <td mat-cell *matCellDef="let element" class="cell-number">{{ element.number }}</td>
+              </ng-container>
+              <ng-container matColumnDef="customer">
+                <th mat-header-cell *matHeaderCellDef class="cell-customer">Cliente</th>
+                <td mat-cell *matCellDef="let element" class="cell-customer">{{ element.customer }}</td>
+              </ng-container>
+              <ng-container matColumnDef="model">
+                <th mat-header-cell *matHeaderCellDef>Modelo</th>
+                <td mat-cell *matCellDef="let element">{{ element.model }}</td>
+              </ng-container>
+              <ng-container matColumnDef="solution">
+                <th mat-header-cell *matHeaderCellDef class="cell-long">Solução</th>
+                <td mat-cell *matCellDef="let element" class="cell-long"><span class="clamp" [attr.title]="element.solution">{{ element.solution }}</span></td>
+              </ng-container>
+              <ng-container matColumnDef="refusedIn">
+                <th mat-header-cell *matHeaderCellDef class="cell-date">Recusa</th>
+                <td mat-cell *matCellDef="let element" class="cell-date">{{ element.refusedIn | date:'dd/MM/yyyy' }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="refusedColumns; sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; columns: refusedColumns;"></tr>
+              <tr class="mat-mdc-row empty-row" *matNoDataRow>
+                <td class="empty" [attr.colspan]="refusedColumns.length">Nenhum orçamento reprovado no momento.</td>
+              </tr>
+              </table>
+            </div>
+            @if (refusedServiceOrdersPagination().totalCount > 0) {
+              <mat-paginator
+                [length]="refusedServiceOrdersPagination().totalCount"
+                [pageSize]="refusedServiceOrdersPagination().pageSize"
+                [pageIndex]="refusedServiceOrdersPagination().pageNumber - 1"
+                [pageSizeOptions]="[15, 25, 100]"
+                aria-label="Selecionar página"
+                (page)="onRefusedPageChange($event)">
+              </mat-paginator>
+            }
+          }
+        </section>
+      </ng-template>
+    </mat-tab>
+    <mat-tab label="Aguardando peça">
+      <ng-template matTabContent>
+        <section class="sheet">
+          @if (isLoadingWaitingPartServiceOrders()) {
+            <div class="loading" role="status">
+              <mat-spinner diameter="36" aria-label="Carregando ordens de serviço"></mat-spinner>
+            </div>
+          } @else {
+            <div class="scroll">
+              <table mat-table [dataSource]="waitingPartServiceOrders()">
+              <ng-container matColumnDef="number">
+                <th mat-header-cell *matHeaderCellDef class="cell-number">Nº OS</th>
+                <td mat-cell *matCellDef="let element" class="cell-number">{{ element.number }}</td>
+              </ng-container>
+              <ng-container matColumnDef="customer">
+                <th mat-header-cell *matHeaderCellDef class="cell-customer">Cliente</th>
+                <td mat-cell *matCellDef="let element" class="cell-customer">{{ element.customer }}</td>
+              </ng-container>
+              <ng-container matColumnDef="model">
+                <th mat-header-cell *matHeaderCellDef>Modelo</th>
+                <td mat-cell *matCellDef="let element">{{ element.model }}</td>
+              </ng-container>
+              <ng-container matColumnDef="solution">
+                <th mat-header-cell *matHeaderCellDef class="cell-long">Solução</th>
+                <td mat-cell *matCellDef="let element" class="cell-long"><span class="clamp" [attr.title]="element.solution">{{ element.solution }}</span></td>
+              </ng-container>
+              <ng-container matColumnDef="purchasedIn">
+                <th mat-header-cell *matHeaderCellDef class="cell-date">Compra da peça</th>
+                <td mat-cell *matCellDef="let element" class="cell-date">{{ element.purchasedIn | date:'dd/MM/yyyy' }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="waitingPartColumns; sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; columns: waitingPartColumns;"></tr>
+              <tr class="mat-mdc-row empty-row" *matNoDataRow>
+                <td class="empty" [attr.colspan]="waitingPartColumns.length">Nenhuma ordem esperando peça.</td>
+              </tr>
+              </table>
+            </div>
+            @if (waitingPartServiceOrdersPagination().totalCount > 0) {
+              <mat-paginator
+                [length]="waitingPartServiceOrdersPagination().totalCount"
+                [pageSize]="waitingPartServiceOrdersPagination().pageSize"
+                [pageIndex]="waitingPartServiceOrdersPagination().pageNumber - 1"
+                [pageSizeOptions]="[15, 25, 100]"
+                aria-label="Selecionar página"
+                (page)="onWaitingPartPageChange($event)">
+              </mat-paginator>
+            }
+          }
+        </section>
+      </ng-template>
+    </mat-tab>
+    <mat-tab label="Prontos">
+      <ng-template matTabContent>
+        <section class="sheet">
+          @if (isLoadingReadyServiceOrders()) {
+            <div class="loading" role="status">
+              <mat-spinner diameter="36" aria-label="Carregando ordens de serviço"></mat-spinner>
+            </div>
+          } @else {
+            <div class="scroll">
+              <table mat-table [dataSource]="readyServiceOrders()">
+              <ng-container matColumnDef="number">
+                <th mat-header-cell *matHeaderCellDef class="cell-number">Nº OS</th>
+                <td mat-cell *matCellDef="let element" class="cell-number">{{ element.number }}</td>
+              </ng-container>
+              <ng-container matColumnDef="customer">
+                <th mat-header-cell *matHeaderCellDef class="cell-customer">Cliente</th>
+                <td mat-cell *matCellDef="let element" class="cell-customer">{{ element.customer }}</td>
+              </ng-container>
+              <ng-container matColumnDef="model">
+                <th mat-header-cell *matHeaderCellDef>Modelo</th>
+                <td mat-cell *matCellDef="let element">{{ element.model }}</td>
+              </ng-container>
+              <ng-container matColumnDef="repairDate">
+                <th mat-header-cell *matHeaderCellDef class="cell-date">Reparo</th>
+                <td mat-cell *matCellDef="let element" class="cell-date">{{ element.repairDate | date:'dd/MM/yyyy' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="situation">
+                <th mat-header-cell *matHeaderCellDef>Situação</th>
+                <td mat-cell *matCellDef="let element">{{ element.situation | enumLabel: 'repairResult' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="response">
+                <th mat-header-cell *matHeaderCellDef>Resposta</th>
+                <td mat-cell *matCellDef="let element">{{ element.response | enumLabel: 'repairStatus' }}</td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="readyColumns; sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; columns: readyColumns;"></tr>
+              <tr class="mat-mdc-row empty-row" *matNoDataRow>
+                <td class="empty" [attr.colspan]="readyColumns.length">Nenhum aparelho pronto para retirada.</td>
+              </tr>
+              </table>
+            </div>
+            @if (readyServiceOrdersPagination().totalCount > 0) {
+              <mat-paginator
+                [length]="readyServiceOrdersPagination().totalCount"
+                [pageSize]="readyServiceOrdersPagination().pageSize"
+                [pageIndex]="readyServiceOrdersPagination().pageNumber - 1"
+                [pageSizeOptions]="[15, 25, 100]"
+                aria-label="Selecionar página"
+                (page)="onReadyPageChange($event)">
+              </mat-paginator>
+            }
+          }
+        </section>
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
 </app-base-layout>

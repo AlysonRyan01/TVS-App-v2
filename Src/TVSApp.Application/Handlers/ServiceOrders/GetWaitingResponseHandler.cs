@@ -1,14 +1,13 @@
 using MediatR;
-using TVS_App.Application.DTOs.ServiceOrder;
-using TVS_App.Application.Mappers;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries;
+using TVS_App.Domain.Repositories;
 using TVS_App.Domain.Repositories.ServiceOrders;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Handlers.ServiceOrders;
 
 public class GetWaitingResponseHandler 
-    : IRequestHandler<GetWaitingResponseQuery, BaseResponse<PaginatedResult<ServiceOrderDto>>>
+    : IRequestHandler<GetWaitingResponseQuery, BaseResponse<PaginatedResult<WaitingResponseServiceOrder>>>
 {
     private readonly IServiceOrderQueryRepository _serviceOrderQueryRepository;
 
@@ -17,7 +16,7 @@ public class GetWaitingResponseHandler
         _serviceOrderQueryRepository = serviceOrderQueryRepository;
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrderDto>>> Handle(
+    public async Task<BaseResponse<PaginatedResult<WaitingResponseServiceOrder>>> Handle(
         GetWaitingResponseQuery request, 
         CancellationToken cancellationToken = default)
     {
@@ -28,23 +27,21 @@ public class GetWaitingResponseHandler
             request.PageSize);
         
         if (!repositoryResult.IsSuccess || repositoryResult.Data == null)
-            return new BaseResponse<PaginatedResult<ServiceOrderDto>>(null, 500, repositoryResult.Message);
+            return new BaseResponse<PaginatedResult<WaitingResponseServiceOrder>>(null, 500, repositoryResult.Message);
             
         var serviceOrders = repositoryResult.Data.Items
             .Where(x => x != null)
             .Select(x => x!)
             .ToList();
 
-        var dtoList = ServiceOrderMapper.MapToServiceOrderDtoList(serviceOrders);
-
-        var paginatedResult = new PaginatedResult<ServiceOrderDto>(
-            dtoList,
+        var paginatedResult = new PaginatedResult<WaitingResponseServiceOrder>(
+            serviceOrders,
             repositoryResult.Data.TotalCount,
             repositoryResult.Data.PageNumber,
             repositoryResult.Data.PageSize
         );
 
-        return new BaseResponse<PaginatedResult<ServiceOrderDto>>(
+        return new BaseResponse<PaginatedResult<WaitingResponseServiceOrder>>(
             paginatedResult, 
             200, 
             "Ordens de serviço obtidas com sucesso!");
