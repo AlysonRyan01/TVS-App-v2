@@ -14,7 +14,7 @@ services:
 
   api:
     build:
-      context: ./Src/TVSApp.Api
+      context: ./src/TVSApp.Api
       dockerfile: Dockerfile.dev
     environment:
       ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=MinhaDb;User=sa;Password=SenhaForte123!;TrustServerCertificate=True;"
@@ -22,7 +22,7 @@ services:
     depends_on:
       - sqlserver
     volumes:
-      - ./Src:/src
+      - ./src:/src
       - /src/TVSApp.Api/bin
       - /src/TVSApp.Api/obj
     working_dir: /src/TVSApp.Api
