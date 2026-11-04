@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using TVS_App.Application.Interfaces.Services;
+using TVS_App.Application.Requests.WhatsAppQueueRequests;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Shared;
 using TVS_App.Infrastructure.Configurations;
@@ -344,6 +345,91 @@ public class WhatsappService : IWhatsappService
         catch (Exception ex)
         {
             return new BaseResponse<string>(null, 500, $"Ocorreu um erro: {ex.Message}");
+        }
+    }
+
+    public async Task<BaseResponse<string>> NotifyOwnerSiteContactAsync(SendSiteContactMessageRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name))
+            return new BaseResponse<string>(null, 404, "Nome do cliente vazio");
+
+        if (string.IsNullOrWhiteSpace(request.Phone))
+            return new BaseResponse<string>(null, 404, "Número de telefone vazio");
+
+        var ownerNumber = _env.IsProduction() ? "41992744920" : "41997561468";
+
+        var sb = new StringBuilder();
+        sb.Append($"📩 *{request.Subject.ToUpper()}* 📩\n\n");
+        sb.Append($"👤 *Nome:* {request.Name}\n");
+        sb.Append($"📞 *Telefone:* {request.Phone}\n");
+        sb.Append($"💬 *WhatsApp:* https://wa.me/{FormatPhoneNumber(request.Phone)}\n");
+        sb.Append($"✉️ *E-mail:* {(string.IsNullOrWhiteSpace(request.Email) ? "Não informado" : request.Email)}\n");
+
+        if (!string.IsNullOrWhiteSpace(request.Message))
+            sb.Append($"\n📝 *Mensagem:*\n{request.Message}\n");
+
+        if (request.Attachments.Count > 0)
+            sb.Append($"\n📎 {request.Attachments.Count} anexo(s) a seguir.");
+
+        var textResult = await Send(sb.ToString(), ownerNumber);
+        if (!textResult.IsSuccess)
+            return textResult;
+
+        var failures = 0;
+        for (var i = 0; i < request.Attachments.Count; i++)
+        {
+            await Task.Delay(1500);
+            var caption = $"{request.Name} — anexo {i + 1}/{request.Attachments.Count}";
+            var mediaResult = await SendMedia(request.Attachments[i], caption, ownerNumber);
+            if (!mediaResult.IsSuccess)
+                failures++;
+        }
+
+        if (failures > 0)
+            return new BaseResponse<string>(null, 500, $"{failures} anexo(s) não foram enviados.");
+
+        return new BaseResponse<string>("Mensagem enviada com sucesso!", 200, "Mensagem enviada com sucesso!");
+    }
+
+    public async Task<BaseResponse<string>> SendMedia(WhatsAppMediaAttachment attachment, string caption, string phoneNumber)
+    {
+        try
+        {
+            var mediaType = attachment.MimeType switch
+            {
+                var m when m.StartsWith("image/") => "image",
+                var m when m.StartsWith("video/") => "video",
+                var m when m.StartsWith("audio/") => "audio",
+                _ => "document"
+            };
+
+            var url = $"{_settings.BaseUrl}/message/sendMedia/{_settings.Instance}";
+            var body = new
+            {
+                number = FormatPhoneNumber(phoneNumber),
+                mediatype = mediaType,
+                mimetype = attachment.MimeType,
+                caption,
+                media = attachment.Base64,
+                fileName = attachment.FileName
+            };
+
+            var request = new HttpRequestMessage(HttpMethod.Post, url);
+            request.Headers.Add("apikey", _settings.ApiKey);
+            request.Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                return new BaseResponse<string>(null, (int)response.StatusCode, $"Erro ao enviar mídia: {content}");
+            }
+
+            return new BaseResponse<string>("Mídia enviada com sucesso!", 200, "Mídia enviada com sucesso!");
+        }
+        catch (Exception ex)
+        {
+            return new BaseResponse<string>(null, 500, $"Ocorreu um erro ao enviar mídia: {ex.Message}");
         }
     }
 

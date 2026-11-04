@@ -21,6 +21,7 @@ public static class AppExtensions
         app.MapServiceOrderEndpoints();
         app.MapNotificationEndpoints();
         app.MapEmailEndpoints();
+        app.MapWhatsAppEndpoints();
         app.MapDashboardEndpoints();
     }
     

@@ -1,3 +1,4 @@
+using TVS_App.Application.Requests.WhatsAppQueueRequests;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Shared;
 
@@ -14,4 +15,5 @@ public interface IWhatsappService
     Task<BaseResponse<string>> NotifyOwnerEstimateDecision(string serviceOrder, ERepairStatus result, string customerName);
     Task<BaseResponse<string>> SendThankYouForEstimateApprovalAsync(string serviceOrder, string customerName, string phoneNumber, decimal amount);
     Task<BaseResponse<string>> SendEstimateDisapprovalAcknowledgmentAsync(string serviceOrder, string customerName, string phoneNumber);
+    Task<BaseResponse<string>> NotifyOwnerSiteContactAsync(SendSiteContactMessageRequest request);
 }

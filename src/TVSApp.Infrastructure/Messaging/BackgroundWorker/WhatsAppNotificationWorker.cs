@@ -105,6 +105,12 @@ public class WhatsAppNotificationWorker : BackgroundService
                                 estimateDisapprovalAcknowledgment.PhoneNumber);
                             break;
                         
+                        case SendSiteContactMessageRequest siteContact:
+                            var siteContactResult = await _whatsappService.NotifyOwnerSiteContactAsync(siteContact);
+                            if (!siteContactResult.IsSuccess)
+                                _logger.LogWarning("Falha ao enviar contato do site via WhatsApp: {Message}", siteContactResult.Message);
+                            break;
+                        
                         default:
                             _logger.LogWarning("Tipo de requisição não suportado: {RequestType}", request.GetType().Name);
                             break;
