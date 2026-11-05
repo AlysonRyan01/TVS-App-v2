@@ -1,0 +1,80 @@
+@let os = order();
+<aside class="ticket" aria-label="Dados da ordem de serviço">
+  <p class="ticket-number"><span class="sr-only">Ordem de serviço </span>OS {{ serviceOrderId() }}</p>
+
+  <div class="ticket-group">
+    <p class="ticket-name">{{ os.name }}</p>
+    @if (os.phone) {
+      <a class="ticket-phone" [href]="'tel:' + os.phone">{{ os.phone }}</a>
+    }
+    @if (os.phone2) {
+      <a class="ticket-phone" [href]="'tel:' + os.phone2">{{ os.phone2 }}</a>
+    }
+  </div>
+
+  <dl class="ticket-device">
+    <div>
+      <dt>Empresa</dt>
+      <dd>{{ os.enterprise | enumLabel: 'enterprise' }}</dd>
+    </div>
+    <div>
+      <dt>Aparelho</dt>
+      <dd>{{ os.type | enumLabel: 'product' }} {{ os.brand }}</dd>
+    </div>
+    <div>
+      <dt>Modelo</dt>
+      <dd>{{ os.model || '—' }}</dd>
+    </div>
+    <div>
+      <dt>Nº de série</dt>
+      <dd class="mono">{{ os.serialNumber || '—' }}</dd>
+    </div>
+    @if (os.accessories) {
+      <div>
+        <dt>Acessórios</dt>
+        <dd>{{ os.accessories }}</dd>
+      </div>
+    }
+  </dl>
+
+  <!-- Onde o aparelho está guardado: mostra a atual e permite gravar uma nova. -->
+  <div class="ticket-location">
+    <p class="ticket-location-current">
+      <span class="ticket-location-label">Localização</span>
+      @if (location()) {
+        <span class="ticket-location-value">{{ location() }}</span>
+      } @else {
+        <span class="ticket-location-value empty">Não informada</span>
+      }
+    </p>
+    <div class="ticket-location-form">
+      <input
+        class="ticket-location-input"
+        type="text"
+        autocomplete="off"
+        placeholder="Ex.: Prateleira B3"
+        aria-label="Nova localização do produto"
+        [value]="newLocation()"
+        [disabled]="isSavingLocation()"
+        (input)="newLocation.set($any($event.target).value)"
+        (keydown.enter)="$event.preventDefault(); saveLocation()" />
+      <button
+        matButton="outlined"
+        type="button"
+        class="ticket-location-save"
+        [disabled]="isSavingLocation() || !newLocation().trim()"
+        (click)="saveLocation()">
+        @if (isSavingLocation()) {
+          <mat-spinner diameter="16" aria-hidden="true"></mat-spinner>
+        } @else {
+          Salvar
+        }
+      </button>
+    </div>
+  </div>
+
+  <figure class="ticket-defect">
+    <figcaption>Defeito relatado pelo cliente</figcaption>
+    <blockquote>{{ os.defect || 'Não informado na entrada.' }}</blockquote>
+  </figure>
+</aside>

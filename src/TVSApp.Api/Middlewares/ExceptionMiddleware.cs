@@ -52,6 +52,7 @@ public class ExceptionMiddleware
                     break;
             }
 
+            context.Response.StatusCode = code;
             var response = new BaseResponse<object?>(null, code, message);
 
             var options = new JsonSerializerOptions

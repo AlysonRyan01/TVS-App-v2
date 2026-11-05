@@ -1,0 +1,37 @@
+<header class="bar">
+  <h1 class="bar-title" mat-dialog-title>{{ title() }}</h1>
+  <button class="close" type="button" [mat-dialog-close]="closeResult()" [disabled]="sending()" [attr.aria-label]="closeLabel()">
+    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+  </button>
+</header>
+
+@if (isLoading()) {
+  <div class="state" role="status">
+    <mat-spinner diameter="36" aria-label="Carregando ordem de serviço"></mat-spinner>
+  </div>
+} @else if (serviceOrder(); as order) {
+  <div class="body">
+    <div class="columns">
+      <!-- Etiqueta: o que já se sabe da OS, só para consulta. -->
+      <app-service-order-ticket [order]="order" [serviceOrderId]="serviceOrderId()" />
+
+      <ng-content select="[modalBody]" />
+    </div>
+
+    <footer class="summary">
+      <ng-content select="[modalFooterInfo]" />
+
+      <div class="actions">
+        <ng-content select="[modalActions]" />
+      </div>
+    </footer>
+  </div>
+} @else {
+  <div class="state">
+    <p class="state-message">Não foi possível carregar a OS {{ serviceOrderId() }}. Confira a conexão e tente de novo.</p>
+    <div class="actions">
+      <button matButton type="button" mat-dialog-close>Fechar</button>
+      <button matButton="filled" type="button" class="send" (click)="loadServiceOrder()">Tentar de novo</button>
+    </div>
+  </div>
+}

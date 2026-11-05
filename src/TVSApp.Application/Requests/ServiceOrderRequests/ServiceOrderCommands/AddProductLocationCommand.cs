@@ -1,13 +1,11 @@
-using MediatR;
 using TVS_App.Application.Exceptions;
-using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 
 public record AddProductLocationCommand(
     long ServiceOrderId,
     string Location
-) : IRequest<BaseResponse<string?>>
+)
 {
     public AddProductLocationCommand() : this(0, string.Empty) { }
 

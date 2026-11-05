@@ -1,5 +1,7 @@
 # Contract: Endpoints HTTP da tela Home
 
+> **Nota (feature 007):** as rotas GET citadas aqui foram substituídas pelo padrão REST: filas em `GET /service-orders/{fila}?pageNumber=&pageSize=` e busca por número em `GET /service-orders/{id}`. Ver `specs/007-rest-get-routes/contracts/http-endpoints.md`.
+
 Todas as rotas: `.WithTags("ServiceOrder").RequireAuthorization()`. A resposta é sempre
 `BaseResponse<T>` convertida com `.ToResult()` (o status HTTP vem de `BaseResponse.Code`).
 

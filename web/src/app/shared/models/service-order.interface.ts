@@ -1,4 +1,4 @@
-import { EEnterprise, EProduct, ERepairResult, EServiceOrderStatus } from "../enums";
+import { EEnterprise, EProduct, ERepairResult, ERepairStatus, EServiceOrderStatus } from "../enums";
 
 export interface ServiceOrder {
     id: number;
@@ -41,7 +41,7 @@ export interface ServiceOrder {
     totalAmount: number;
  
     serviceOrderStatus: EServiceOrderStatus;
-    repairStatus: ERepairResult;
+    repairStatus: ERepairStatus;
     repairResult?: ERepairResult | null;
  
     formattedAddress: string;

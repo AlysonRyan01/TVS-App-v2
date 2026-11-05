@@ -1,0 +1,56 @@
+<app-service-order-modal
+  [serviceOrderId]="id"
+  title="Entrega"
+  closeLabel="Fechar sem entregar"
+  [sending]="isSending()"
+  (loaded)="serviceOrder.set($event)">
+
+  @if (serviceOrder(); as order) {
+    <!-- O que o cliente está levando: só para conferir no balcão antes de registrar a entrega. -->
+    <section modalBody class="estimate" aria-labelledby="estimate-title">
+      <h2 class="estimate-title" id="estimate-title">Resumo da entrega</h2>
+
+      <dl class="estimate-details">
+        <div>
+          <dt>Resultado</dt>
+          <dd>{{ order.repairResult ? (order.repairResult | enumLabel: 'repairResult') : '—' }}</dd>
+        </div>
+        <div>
+          <dt>Solução</dt>
+          <dd>{{ order.solution || '—' }}</dd>
+        </div>
+        <div>
+          <dt>Valor total</dt>
+          <dd class="estimate-amount">{{ order.totalAmount | currency: 'BRL' : 'symbol' : '1.2-2' }}</dd>
+        </div>
+        <div>
+          <dt>Garantia</dt>
+          <dd>{{ order.guarantee || '—' }}</dd>
+        </div>
+        <div>
+          <dt>Consertado em</dt>
+          <dd>{{ order.repairDate ? (order.repairDate | date: 'dd/MM/yyyy') : '—' }}</dd>
+        </div>
+      </dl>
+    </section>
+  }
+
+  <div modalFooterInfo>
+    <p class="question">O cliente já retirou o aparelho?</p>
+    @if (isRepaired()) {
+      <p class="hint">O termo de entrega será aberto para impressão.</p>
+    }
+  </div>
+
+  <ng-container modalActions>
+    <button matButton type="button" mat-dialog-close [disabled]="isSending()">Cancelar</button>
+    <button matButton="filled" type="button" class="send" [disabled]="isSending()" (click)="registerDelivery()">
+      @if (isSending()) {
+        <mat-spinner diameter="18" aria-hidden="true"></mat-spinner>
+        Registrando…
+      } @else {
+        Entregue
+      }
+    </button>
+  </ng-container>
+</app-service-order-modal>

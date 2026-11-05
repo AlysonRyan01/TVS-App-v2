@@ -9,11 +9,13 @@ namespace TVSApp.Tests.Handlers.Fakes;
 public class FakeServiceOrderQueryRepository : IServiceOrderQueryRepository
 {
     public ServiceOrder? ServiceOrderForUpdate { get; set; }
+    public bool GetByIdForUpdateCalled { get; private set; }
     public string? LastQueueMethod { get; private set; }
     public (int PageNumber, int PageSize)? LastPagination { get; private set; }
 
     public Task<BaseResponse<ServiceOrder?>> GetByIdForUpdateAsync(long id)
     {
+        GetByIdForUpdateCalled = true;
         var response = ServiceOrderForUpdate is null
             ? new BaseResponse<ServiceOrder?>(null, 404, $"A ordem de serviço com ID:{id} não existe")
             : new BaseResponse<ServiceOrder?>(ServiceOrderForUpdate);

@@ -73,10 +73,16 @@ public class ServiceOrder : Entity
         }
     }
 
+    public bool IsAwaitingEstimateResponse =>
+        ServiceOrderStatus == EServiceOrderStatus.Evaluated && RepairStatus == ERepairStatus.Waiting;
+
     public void ApproveEstimate()
     {
         if (string.IsNullOrEmpty(Solution?.ServiceOrderSolution))
             throw new EntityException<ServiceOrder>("A solução não pode estar nula ao adicionar a aprovação");
+
+        if (!IsAwaitingEstimateResponse)
+            throw new EntityException<ServiceOrder>("Esse orçamento já foi respondido.");
 
         RepairStatus = ERepairStatus.Approved;
         ResponseDate = DateTime.UtcNow;
@@ -86,6 +92,9 @@ public class ServiceOrder : Entity
     {
         if (string.IsNullOrEmpty(Solution?.ServiceOrderSolution))
             throw new EntityException<ServiceOrder>("A solução não pode estar nula ao adicionar a rejeição");
+
+        if (!IsAwaitingEstimateResponse)
+            throw new EntityException<ServiceOrder>("Esse orçamento já foi respondido.");
 
         RepairStatus = ERepairStatus.Disapproved;
         ResponseDate = DateTime.UtcNow;

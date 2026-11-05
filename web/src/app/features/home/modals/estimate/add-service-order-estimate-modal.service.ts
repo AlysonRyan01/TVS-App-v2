@@ -13,8 +13,4 @@ export class AddServiceOrderEstimateModalService {
     addServiceOrderEstimate(command: AddServiceOrderEstimate): Observable<BaseResponse<ServiceOrder>> {
         return this._http.put<BaseResponse<ServiceOrder>>(`${environment.apiUrl}/add-service-order-estimate`, command);
     }
-
-    getServiceOrderById(id: number): Observable<BaseResponse<ServiceOrder>> {
-        return this._http.get<BaseResponse<ServiceOrder>>(`${environment.apiUrl}/get-service-order-by-id/${id}`);
-    }
 }

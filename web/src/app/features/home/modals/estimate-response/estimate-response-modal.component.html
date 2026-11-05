@@ -1,0 +1,60 @@
+<app-service-order-modal
+  [serviceOrderId]="id"
+  title="Resposta"
+  closeLabel="Fechar sem responder"
+  [closeResult]="answeredElsewhere()"
+  [sending]="isSending()"
+  (loaded)="serviceOrder.set($event)">
+
+  @if (serviceOrder(); as order) {
+    <!-- O orçamento que o cliente recebeu: só para conferir antes de registrar a resposta. -->
+    <section modalBody class="estimate" aria-labelledby="estimate-title">
+      <h2 class="estimate-title" id="estimate-title">Orçamento enviado</h2>
+
+      <dl class="estimate-details">
+        <div>
+          <dt>Resultado</dt>
+          <dd>{{ order.repairResult ? (order.repairResult | enumLabel: 'repairResult') : '—' }}</dd>
+        </div>
+        <div>
+          <dt>Solução</dt>
+          <dd>{{ order.solution || '—' }}</dd>
+        </div>
+        <div>
+          <dt>Valor total</dt>
+          <dd class="estimate-amount">{{ order.totalAmount | currency: 'BRL' : 'symbol' : '1.2-2' }}</dd>
+        </div>
+        <div>
+          <dt>Garantia</dt>
+          <dd>{{ order.guarantee || '—' }}</dd>
+        </div>
+        <div>
+          <dt>Mensagem enviada</dt>
+          <dd>{{ order.estimateMessage || '—' }}</dd>
+        </div>
+      </dl>
+    </section>
+  }
+
+  <p modalFooterInfo class="question">O cliente aprovou o orçamento?</p>
+
+  <ng-container modalActions>
+    <button matButton type="button" [mat-dialog-close]="answeredElsewhere()" [disabled]="isSending()">Cancelar</button>
+    <button matButton="outlined" type="button" class="reject" [disabled]="isSending()" (click)="reject()">
+      @if (sendingAction() === 'reject') {
+        <mat-spinner diameter="18" aria-hidden="true"></mat-spinner>
+        Registrando…
+      } @else {
+        Reprovado
+      }
+    </button>
+    <button matButton="filled" type="button" class="send" [disabled]="isSending()" (click)="approve()">
+      @if (sendingAction() === 'approve') {
+        <mat-spinner diameter="18" aria-hidden="true"></mat-spinner>
+        Registrando…
+      } @else {
+        Aprovado
+      }
+    </button>
+  </ng-container>
+</app-service-order-modal>

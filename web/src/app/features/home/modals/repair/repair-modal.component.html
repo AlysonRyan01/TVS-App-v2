@@ -1,0 +1,47 @@
+<app-service-order-modal
+  [serviceOrderId]="id"
+  title="Conserto"
+  closeLabel="Fechar sem registrar"
+  [sending]="isSending()"
+  (loaded)="serviceOrder.set($event)">
+
+  @if (serviceOrder(); as order) {
+    <!-- O conserto aprovado e a peça comprada: só para conferir antes de avisar o cliente. -->
+    <section modalBody class="estimate" aria-labelledby="estimate-title">
+      <h2 class="estimate-title" id="estimate-title">Resumo do conserto</h2>
+
+      <dl class="estimate-details">
+        <div>
+          <dt>Solução</dt>
+          <dd>{{ order.solution || '—' }}</dd>
+        </div>
+        <div>
+          <dt>Valor total</dt>
+          <dd class="estimate-amount">{{ order.totalAmount | currency: 'BRL' : 'symbol' : '1.2-2' }}</dd>
+        </div>
+        <div>
+          <dt>Garantia</dt>
+          <dd>{{ order.guarantee || '—' }}</dd>
+        </div>
+        <div>
+          <dt>Peça comprada em</dt>
+          <dd>{{ order.purchasePartDate ? (order.purchasePartDate | date: 'dd/MM/yyyy') : '—' }}</dd>
+        </div>
+      </dl>
+    </section>
+  }
+
+  <p modalFooterInfo class="question">O conserto já foi concluído?</p>
+
+  <ng-container modalActions>
+    <button matButton type="button" mat-dialog-close [disabled]="isSending()">Cancelar</button>
+    <button matButton="filled" type="button" class="send" [disabled]="isSending()" (click)="registerRepair()">
+      @if (isSending()) {
+        <mat-spinner diameter="18" aria-hidden="true"></mat-spinner>
+        Registrando…
+      } @else {
+        Consertado
+      }
+    </button>
+  </ng-container>
+</app-service-order-modal>

@@ -1,0 +1,47 @@
+<app-service-order-modal
+  [serviceOrderId]="id"
+  title="Liberação"
+  closeLabel="Fechar sem liberar"
+  [sending]="isSending()"
+  (loaded)="serviceOrder.set($event)">
+
+  @if (serviceOrder(); as order) {
+    <!-- O orçamento que o cliente reprovou: só para conferir antes de liberar o aparelho. -->
+    <section modalBody class="estimate" aria-labelledby="estimate-title">
+      <h2 class="estimate-title" id="estimate-title">Orçamento reprovado</h2>
+
+      <dl class="estimate-details">
+        <div>
+          <dt>Solução</dt>
+          <dd>{{ order.solution || '—' }}</dd>
+        </div>
+        <div>
+          <dt>Valor total</dt>
+          <dd class="estimate-amount">{{ order.totalAmount | currency: 'BRL' : 'symbol' : '1.2-2' }}</dd>
+        </div>
+        <div>
+          <dt>Garantia</dt>
+          <dd>{{ order.guarantee || '—' }}</dd>
+        </div>
+        <div>
+          <dt>Reprovado em</dt>
+          <dd>{{ order.responseDate ? (order.responseDate | date: 'dd/MM/yyyy') : '—' }}</dd>
+        </div>
+      </dl>
+    </section>
+  }
+
+  <p modalFooterInfo class="question">O aparelho já está pronto para retirada?</p>
+
+  <ng-container modalActions>
+    <button matButton type="button" mat-dialog-close [disabled]="isSending()">Cancelar</button>
+    <button matButton="filled" type="button" class="send" [disabled]="isSending()" (click)="release()">
+      @if (isSending()) {
+        <mat-spinner diameter="18" aria-hidden="true"></mat-spinner>
+        Registrando…
+      } @else {
+        Liberado
+      }
+    </button>
+  </ng-container>
+</app-service-order-modal>

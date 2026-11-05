@@ -6,13 +6,12 @@ $desktop: 56rem;
 $rule: #ead8d3;
 $rule-soft: #f3e6e2;
 
-:host {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background-color: #fff;
-  color: $ink;
-  font-family: $font-body;
+// A barra, a etiqueta, os estados e o rodapé vêm da casca (modals/shared/_service-order-modal.scss).
+// Aqui ficam só os estilos do formulário de orçamento.
+
+// O <form> envolve a casca sem virar uma caixa no layout; os overrides valem para os campos dentro dele.
+.modal-form {
+  display: contents;
 
   @include mat.form-field-overrides((
     outlined-outline-color: $rule,
@@ -56,240 +55,6 @@ $rule-soft: #f3e6e2;
     label-text-weight: 500,
     label-text-tracking: 0,
   ));
-
-  @include mat.button-overrides((
-    filled-container-color: $brand-red,
-    filled-label-text-color: #fff,
-    filled-container-shape: 0.25rem,
-    filled-container-height: 48px,
-    filled-horizontal-padding: 1.5rem,
-    filled-label-text-font: $font-body,
-    filled-label-text-size: 1rem,
-    filled-label-text-weight: 500,
-    filled-label-text-tracking: 0,
-    filled-disabled-container-color: $rule,
-    filled-disabled-label-text-color: $ink-muted,
-    text-label-text-color: $ink,
-    text-container-shape: 0.25rem,
-    text-container-height: 48px,
-    text-label-text-font: $font-body,
-    text-label-text-size: 1rem,
-    text-label-text-tracking: 0,
-  ));
-
-  @include mat.progress-spinner-overrides((
-    active-indicator-color: $brand-red,
-  ));
-}
-
-// Barra superior: o mesmo vermelho das abas que abriram o modal.
-.bar {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 3.5rem;
-  padding: 0 0.5rem 0 1.25rem;
-  background-color: $brand-red;
-  color: #fff;
-
-  @media (min-width: $desktop) {
-    padding-left: 2rem;
-  }
-}
-
-// mat-dialog-title traz margem e padding próprios; zera aqui.
-.bar-title.mat-mdc-dialog-title {
-  margin: 0;
-  padding: 0;
-  color: #fff;
-  font-family: $font-display;
-  font-size: 1.25rem;
-  font-weight: 600;
-  font-stretch: 112%;
-  line-height: 1.2;
-  letter-spacing: 0;
-
-  &::before {
-    display: none;
-  }
-}
-
-.close {
-  display: grid;
-  place-items: center;
-  width: 3rem;
-  height: 3rem;
-  border: 0;
-  border-radius: 0.25rem;
-  background: none;
-  color: #fff;
-  cursor: pointer;
-
-  &:hover {
-    background-color: $brand-red-deep;
-  }
-
-  &:focus-visible {
-    outline: 3px solid $signal;
-    outline-offset: -3px;
-  }
-}
-
-// Carregando e erro: centralizados no espaço que o formulário ocuparia.
-.state {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 1.5rem;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 1.5rem;
-  text-align: center;
-}
-
-.state-message {
-  max-width: 36ch;
-  margin: 0;
-  font-size: 1.0625rem;
-  line-height: 1.5;
-}
-
-.body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
-}
-
-// Só o meio rola; barra e rodapé ficam no lugar.
-.columns {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-
-  @media (min-width: $desktop) {
-    display: grid;
-    grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
-    overflow: hidden;
-  }
-}
-
-// A etiqueta da OS: leitura, não edição.
-.ticket {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  padding: 1.5rem 1.25rem;
-  border-bottom: 1px solid $rule;
-  background-color: $surface;
-
-  @media (min-width: $desktop) {
-    overflow: auto;
-    padding: 2rem;
-    border-right: 1px solid $rule;
-    border-bottom: 0;
-  }
-
-  p {
-    margin: 0;
-  }
-}
-
-// O número escrito na etiqueta colada no aparelho.
-.ticket-number {
-  color: $brand-red;
-  font-family: $font-display;
-  font-size: 2rem;
-  font-weight: 600;
-  font-stretch: 125%;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-
-  @media (min-width: $desktop) {
-    font-size: 2.5rem;
-  }
-}
-
-.ticket-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.ticket-name {
-  font-size: 1.125rem;
-  font-weight: 500;
-  line-height: 1.3;
-}
-
-.ticket-phone {
-  align-self: flex-start;
-  color: $ink-muted;
-  font-size: 0.9375rem;
-  font-variant-numeric: tabular-nums;
-  text-decoration: none;
-
-  &:hover {
-    color: $brand-red;
-    text-decoration: underline;
-  }
-
-  &:focus-visible {
-    outline: 3px solid $signal;
-    outline-offset: 2px;
-  }
-}
-
-.ticket-device {
-  display: grid;
-  gap: 0.75rem;
-  margin: 0;
-  padding-top: 1.25rem;
-  border-top: 1px solid $rule;
-
-  div {
-    display: grid;
-    gap: 0.125rem;
-  }
-
-  dt {
-    color: $ink-muted;
-    font-size: 0.8125rem;
-  }
-
-  dd {
-    margin: 0;
-    font-size: 0.9375rem;
-    overflow-wrap: anywhere;
-  }
-}
-
-.mono {
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
-}
-
-// O que o cliente disse na entrada: a referência para a avaliação.
-.ticket-defect {
-  margin: 0;
-  padding-top: 1.25rem;
-  border-top: 1px solid $rule;
-
-  figcaption {
-    margin-bottom: 0.375rem;
-    color: $ink-muted;
-    font-size: 0.8125rem;
-  }
-
-  blockquote {
-    margin: 0;
-    padding-left: 0.875rem;
-    border-left: 3px solid $brand-red;
-    font-size: 1rem;
-    line-height: 1.5;
-    white-space: pre-line;
-  }
 }
 
 .fields {
@@ -399,21 +164,6 @@ $rule-soft: #f3e6e2;
 }
 
 // Rodapé: o preço que vai para o cliente e a ação que o envia.
-.summary {
-  display: flex;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-  gap: 1rem 2rem;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-top: 1px solid $rule;
-  background-color: #fff;
-
-  @media (min-width: $desktop) {
-    padding: 1rem 2rem;
-  }
-}
 
 .total {
   display: grid;
@@ -447,37 +197,5 @@ $rule-soft: #f3e6e2;
   &.negative {
     color: $brand-red-bright;
     font-weight: 500;
-  }
-}
-
-.actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-left: auto;
-}
-
-.send mat-spinner {
-  display: inline-block;
-  margin-right: 0.5rem;
-  vertical-align: middle;
-
-  @include mat.progress-spinner-overrides((
-    active-indicator-color: $ink-muted,
-  ));
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :host ::ng-deep * {
-    transition-duration: 0s !important;
-    animation-duration: 0s !important;
   }
 }

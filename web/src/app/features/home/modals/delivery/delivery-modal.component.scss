@@ -1,0 +1,8 @@
+@use '../../../../shared/styles/brand' as *;
+
+// Aviso de que o termo de entrega vai abrir em outra aba.
+.hint {
+  margin: 0.25rem 0 0;
+  color: $ink-muted;
+  font-size: 0.8125rem;
+}

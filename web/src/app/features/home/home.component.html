@@ -20,12 +20,12 @@
                 <td mat-cell *matCellDef="let element" class="cell-customer">{{ element.customer }}</td>
               </ng-container>
               <ng-container matColumnDef="company">
-                <th mat-header-cell *matHeaderCellDef>Empresa</th>
-                <td mat-cell *matCellDef="let element">{{ element.company | enumLabel: 'enterprise' }}</td>
+                <th mat-header-cell *matHeaderCellDef class="cell-company">Empresa</th>
+                <td mat-cell *matCellDef="let element" class="cell-company">{{ element.company | enumLabel: 'enterprise' }}</td>
               </ng-container>
               <ng-container matColumnDef="model">
-                <th mat-header-cell *matHeaderCellDef>Modelo</th>
-                <td mat-cell *matCellDef="let element">{{ element.model }}</td>
+                <th mat-header-cell *matHeaderCellDef class="cell-model">Modelo</th>
+                <td mat-cell *matCellDef="let element" class="cell-model">{{ element.model }}</td>
               </ng-container>
               <ng-container matColumnDef="defect">
                 <th mat-header-cell *matHeaderCellDef class="cell-long">Defeito</th>
@@ -36,8 +36,8 @@
                 <td mat-cell *matCellDef="let element" class="cell-date">{{ element.enteredAt | date:'dd/MM/yyyy' }}</td>
               </ng-container>
               <ng-container matColumnDef="action">
-                <th mat-header-cell *matHeaderCellDef class="cell-date">Ação</th>
-                <td mat-cell *matCellDef="let element" class="cell-date"><button matButton="filled" (click)="openEstimateDialog(element.number)">ORÇAMENTO</button></td>
+                <th mat-header-cell *matHeaderCellDef class="cell-action">Ação</th>
+                <td mat-cell *matCellDef="let element" class="cell-action"><button matButton="filled" (click)="openEstimateDialog(element.number)">ORÇAMENTO</button></td>
               </ng-container>
 
               <tr mat-header-row *matHeaderRowDef="pendingEstimateColumns; sticky: true"></tr>
@@ -80,8 +80,8 @@
                 <td mat-cell *matCellDef="let element" class="cell-customer">{{ element.customer }}</td>
               </ng-container>
               <ng-container matColumnDef="model">
-                <th mat-header-cell *matHeaderCellDef>Modelo</th>
-                <td mat-cell *matCellDef="let element">{{ element.model }}</td>
+                <th mat-header-cell *matHeaderCellDef class="cell-model">Modelo</th>
+                <td mat-cell *matCellDef="let element" class="cell-model">{{ element.model }}</td>
               </ng-container>
               <ng-container matColumnDef="solution">
                 <th mat-header-cell *matHeaderCellDef class="cell-long">Solução</th>
@@ -94,6 +94,10 @@
               <ng-container matColumnDef="evaluatedAt">
                 <th mat-header-cell *matHeaderCellDef class="cell-date">Inspeção</th>
                 <td mat-cell *matCellDef="let element" class="cell-date">{{ element.evaluatedAt | date:'dd/MM/yyyy' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="action">
+                <th mat-header-cell *matHeaderCellDef class="cell-action">Ação</th>
+                <td mat-cell *matCellDef="let element" class="cell-action"><button matButton="filled" (click)="openEstimateResponseDialog(element.number)">RESPOSTA</button></td>
               </ng-container>
 
               <tr mat-header-row *matHeaderRowDef="awaitingResponseColumns; sticky: true"></tr>
@@ -132,16 +136,16 @@
                 <td mat-cell *matCellDef="let element" class="cell-number">{{ element.number }}</td>
               </ng-container>
               <ng-container matColumnDef="company">
-                <th mat-header-cell *matHeaderCellDef>Empresa</th>
-                <td mat-cell *matCellDef="let element">{{ element.company | enumLabel: 'enterprise' }}</td>
+                <th mat-header-cell *matHeaderCellDef class="cell-company">Empresa</th>
+                <td mat-cell *matCellDef="let element" class="cell-company">{{ element.company | enumLabel: 'enterprise' }}</td>
               </ng-container>
               <ng-container matColumnDef="customer">
                 <th mat-header-cell *matHeaderCellDef class="cell-customer">Cliente</th>
                 <td mat-cell *matCellDef="let element" class="cell-customer">{{ element.customer }}</td>
               </ng-container>
               <ng-container matColumnDef="model">
-                <th mat-header-cell *matHeaderCellDef>Modelo</th>
-                <td mat-cell *matCellDef="let element">{{ element.model }}</td>
+                <th mat-header-cell *matHeaderCellDef class="cell-model">Modelo</th>
+                <td mat-cell *matCellDef="let element" class="cell-model">{{ element.model }}</td>
               </ng-container>
               <ng-container matColumnDef="solution">
                 <th mat-header-cell *matHeaderCellDef class="cell-long">Solução</th>
@@ -150,6 +154,10 @@
               <ng-container matColumnDef="approvedAt">
                 <th mat-header-cell *matHeaderCellDef class="cell-date">Aprovação</th>
                 <td mat-cell *matCellDef="let element" class="cell-date">{{ element.approvedAt | date:'dd/MM/yyyy' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="action">
+                <th mat-header-cell *matHeaderCellDef class="cell-action">Ação</th>
+                <td mat-cell *matCellDef="let element" class="cell-action"><button matButton="filled" (click)="openPartPurchaseDialog(element.number)">COMPRADO</button></td>
               </ng-container>
 
               <tr mat-header-row *matHeaderRowDef="approvedColumns; sticky: true"></tr>
@@ -192,8 +200,8 @@
                 <td mat-cell *matCellDef="let element" class="cell-customer">{{ element.customer }}</td>
               </ng-container>
               <ng-container matColumnDef="model">
-                <th mat-header-cell *matHeaderCellDef>Modelo</th>
-                <td mat-cell *matCellDef="let element">{{ element.model }}</td>
+                <th mat-header-cell *matHeaderCellDef class="cell-model">Modelo</th>
+                <td mat-cell *matCellDef="let element" class="cell-model">{{ element.model }}</td>
               </ng-container>
               <ng-container matColumnDef="solution">
                 <th mat-header-cell *matHeaderCellDef class="cell-long">Solução</th>
@@ -202,6 +210,10 @@
               <ng-container matColumnDef="rejectedAt">
                 <th mat-header-cell *matHeaderCellDef class="cell-date">Recusa</th>
                 <td mat-cell *matCellDef="let element" class="cell-date">{{ element.rejectedAt | date:'dd/MM/yyyy' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="action">
+                <th mat-header-cell *matHeaderCellDef class="cell-action">Ação</th>
+                <td mat-cell *matCellDef="let element" class="cell-action"><button matButton="filled" (click)="openRejectedReleaseDialog(element.number)">LIBERADO</button></td>
               </ng-container>
 
               <tr mat-header-row *matHeaderRowDef="rejectedColumns; sticky: true"></tr>
@@ -244,8 +256,8 @@
                 <td mat-cell *matCellDef="let element" class="cell-customer">{{ element.customer }}</td>
               </ng-container>
               <ng-container matColumnDef="model">
-                <th mat-header-cell *matHeaderCellDef>Modelo</th>
-                <td mat-cell *matCellDef="let element">{{ element.model }}</td>
+                <th mat-header-cell *matHeaderCellDef class="cell-model">Modelo</th>
+                <td mat-cell *matCellDef="let element" class="cell-model">{{ element.model }}</td>
               </ng-container>
               <ng-container matColumnDef="solution">
                 <th mat-header-cell *matHeaderCellDef class="cell-long">Solução</th>
@@ -254,6 +266,10 @@
               <ng-container matColumnDef="partPurchasedAt">
                 <th mat-header-cell *matHeaderCellDef class="cell-date">Compra da peça</th>
                 <td mat-cell *matCellDef="let element" class="cell-date">{{ element.partPurchasedAt | date:'dd/MM/yyyy' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="action">
+                <th mat-header-cell *matHeaderCellDef class="cell-action">Ação</th>
+                <td mat-cell *matCellDef="let element" class="cell-action"><button matButton="filled" (click)="openRepairDialog(element.number)">CONSERTADO</button></td>
               </ng-container>
 
               <tr mat-header-row *matHeaderRowDef="awaitingPartColumns; sticky: true"></tr>
@@ -296,20 +312,24 @@
                 <td mat-cell *matCellDef="let element" class="cell-customer">{{ element.customer }}</td>
               </ng-container>
               <ng-container matColumnDef="model">
-                <th mat-header-cell *matHeaderCellDef>Modelo</th>
-                <td mat-cell *matCellDef="let element">{{ element.model }}</td>
+                <th mat-header-cell *matHeaderCellDef class="cell-model">Modelo</th>
+                <td mat-cell *matCellDef="let element" class="cell-model">{{ element.model }}</td>
               </ng-container>
               <ng-container matColumnDef="repairedAt">
                 <th mat-header-cell *matHeaderCellDef class="cell-date">Reparo</th>
                 <td mat-cell *matCellDef="let element" class="cell-date">{{ element.repairedAt | date:'dd/MM/yyyy' }}</td>
               </ng-container>
               <ng-container matColumnDef="repairResult">
-                <th mat-header-cell *matHeaderCellDef>Situação</th>
-                <td mat-cell *matCellDef="let element">{{ element.repairResult | enumLabel: 'repairResult' }}</td>
+                <th mat-header-cell *matHeaderCellDef class="cell-status">Situação</th>
+                <td mat-cell *matCellDef="let element" class="cell-status">{{ element.repairResult | enumLabel: 'repairResult' }}</td>
               </ng-container>
               <ng-container matColumnDef="repairStatus">
-                <th mat-header-cell *matHeaderCellDef>Resposta</th>
-                <td mat-cell *matCellDef="let element">{{ element.repairStatus | enumLabel: 'repairStatus' }}</td>
+                <th mat-header-cell *matHeaderCellDef class="cell-status">Resposta</th>
+                <td mat-cell *matCellDef="let element" class="cell-status">{{ element.repairStatus | enumLabel: 'repairStatus' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="action">
+                <th mat-header-cell *matHeaderCellDef class="cell-action">Ação</th>
+                <td mat-cell *matCellDef="let element" class="cell-action"><button matButton="filled" (click)="openDeliveryDialog(element.number)">ENTREGUE</button></td>
               </ng-container>
 
               <tr mat-header-row *matHeaderRowDef="readyForPickupColumns; sticky: true"></tr>

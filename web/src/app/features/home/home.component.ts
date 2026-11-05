@@ -23,6 +23,11 @@ import { EnumLabelPipe } from "../../shared/enums";
 import { MatButtonModule } from "@angular/material/button";
 import { MatDialog } from "@angular/material/dialog";
 import { AddServiceOrderEstimateModalComponent } from "./modals/estimate/add-service-order-estimate-modal.component";
+import { EstimateResponseModalComponent } from "./modals/estimate-response/estimate-response-modal.component";
+import { PartPurchaseModalComponent } from "./modals/part-purchase/part-purchase-modal.component";
+import { RejectedReleaseModalComponent } from "./modals/rejected-release/rejected-release-modal.component";
+import { RepairModalComponent } from "./modals/repair/repair-modal.component";
+import { DeliveryModalComponent } from "./modals/delivery/delivery-modal.component";
 
 @Component({
     selector: 'app-home',
@@ -55,12 +60,12 @@ export class HomeComponent implements OnInit {
     protected awaitingPartServiceOrdersPagination = signal<TablePagination>(this.createPagination());
     protected readyForPickupServiceOrdersPagination = signal<TablePagination>(this.createPagination());
 
-    protected pendingEstimateColumns = ['number','customer','model','enteredAt','action'];
-    protected awaitingResponseColumns = ['number','customer','model','solution','amount','evaluatedAt'];
-    protected approvedColumns = ['number', 'company', 'customer', 'model', 'solution', 'approvedAt'];
-    protected rejectedColumns = ['number', 'customer', 'model', 'solution', 'rejectedAt'];
-    protected awaitingPartColumns = ['number', 'customer', 'model', 'solution', 'partPurchasedAt'];
-    protected readyForPickupColumns = ['number', 'customer', 'model', 'repairedAt', 'repairResult', 'repairStatus'];
+    protected pendingEstimateColumns = ['number', 'company', 'customer', 'model', 'enteredAt', 'action'];
+    protected awaitingResponseColumns = ['number','customer','model','solution','amount','evaluatedAt','action'];
+    protected approvedColumns = ['number', 'company', 'customer', 'model', 'solution', 'approvedAt', 'action'];
+    protected rejectedColumns = ['number', 'customer', 'model', 'solution', 'rejectedAt', 'action'];
+    protected awaitingPartColumns = ['number', 'customer', 'model', 'solution', 'partPurchasedAt', 'action'];
+    protected readyForPickupColumns = ['number', 'customer', 'model', 'repairedAt', 'repairResult', 'repairStatus', 'action'];
 
     protected dialog = inject(MatDialog);
 
@@ -81,6 +86,91 @@ export class HomeComponent implements OnInit {
             // A OS sai da fila de orçamentos pendentes assim que o orçamento é enviado.
             if (sent) {
                 this.loadPendingEstimateServiceOrders();
+            }
+        })
+    }
+
+    protected openEstimateResponseDialog(id: number) {
+        this.dialog.open(EstimateResponseModalComponent, {
+            data: id,
+            width: '100vw',
+            height: '100vh',
+            maxWidth: '100vw',
+            maxHeight: '100vh',
+            panelClass: 'fullscreen-dialog',
+            autoFocus: 'dialog',
+        }).afterClosed().subscribe(responded => {
+            // A OS sai da fila assim que a resposta é registrada (ou se já tinha sido respondida em outra tela).
+            if (responded) {
+                this.loadAwaitingResponseServiceOrders();
+            }
+        })
+    }
+
+    protected openPartPurchaseDialog(id: number) {
+        this.dialog.open(PartPurchaseModalComponent, {
+            data: id,
+            width: '100vw',
+            height: '100vh',
+            maxWidth: '100vw',
+            maxHeight: '100vh',
+            panelClass: 'fullscreen-dialog',
+            autoFocus: 'dialog',
+        }).afterClosed().subscribe(purchased => {
+            // A OS sai de "Aprovados" e vai para "Aguardando peça" assim que a compra é registrada.
+            if (purchased) {
+                this.loadApprovedServiceOrders();
+            }
+        })
+    }
+
+    protected openRejectedReleaseDialog(id: number) {
+        this.dialog.open(RejectedReleaseModalComponent, {
+            data: id,
+            width: '100vw',
+            height: '100vh',
+            maxWidth: '100vw',
+            maxHeight: '100vh',
+            panelClass: 'fullscreen-dialog',
+            autoFocus: 'dialog',
+        }).afterClosed().subscribe(released => {
+            // A OS sai de "Reprovados" e vai para "Prontos" assim que é liberada.
+            if (released) {
+                this.loadRejectedServiceOrders();
+            }
+        })
+    }
+
+    protected openRepairDialog(id: number) {
+        this.dialog.open(RepairModalComponent, {
+            data: id,
+            width: '100vw',
+            height: '100vh',
+            maxWidth: '100vw',
+            maxHeight: '100vh',
+            panelClass: 'fullscreen-dialog',
+            autoFocus: 'dialog',
+        }).afterClosed().subscribe(repaired => {
+            // A OS sai de "Aguardando peça" e vai para "Prontos" assim que o conserto é registrado.
+            if (repaired) {
+                this.loadAwaitingPartServiceOrders();
+            }
+        })
+    }
+
+    protected openDeliveryDialog(id: number) {
+        this.dialog.open(DeliveryModalComponent, {
+            data: id,
+            width: '100vw',
+            height: '100vh',
+            maxWidth: '100vw',
+            maxHeight: '100vh',
+            panelClass: 'fullscreen-dialog',
+            autoFocus: 'dialog',
+        }).afterClosed().subscribe(delivered => {
+            // A OS sai de "Prontos" assim que a entrega é registrada.
+            if (delivered) {
+                this.loadReadyForPickupServiceOrders();
             }
         })
     }

@@ -1,4 +1,5 @@
-import { Component, computed, inject, OnInit, signal } from "@angular/core";
+import { Component, computed, inject, signal } from "@angular/core";
+import { ServiceOrderModalComponent } from "../shared/service-order-modal.component";
 import { toSignal } from "@angular/core/rxjs-interop";
 import { CurrencyPipe } from "@angular/common";
 import { FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
@@ -9,7 +10,7 @@ import { AddServiceOrderEstimateModalService } from "./add-service-order-estimat
 import { finalize } from "rxjs";
 import { HttpErrorResponse } from "@angular/common/http";
 import { SnackbarService } from "../../../../shared/snackbar/snackbar.service";
-import { EnumLabelPipe, enumOptions, ERepairResult } from "../../../../shared/enums";
+import { enumOptions, ERepairResult } from "../../../../shared/enums";
 import { MatButtonModule } from "@angular/material/button";
 import { MatButtonToggleModule } from "@angular/material/button-toggle";
 import { MatInputModule } from "@angular/material/input";
@@ -19,11 +20,12 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 @Component({
     selector: 'app-add-service-order-estimate-modal',
     styleUrl: './add-service-order-estimate-modal.component.scss',
+    host: { class: 'service-order-modal-host' },
     templateUrl: './add-service-order-estimate-modal.component.html',
     imports: [
+        ServiceOrderModalComponent,
         ReactiveFormsModule,
         CurrencyPipe,
-        EnumLabelPipe,
         TextFieldModule,
         MatDialogModule,
         MatFormFieldModule,
@@ -33,13 +35,12 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
         MatProgressSpinnerModule,
     ]
 })
-export class AddServiceOrderEstimateModalComponent implements OnInit {
+export class AddServiceOrderEstimateModalComponent {
     private _dialogRef = inject(MatDialogRef<AddServiceOrderEstimateModalComponent>);
     private _fb = inject(FormBuilder);
     private _service = inject(AddServiceOrderEstimateModalService);
     private _snackbar = inject(SnackbarService);
 
-    protected isLoading = signal<boolean>(false);
     protected isSending = signal<boolean>(false);
     protected serviceOrder = signal<ServiceOrder | null>(null);
     id = inject<number>(MAT_DIALOG_DATA)
@@ -51,7 +52,7 @@ export class AddServiceOrderEstimateModalComponent implements OnInit {
         repairResult: this._fb.nonNullable.control(ERepairResult.Repair),
         solution: this._fb.nonNullable.control('', Validators.required),
         estimateMessage: this._fb.nonNullable.control('', Validators.required),
-        partPurchaseCost: this._fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
+        partPurchaseCost: this._fb.control<number | null>(0, [Validators.required, Validators.min(0)]),
         totalCost: this._fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
         warranty: this._fb.nonNullable.control(''),
     })
@@ -66,34 +67,10 @@ export class AddServiceOrderEstimateModalComponent implements OnInit {
         return totalCost - partPurchaseCost;
     });
 
-    ngOnInit(): void {
-        this.loadServiceOrder();
-    }
-
-    protected loadServiceOrder() {
-        this.isLoading.set(true);
-
-        this._service.getServiceOrderById(this.id).
-        pipe(
-            finalize(() => this.isLoading.set(false))
-        ).subscribe({
-            next: result => {
-                if (!result.data) {
-                    this._snackbar.open(result.message ?? 'Ordem de serviço não encontrada.');
-                    return;
-                }
-
-                const serviceOrder = result.data;
-                this.serviceOrder.set(serviceOrder);
-                this.prefill(serviceOrder);
-            },
-            error: (error: HttpErrorResponse) => {
-                const message = error.error?.message ??
-                    (typeof error.error === 'string' ? error.error : 'Erro ao carregar a ordem de serviço.');
-
-                this._snackbar.open(message);
-            }
-        })
+    /** A casca carregou a OS: guarda e preenche o formulário com o orçamento salvo, se houver. */
+    protected onLoaded(order: ServiceOrder) {
+        this.serviceOrder.set(order);
+        this.prefill(order);
     }
 
     /** Se a OS já tiver um orçamento salvo, ele aparece para ser corrigido. */
