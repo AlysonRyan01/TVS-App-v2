@@ -2,12 +2,12 @@ import { Component, inject, OnInit, signal } from "@angular/core";
 import { BaseLayoutComponent } from "../../shared/layout/base-layout/base-layout.component";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatTableModule } from "@angular/material/table";
-import { ApprovedServiceOrder } from "./models/approved-service-orders.interface";
-import { PendingEstimateServiceOrder } from "./models/pending-estimate-service-ordens.interface";
-import { ReadyServiceOrder } from "./models/ready-service-orders.interface";
-import { RefusedServiceOrder } from "./models/refused-service-orders.interface";
-import { WaitingResponseServiceOrder } from "./models/waiting-response-service-orders.interface";
-import { WaitingPartServiceOrder } from "./models/waiting-part-service-orders.interface";
+import { ApprovedServiceOrder } from "./models/approved-service-order.interface";
+import { PendingEstimateServiceOrder } from "./models/pending-estimate-service-order.interface";
+import { ReadyForPickupServiceOrder } from "./models/ready-for-pickup-service-order.interface";
+import { RejectedServiceOrder } from "./models/rejected-service-order.interface";
+import { AwaitingResponseServiceOrder } from "./models/awaiting-response-service-order.interface";
+import { AwaitingPartServiceOrder } from "./models/awaiting-part-service-order.interface";
 import { HomeService } from "./home.service";
 import { TablePagination } from "./models/table-pagination.interface";
 import { DatePipe } from '@angular/common';
@@ -21,9 +21,8 @@ import { SnackbarService } from "../../shared/snackbar/snackbar.service";
 import { CurrencyPipe } from "@angular/common";
 import { EnumLabelPipe } from "../../shared/enums";
 import { MatButtonModule } from "@angular/material/button";
-import { DialogRef } from "@angular/cdk/dialog";
 import { MatDialog } from "@angular/material/dialog";
-import { AddServiceOrderQuoteModalComponent } from "./modals/quote/add-service-order-quote-modal.component";
+import { AddServiceOrderEstimateModalComponent } from "./modals/estimate/add-service-order-estimate-modal.component";
 
 @Component({
     selector: 'app-home',
@@ -36,41 +35,41 @@ export class HomeComponent implements OnInit {
     private _snack = inject(SnackbarService);
 
     protected isLoadingPendingEstimateServiceOrders = signal<boolean>(false);
-    protected isLoadingWaitingResponseServiceOrders = signal<boolean>(false);
+    protected isLoadingAwaitingResponseServiceOrders = signal<boolean>(false);
     protected isLoadingApprovedServiceOrders = signal<boolean>(false);
-    protected isLoadingReprovedServiceOrders = signal<boolean>(false);
-    protected isLoadingWaitingPartServiceOrders = signal<boolean>(false);
-    protected isLoadingReadyServiceOrders = signal<boolean>(false);
+    protected isLoadingRejectedServiceOrders = signal<boolean>(false);
+    protected isLoadingAwaitingPartServiceOrders = signal<boolean>(false);
+    protected isLoadingReadyForPickupServiceOrders = signal<boolean>(false);
 
     protected pendingEstimateServiceOrders = signal<PendingEstimateServiceOrder[]>([]);
-    protected waitingResponseServiceOrders = signal<WaitingResponseServiceOrder[]>([]);
+    protected awaitingResponseServiceOrders = signal<AwaitingResponseServiceOrder[]>([]);
     protected approvedServiceOrders = signal<ApprovedServiceOrder[]>([]);
-    protected refusedServiceOrders = signal<RefusedServiceOrder[]>([]);
-    protected waitingPartServiceOrders = signal<WaitingPartServiceOrder[]>([]);
-    protected readyServiceOrders = signal<ReadyServiceOrder[]>([]);
+    protected rejectedServiceOrders = signal<RejectedServiceOrder[]>([]);
+    protected awaitingPartServiceOrders = signal<AwaitingPartServiceOrder[]>([]);
+    protected readyForPickupServiceOrders = signal<ReadyForPickupServiceOrder[]>([]);
 
-    protected pendingServiceOrdersPagination = signal<TablePagination>(this.createPagination());
-    protected waitingResponseServiceOrdersPagination = signal<TablePagination>(this.createPagination());
+    protected pendingEstimateServiceOrdersPagination = signal<TablePagination>(this.createPagination());
+    protected awaitingResponseServiceOrdersPagination = signal<TablePagination>(this.createPagination());
     protected approvedServiceOrdersPagination = signal<TablePagination>(this.createPagination());
-    protected refusedServiceOrdersPagination = signal<TablePagination>(this.createPagination());
-    protected waitingPartServiceOrdersPagination = signal<TablePagination>(this.createPagination());
-    protected readyServiceOrdersPagination = signal<TablePagination>(this.createPagination());
+    protected rejectedServiceOrdersPagination = signal<TablePagination>(this.createPagination());
+    protected awaitingPartServiceOrdersPagination = signal<TablePagination>(this.createPagination());
+    protected readyForPickupServiceOrdersPagination = signal<TablePagination>(this.createPagination());
 
-    protected pendingColumns = ['number','customer','model','entryDate','action'];
-    protected waitingResponseColumns = ['number','customer','model','solution','amount','inspectionIn'];
-    protected approvedColumns = ['number', 'company', 'customer', 'model', 'solution', 'approvedIn'];
-    protected refusedColumns = ['number', 'customer', 'model', 'solution', 'refusedIn'];
-    protected waitingPartColumns = ['number', 'customer', 'model', 'solution', 'purchasedIn'];
-    protected readyColumns = ['number', 'customer', 'model', 'repairDate', 'situation', 'response'];
+    protected pendingEstimateColumns = ['number','customer','model','enteredAt','action'];
+    protected awaitingResponseColumns = ['number','customer','model','solution','amount','evaluatedAt'];
+    protected approvedColumns = ['number', 'company', 'customer', 'model', 'solution', 'approvedAt'];
+    protected rejectedColumns = ['number', 'customer', 'model', 'solution', 'rejectedAt'];
+    protected awaitingPartColumns = ['number', 'customer', 'model', 'solution', 'partPurchasedAt'];
+    protected readyForPickupColumns = ['number', 'customer', 'model', 'repairedAt', 'repairResult', 'repairStatus'];
 
     protected dialog = inject(MatDialog);
 
     ngOnInit(): void {
-        this.loadPendingServiceOrders();
+        this.loadPendingEstimateServiceOrders();
     }
 
-    protected openDialog(id: number) {
-        this.dialog.open(AddServiceOrderQuoteModalComponent, {
+    protected openEstimateDialog(id: number) {
+        this.dialog.open(AddServiceOrderEstimateModalComponent, {
             data: id,
             width: '100vw',
             height: '100vh',
@@ -81,16 +80,16 @@ export class HomeComponent implements OnInit {
         }).afterClosed().subscribe(sent => {
             // A OS sai da fila de orçamentos pendentes assim que o orçamento é enviado.
             if (sent) {
-                this.loadPendingServiceOrders();
+                this.loadPendingEstimateServiceOrders();
             }
         })
     }
 
-    private loadPendingServiceOrders() {
+    private loadPendingEstimateServiceOrders() {
         this.isLoadingPendingEstimateServiceOrders.set(true);
         this.pendingEstimateServiceOrders.set([]);
 
-        const pagination = this.pendingServiceOrdersPagination();
+        const pagination = this.pendingEstimateServiceOrdersPagination();
 
         this._service.getPendingEstimateServiceOrders({pageNumber: pagination.pageNumber, pageSize: pagination.pageSize})
         .pipe(
@@ -100,7 +99,7 @@ export class HomeComponent implements OnInit {
             next: result => {
             const data = result.data!;
             this.pendingEstimateServiceOrders.set(data.items);
-            this.pendingServiceOrdersPagination.set(this.createPaginationWithParams(data.pageNumber, result.data!.pageSize, result.data!.totalCount));
+            this.pendingEstimateServiceOrdersPagination.set(this.createPaginationWithParams(data.pageNumber, data.pageSize, data.totalCount));
         },
             error: (error: HttpErrorResponse) => {
                 const message = error.error?.message ??
@@ -111,20 +110,20 @@ export class HomeComponent implements OnInit {
         })
     }
 
-    private loadWaitingResponseServiceOrders() {
-        this.isLoadingWaitingResponseServiceOrders.set(true);
-        this.waitingResponseServiceOrders.set([]);
-        const pagination = this.waitingResponseServiceOrdersPagination();
+    private loadAwaitingResponseServiceOrders() {
+        this.isLoadingAwaitingResponseServiceOrders.set(true);
+        this.awaitingResponseServiceOrders.set([]);
+        const pagination = this.awaitingResponseServiceOrdersPagination();
 
-        this._service.getWaitingResponseServiceOrders({pageNumber: pagination.pageNumber, pageSize: pagination.pageSize})
+        this._service.getAwaitingResponseServiceOrders({pageNumber: pagination.pageNumber, pageSize: pagination.pageSize})
         .pipe(
-            finalize(() => this.isLoadingWaitingResponseServiceOrders.set(false))
+            finalize(() => this.isLoadingAwaitingResponseServiceOrders.set(false))
         )
         .subscribe({
             next: result => {
                 const data = result.data!;
-                this.waitingResponseServiceOrders.set(data.items);
-                this.waitingResponseServiceOrdersPagination.set(this.createPaginationWithParams(data.pageNumber, result.data!.pageSize, result.data!.totalCount));
+                this.awaitingResponseServiceOrders.set(data.items);
+                this.awaitingResponseServiceOrdersPagination.set(this.createPaginationWithParams(data.pageNumber, data.pageSize, data.totalCount));
             },
             error: (error: HttpErrorResponse) => {
                 const message = error.error?.message ??
@@ -148,7 +147,7 @@ export class HomeComponent implements OnInit {
             next: result => {
                 const data = result.data!;
                 this.approvedServiceOrders.set(data.items);
-                this.approvedServiceOrdersPagination.set(this.createPaginationWithParams(data.pageNumber, result.data!.pageSize, result.data!.totalCount));
+                this.approvedServiceOrdersPagination.set(this.createPaginationWithParams(data.pageNumber, data.pageSize, data.totalCount));
             },
             error: (error: HttpErrorResponse) => {
                 const message = error.error?.message ??
@@ -159,20 +158,20 @@ export class HomeComponent implements OnInit {
         })
     }
 
-    private loadRefusedServiceOrders() {
-        this.isLoadingReprovedServiceOrders.set(true);
-        this.refusedServiceOrders.set([]);
-        const pagination = this.refusedServiceOrdersPagination();
+    private loadRejectedServiceOrders() {
+        this.isLoadingRejectedServiceOrders.set(true);
+        this.rejectedServiceOrders.set([]);
+        const pagination = this.rejectedServiceOrdersPagination();
 
-        this._service.getRefusedServiceOrders({pageNumber: pagination.pageNumber, pageSize: pagination.pageSize})
+        this._service.getRejectedServiceOrders({pageNumber: pagination.pageNumber, pageSize: pagination.pageSize})
         .pipe(
-            finalize(() => this.isLoadingReprovedServiceOrders.set(false))
+            finalize(() => this.isLoadingRejectedServiceOrders.set(false))
         )
         .subscribe({
             next: result => {
                 const data = result.data!;
-                this.refusedServiceOrders.set(data.items);
-                this.refusedServiceOrdersPagination.set(this.createPaginationWithParams(data.pageNumber, result.data!.pageSize, result.data!.totalCount));
+                this.rejectedServiceOrders.set(data.items);
+                this.rejectedServiceOrdersPagination.set(this.createPaginationWithParams(data.pageNumber, data.pageSize, data.totalCount));
             },
             error: (error: HttpErrorResponse) => {
                 const message = error.error?.message ??
@@ -183,20 +182,20 @@ export class HomeComponent implements OnInit {
         })
     }
 
-    private loadWaitingPartServiceOrders() {
-        this.isLoadingWaitingPartServiceOrders.set(true);
-        this.waitingPartServiceOrders.set([]);
-        const pagination = this.waitingPartServiceOrdersPagination();
+    private loadAwaitingPartServiceOrders() {
+        this.isLoadingAwaitingPartServiceOrders.set(true);
+        this.awaitingPartServiceOrders.set([]);
+        const pagination = this.awaitingPartServiceOrdersPagination();
 
-        this._service.getWaitingPartServiceOrders({pageNumber: pagination.pageNumber, pageSize: pagination.pageSize})
+        this._service.getAwaitingPartServiceOrders({pageNumber: pagination.pageNumber, pageSize: pagination.pageSize})
         .pipe(
-            finalize(() => this.isLoadingWaitingPartServiceOrders.set(false))
+            finalize(() => this.isLoadingAwaitingPartServiceOrders.set(false))
         )
         .subscribe({
             next: result => {
                 const data = result.data!;
-                this.waitingPartServiceOrders.set(data.items);
-                this.waitingPartServiceOrdersPagination.set(this.createPaginationWithParams(data.pageNumber, result.data!.pageSize, result.data!.totalCount));
+                this.awaitingPartServiceOrders.set(data.items);
+                this.awaitingPartServiceOrdersPagination.set(this.createPaginationWithParams(data.pageNumber, data.pageSize, data.totalCount));
             },
             error: (error: HttpErrorResponse) => {
                 const message = error.error?.message ??
@@ -207,20 +206,20 @@ export class HomeComponent implements OnInit {
         })
     }
 
-    private loadReadyServiceOrders() {
-        this.isLoadingReadyServiceOrders.set(true);
-        this.readyServiceOrders.set([]);
-        const pagination = this.readyServiceOrdersPagination();
+    private loadReadyForPickupServiceOrders() {
+        this.isLoadingReadyForPickupServiceOrders.set(true);
+        this.readyForPickupServiceOrders.set([]);
+        const pagination = this.readyForPickupServiceOrdersPagination();
 
-        this._service.getReadyServiceOrders({pageNumber: pagination.pageNumber, pageSize: pagination.pageSize})
+        this._service.getReadyForPickupServiceOrders({pageNumber: pagination.pageNumber, pageSize: pagination.pageSize})
         .pipe(
-            finalize(() => this.isLoadingReadyServiceOrders.set(false))
+            finalize(() => this.isLoadingReadyForPickupServiceOrders.set(false))
         )
         .subscribe({
             next: result => {
                 const data = result.data!;
-                this.readyServiceOrders.set(data.items);
-                this.readyServiceOrdersPagination.set(this.createPaginationWithParams(data.pageNumber, result.data!.pageSize, result.data!.totalCount));
+                this.readyForPickupServiceOrders.set(data.items);
+                this.readyForPickupServiceOrdersPagination.set(this.createPaginationWithParams(data.pageNumber, data.pageSize, data.totalCount));
             },
             error: (error: HttpErrorResponse) => {
                 const message = error.error?.message ??
@@ -231,24 +230,24 @@ export class HomeComponent implements OnInit {
         })
     }
 
-    protected onPendingPageChange(event: PageEvent): void {
-        this.pendingServiceOrdersPagination.update(current => ({
+    protected onPendingEstimatePageChange(event: PageEvent): void {
+        this.pendingEstimateServiceOrdersPagination.update(current => ({
             ...current,
             pageNumber: event.pageIndex + 1,
             pageSize: event.pageSize
         }));
 
-        this.loadPendingServiceOrders();
+        this.loadPendingEstimateServiceOrders();
     }
 
-    protected onWaitingResponsePageChange(event: PageEvent): void {
-        this.waitingResponseServiceOrdersPagination.update(current => ({
+    protected onAwaitingResponsePageChange(event: PageEvent): void {
+        this.awaitingResponseServiceOrdersPagination.update(current => ({
             ...current,
             pageNumber: event.pageIndex + 1,
             pageSize: event.pageSize
         }));
 
-        this.loadWaitingResponseServiceOrders();
+        this.loadAwaitingResponseServiceOrders();
     }
 
     protected onApprovedPageChange(event: PageEvent): void {
@@ -261,55 +260,55 @@ export class HomeComponent implements OnInit {
         this.loadApprovedServiceOrders();
     }
 
-    protected onRefusedPageChange(event: PageEvent): void {
-        this.refusedServiceOrdersPagination.update(current => ({
+    protected onRejectedPageChange(event: PageEvent): void {
+        this.rejectedServiceOrdersPagination.update(current => ({
             ...current,
             pageNumber: event.pageIndex + 1,
             pageSize: event.pageSize
         }));
 
-        this.loadRefusedServiceOrders();
+        this.loadRejectedServiceOrders();
     }
 
-    protected onWaitingPartPageChange(event: PageEvent): void {
-        this.waitingPartServiceOrdersPagination.update(current => ({
+    protected onAwaitingPartPageChange(event: PageEvent): void {
+        this.awaitingPartServiceOrdersPagination.update(current => ({
             ...current,
             pageNumber: event.pageIndex + 1,
             pageSize: event.pageSize
         }));
 
-        this.loadWaitingPartServiceOrders();
+        this.loadAwaitingPartServiceOrders();
     }
 
-    protected onReadyPageChange(event: PageEvent): void {
-        this.readyServiceOrdersPagination.update(current => ({
+    protected onReadyForPickupPageChange(event: PageEvent): void {
+        this.readyForPickupServiceOrdersPagination.update(current => ({
             ...current,
             pageNumber: event.pageIndex + 1,
             pageSize: event.pageSize
         }));
 
-        this.loadReadyServiceOrders();
+        this.loadReadyForPickupServiceOrders();
     }
 
-    protected myTabSelectedTabChange(changeEvent: MatTabChangeEvent) {
+    protected onTabChange(changeEvent: MatTabChangeEvent) {
         switch (changeEvent.index) {
             case 0:
-                this.loadPendingServiceOrders();
+                this.loadPendingEstimateServiceOrders();
                 break;
             case 1:
-                this.loadWaitingResponseServiceOrders();
+                this.loadAwaitingResponseServiceOrders();
                 break;
             case 2:
                 this.loadApprovedServiceOrders();
                 break;
             case 3:
-                this.loadRefusedServiceOrders();
+                this.loadRejectedServiceOrders();
                 break;
             case 4:
-                this.loadWaitingPartServiceOrders();
+                this.loadAwaitingPartServiceOrders();
                 break;
             case 5:
-                this.loadReadyServiceOrders();
+                this.loadReadyForPickupServiceOrders();
                 break;
         }
     }

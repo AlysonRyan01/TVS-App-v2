@@ -5,6 +5,6 @@ export interface PendingEstimateServiceOrder {
     customer: string;
     company: keyof typeof EEnterprise;
     model: string;
-    defect: string;
-    entryDate: Date;
+    defect: string | null;
+    enteredAt: Date;
 }

@@ -29,22 +29,22 @@ public class ServiceOrderQueryHandler : IServiceOrderQueryHandler
     }
 
     public Task<BaseResponse<PaginatedResult<PendingEstimateServiceOrder>>> GetPendingEstimateServiceOrders(int pageNumber, int pageSize)
-        => GetPagedAsync(pageNumber, pageSize, _repository.GetPendingEstimatesAsync);
+        => GetPagedAsync(pageNumber, pageSize, _repository.GetPendingEstimateAsync);
 
-    public Task<BaseResponse<PaginatedResult<WaitingResponseServiceOrder>>> GetWaitingResponseServiceOrders(int pageNumber, int pageSize)
-        => GetPagedAsync(pageNumber, pageSize, _repository.GetWaitingResponseAsync);
+    public Task<BaseResponse<PaginatedResult<AwaitingResponseServiceOrder>>> GetAwaitingResponseServiceOrders(int pageNumber, int pageSize)
+        => GetPagedAsync(pageNumber, pageSize, _repository.GetAwaitingResponseAsync);
 
     public Task<BaseResponse<PaginatedResult<ApprovedServiceOrder>>> GetApprovedServiceOrders(int pageNumber, int pageSize)
         => GetPagedAsync(pageNumber, pageSize, _repository.GetApprovedAsync);
 
-    public Task<BaseResponse<PaginatedResult<RefusedServiceOrder>>> GetRefusedServiceOrders(int pageNumber, int pageSize)
-        => GetPagedAsync(pageNumber, pageSize, _repository.GetRefusedAsync);
+    public Task<BaseResponse<PaginatedResult<RejectedServiceOrder>>> GetRejectedServiceOrders(int pageNumber, int pageSize)
+        => GetPagedAsync(pageNumber, pageSize, _repository.GetRejectedAsync);
 
-    public Task<BaseResponse<PaginatedResult<WaitingPartServiceOrder>>> GetWaitingPartServiceOrders(int pageNumber, int pageSize)
-        => GetPagedAsync(pageNumber, pageSize, _repository.GetWaitingPartAsync);
+    public Task<BaseResponse<PaginatedResult<AwaitingPartServiceOrder>>> GetAwaitingPartServiceOrders(int pageNumber, int pageSize)
+        => GetPagedAsync(pageNumber, pageSize, _repository.GetAwaitingPartAsync);
 
-    public Task<BaseResponse<PaginatedResult<ReadyServiceOrder>>> GetReadyServiceOrders(int pageNumber, int pageSize)
-        => GetPagedAsync(pageNumber, pageSize, _repository.GetReadyAsync);
+    public Task<BaseResponse<PaginatedResult<ReadyForPickupServiceOrder>>> GetReadyForPickupServiceOrders(int pageNumber, int pageSize)
+        => GetPagedAsync(pageNumber, pageSize, _repository.GetReadyForPickupAsync);
 
     private static async Task<BaseResponse<PaginatedResult<T>>> GetPagedAsync<T>(
         int pageNumber,

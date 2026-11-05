@@ -6,16 +6,16 @@ public record PendingEstimateServiceOrder(
     string Company,
     string Model,
     string? Defect,
-    DateTime EntryDate
+    DateTime EnteredAt
 );
 
-public record WaitingResponseServiceOrder(
+public record AwaitingResponseServiceOrder(
     long Number,
     string Customer,
     string Model,
     string? Solution,
     decimal Amount,
-    DateTime? InspectionIn
+    DateTime? EvaluatedAt
 );
 
 public record ApprovedServiceOrder(
@@ -24,30 +24,30 @@ public record ApprovedServiceOrder(
     string Customer,
     string Model,
     string? Solution,
-    DateTime? ApprovedIn
+    DateTime? ApprovedAt
 );
 
-public record RefusedServiceOrder(
+public record RejectedServiceOrder(
     long Number,
     string Customer,
     string Model,
     string? Solution,
-    DateTime? RefusedIn
+    DateTime? RejectedAt
 );
 
-public record WaitingPartServiceOrder(
+public record AwaitingPartServiceOrder(
     long Number,
     string Customer,
     string Model,
     string? Solution,
-    DateTime? PurchasedIn
+    DateTime? PartPurchasedAt
 );
 
-public record ReadyServiceOrder(
+public record ReadyForPickupServiceOrder(
     long Number,
     string Customer,
     string Model,
-    DateTime? RepairDate,
-    string? Situation,
-    string? Response
+    DateTime? RepairedAt,
+    string? RepairResult,
+    string? RepairStatus
 );

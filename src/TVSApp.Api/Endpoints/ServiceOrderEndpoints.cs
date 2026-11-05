@@ -227,46 +227,46 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-pending-estimates-service-orders/{pageNumber}/{pageSize}", 
+        app.MapGet("/get-pending-estimate-service-orders/{pageNumber}/{pageSize}", 
             async (IServiceOrderQueryHandler handler, int pageNumber, int pageSize) =>
         {
-            var getOrderResult = await handler.GetPendingEstimateServiceOrders(pageNumber, pageSize);
-            return getOrderResult.ToResult();
+            var result = await handler.GetPendingEstimateServiceOrders(pageNumber, pageSize);
+            return result.ToResult();
         }).WithTags("ServiceOrder").RequireAuthorization();
 
-        app.MapGet("/get-waiting-response-service-orders/{pageNumber}/{pageSize}", 
+        app.MapGet("/get-awaiting-response-service-orders/{pageNumber}/{pageSize}", 
             async (IServiceOrderQueryHandler handler, int pageNumber, int pageSize) =>
         {
-            var getOrderResult = await handler.GetWaitingResponseServiceOrders(pageNumber, pageSize);
-            return getOrderResult.ToResult();
+            var result = await handler.GetAwaitingResponseServiceOrders(pageNumber, pageSize);
+            return result.ToResult();
         }).WithTags("ServiceOrder").RequireAuthorization();
 
-        app.MapGet("/get-pending-purchase-service-orders/{pageNumber}/{pageSize}", 
+        app.MapGet("/get-approved-service-orders/{pageNumber}/{pageSize}", 
             async (IServiceOrderQueryHandler handler, int pageNumber, int pageSize) =>
         {
-            var getOrderResult = await handler.GetApprovedServiceOrders(pageNumber, pageSize);
-            return getOrderResult.ToResult();
+            var result = await handler.GetApprovedServiceOrders(pageNumber, pageSize);
+            return result.ToResult();
         }).WithTags("ServiceOrder").RequireAuthorization();
         
-        app.MapGet("/get-rejected-estimate-service-orders/{pageNumber}/{pageSize}", 
+        app.MapGet("/get-rejected-service-orders/{pageNumber}/{pageSize}", 
             async (IServiceOrderQueryHandler handler, int pageNumber, int pageSize) =>
         {
-            var getOrderResult = await handler.GetRefusedServiceOrders(pageNumber, pageSize);
-            return getOrderResult.ToResult();
+            var result = await handler.GetRejectedServiceOrders(pageNumber, pageSize);
+            return result.ToResult();
         }).WithTags("ServiceOrder").RequireAuthorization();
 
-        app.MapGet("/get-waiting-parts-service-orders/{pageNumber}/{pageSize}", 
+        app.MapGet("/get-awaiting-part-service-orders/{pageNumber}/{pageSize}", 
             async (IServiceOrderQueryHandler handler, int pageNumber, int pageSize) =>
         {
-            var getOrderResult = await handler.GetWaitingPartServiceOrders(pageNumber, pageSize);
-            return getOrderResult.ToResult();
+            var result = await handler.GetAwaitingPartServiceOrders(pageNumber, pageSize);
+            return result.ToResult();
         }).WithTags("ServiceOrder").RequireAuthorization();
 
-        app.MapGet("/get-waiting-pickup-service-orders/{pageNumber}/{pageSize}", 
+        app.MapGet("/get-ready-for-pickup-service-orders/{pageNumber}/{pageSize}", 
             async (IServiceOrderQueryHandler handler, int pageNumber, int pageSize) =>
         {
-            var getOrderResult = await handler.GetReadyServiceOrders(pageNumber, pageSize);
-            return getOrderResult.ToResult();
+            var result = await handler.GetReadyForPickupServiceOrders(pageNumber, pageSize);
+            return result.ToResult();
         }).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapGet("/get-delivered-service-orders/{pageNumber}/{pageSize}", async (
@@ -310,20 +310,15 @@ public static class ServiceOrderEndpoints
         .RequireAuthorization();
 
         app.MapPut("/add-service-order-estimate", async (
-                ISender handler, 
-                AddServiceOrderEstimateCommand command, 
+                IServiceOrderCommandHandler handler,
+                AddServiceOrderEstimateCommand command,
                 IHubContext<ServiceOrderHub> hubContext) =>
         {
-            var normalizedCommand = command.Normalize();
-            normalizedCommand.Validate();
+            var result = await handler.AddEstimate(command);
+            if (result.IsSuccess)
+                await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
-            var addServiceOrderEstimateResult = await handler.Send(normalizedCommand);
-            if (!addServiceOrderEstimateResult.IsSuccess)
-                return addServiceOrderEstimateResult.ToResult();
-
-            await hubContext.Clients.All.SendAsync("Atualizar", addServiceOrderEstimateResult.Message);
-
-            return addServiceOrderEstimateResult.ToResult();
+            return result.ToResult();
         }).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPut("/add-service-order-approve-estimate", async (

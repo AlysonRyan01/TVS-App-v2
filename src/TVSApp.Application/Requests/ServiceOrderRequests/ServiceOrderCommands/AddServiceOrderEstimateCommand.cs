@@ -1,20 +1,17 @@
-using MediatR;
-using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Exceptions;
 using TVS_App.Domain.Enums;
-using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 
 public record AddServiceOrderEstimateCommand(
     long ServiceOrderId,
-    string Guarantee,
+    string Warranty,
     string Solution,
     decimal TotalCost,
     ERepairResult RepairResult,
     string EstimateMessage,
     decimal PartPurchaseCost = 0
-) : IRequest<BaseResponse<ServiceOrderDto?>>
+)
 {
     public AddServiceOrderEstimateCommand() : this(
         0,
@@ -31,7 +28,7 @@ public record AddServiceOrderEstimateCommand(
         return this with
         {
             Solution = Solution.Trim().ToUpper(),
-            Guarantee = Guarantee.Trim().ToUpper()
+            Warranty = Warranty.Trim().ToUpper()
         };
     }
 

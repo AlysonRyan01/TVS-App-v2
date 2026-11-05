@@ -1,8 +1,8 @@
 import { ERepairResult } from "../../../../../shared/enums";
 
-export interface AddServiceOrderQuote {
+export interface AddServiceOrderEstimate {
     serviceOrderId: number;
-    guarantee: string;
+    warranty: string;
     solution: string;
     totalCost: number;
     repairResult: ERepairResult;

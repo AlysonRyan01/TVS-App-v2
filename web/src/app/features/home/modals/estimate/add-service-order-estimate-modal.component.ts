@@ -5,7 +5,7 @@ import { FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from "@angular/material/dialog";
 import { TextFieldModule } from "@angular/cdk/text-field";
 import { ServiceOrder } from "../../../../shared/models/service-order.interface";
-import { AddServiceOrderQuoteModalService } from "./add-service-order-quote-modal.service";
+import { AddServiceOrderEstimateModalService } from "./add-service-order-estimate-modal.service";
 import { finalize } from "rxjs";
 import { HttpErrorResponse } from "@angular/common/http";
 import { SnackbarService } from "../../../../shared/snackbar/snackbar.service";
@@ -17,9 +17,9 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
 @Component({
-    selector: 'app-add-service-order-quote-modal',
-    styleUrl: './add-service-order-quote-modal.component.scss',
-    templateUrl: './add-service-order-quote-modal.component.html',
+    selector: 'app-add-service-order-estimate-modal',
+    styleUrl: './add-service-order-estimate-modal.component.scss',
+    templateUrl: './add-service-order-estimate-modal.component.html',
     imports: [
         ReactiveFormsModule,
         CurrencyPipe,
@@ -33,10 +33,10 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
         MatProgressSpinnerModule,
     ]
 })
-export class AddServiceOrderQuoteModalComponent implements OnInit {
-    private _dialogRef = inject(MatDialogRef<AddServiceOrderQuoteModalComponent>);
+export class AddServiceOrderEstimateModalComponent implements OnInit {
+    private _dialogRef = inject(MatDialogRef<AddServiceOrderEstimateModalComponent>);
     private _fb = inject(FormBuilder);
-    private _service = inject(AddServiceOrderQuoteModalService);
+    private _service = inject(AddServiceOrderEstimateModalService);
     private _snackbar = inject(SnackbarService);
 
     protected isLoading = signal<boolean>(false);
@@ -45,7 +45,7 @@ export class AddServiceOrderQuoteModalComponent implements OnInit {
     id = inject<number>(MAT_DIALOG_DATA)
 
     repairResultOptions = enumOptions('repairResult');
-    guaranteePresets = ['90 dias', '6 meses', '1 ano'];
+    warrantyPresets = ['90 dias', '6 meses', '1 ano'];
 
     form = this._fb.group({
         repairResult: this._fb.nonNullable.control(ERepairResult.Repair),
@@ -53,7 +53,7 @@ export class AddServiceOrderQuoteModalComponent implements OnInit {
         estimateMessage: this._fb.nonNullable.control('', Validators.required),
         partPurchaseCost: this._fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
         totalCost: this._fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
-        guarantee: this._fb.nonNullable.control(''),
+        warranty: this._fb.nonNullable.control(''),
     })
 
     protected formValue = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
@@ -102,19 +102,19 @@ export class AddServiceOrderQuoteModalComponent implements OnInit {
             ...(typeof order.repairResult === 'number' ? { repairResult: order.repairResult } : {}),
             ...(order.solution ? { solution: order.solution } : {}),
             ...(order.estimateMessage ? { estimateMessage: order.estimateMessage } : {}),
-            ...(order.guarantee ? { guarantee: order.guarantee } : {}),
+            ...(order.guarantee ? { warranty: order.guarantee } : {}),
             ...(order.partPurchaseCost ? { partPurchaseCost: order.partPurchaseCost } : {}),
             ...(order.totalAmount ? { totalCost: order.totalAmount } : {}),
         });
     }
 
-    protected setGuarantee(value: string) {
-        const control = this.form.controls.guarantee;
+    protected setWarranty(value: string) {
+        const control = this.form.controls.warranty;
         control.setValue(control.value === value ? '' : value);
         control.markAsDirty();
     }
 
-    protected sendQuote() {
+    protected sendEstimate() {
         if (this.form.invalid) {
             this.form.markAllAsTouched();
             return;
@@ -130,7 +130,7 @@ export class AddServiceOrderQuoteModalComponent implements OnInit {
             partPurchaseCost: raw.partPurchaseCost ?? 0,
         }
 
-        this._service.addServiceOrderQuote(payload)
+        this._service.addServiceOrderEstimate(payload)
         .pipe(
             finalize(() => this.isSending.set(false))
         )

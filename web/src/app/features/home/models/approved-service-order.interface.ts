@@ -5,6 +5,6 @@ export interface ApprovedServiceOrder {
     company: keyof typeof EEnterprise;
     customer: string;
     model: string;
-    solution: string;
-    approvedIn: Date;
+    solution: string | null;
+    approvedAt: Date | null;
 }

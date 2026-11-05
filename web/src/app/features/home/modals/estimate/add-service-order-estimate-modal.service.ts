@@ -4,13 +4,13 @@ import { Observable } from "rxjs";
 import { BaseResponse } from "../../../../shared/models/base-response.interface";
 import { ServiceOrder } from "../../../../shared/models/service-order.interface";
 import { environment } from "../../../../../environments/environment";
-import { AddServiceOrderQuote } from "./models/add-service-order-quote.model";
+import { AddServiceOrderEstimate } from "./models/add-service-order-estimate.model";
 
 @Service()
-export class AddServiceOrderQuoteModalService {
+export class AddServiceOrderEstimateModalService {
     private _http = inject(HttpClient);
 
-    addServiceOrderQuote(command: AddServiceOrderQuote): Observable<BaseResponse<ServiceOrder>> {
+    addServiceOrderEstimate(command: AddServiceOrderEstimate): Observable<BaseResponse<ServiceOrder>> {
         return this._http.put<BaseResponse<ServiceOrder>>(`${environment.apiUrl}/add-service-order-estimate`, command);
     }
 

@@ -65,6 +65,7 @@ public static class BuilderExtensions
     public static void AddDependencies(this WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<IServiceOrderQueryHandler, ServiceOrderQueryHandler>();
+        builder.Services.AddScoped<IServiceOrderCommandHandler, ServiceOrderCommandHandler>();
         builder.Services.AddSingleton<IWhatsAppQueue, WhatsAppQueue>();
         builder.Services.AddHostedService<WhatsAppNotificationWorker>();
         builder.Services.AddSingleton<IEmailQueue, EmailQueue>();

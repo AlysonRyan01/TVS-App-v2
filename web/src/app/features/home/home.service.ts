@@ -1,16 +1,16 @@
-import { inject, Injectable, signal } from "@angular/core";
+import { inject, Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { PendingEstimateServiceOrder } from "./models/pending-estimate-service-ordens.interface";
-import { WaitingPartServiceOrder } from "./models/waiting-part-service-orders.interface";
-import { ApprovedServiceOrder } from "./models/approved-service-orders.interface";
-import { RefusedServiceOrder } from "./models/refused-service-orders.interface";
-import { ReadyServiceOrder } from "./models/ready-service-orders.interface";
+import { PendingEstimateServiceOrder } from "./models/pending-estimate-service-order.interface";
+import { AwaitingPartServiceOrder } from "./models/awaiting-part-service-order.interface";
+import { ApprovedServiceOrder } from "./models/approved-service-order.interface";
+import { RejectedServiceOrder } from "./models/rejected-service-order.interface";
+import { ReadyForPickupServiceOrder } from "./models/ready-for-pickup-service-order.interface";
 import { PaginationParams } from "../../shared/models/pagination-params.interface";
 import { Observable } from "rxjs";
 import { BaseResponse } from "../../shared/models/base-response.interface";
 import { environment } from "../../../environments/environment";
 import { PaginatedResult } from "../../shared/models/paginated-result.interface";
-import { WaitingResponseServiceOrder } from "./models/waiting-response-service-orders.interface";
+import { AwaitingResponseServiceOrder } from "./models/awaiting-response-service-order.interface";
 
 @Injectable({
     providedIn: 'root'
@@ -19,26 +19,26 @@ export class HomeService {
     private _http = inject(HttpClient);
 
     getPendingEstimateServiceOrders(pagination: PaginationParams): Observable<BaseResponse<PaginatedResult<PendingEstimateServiceOrder[]>>> {
-        return this._http.get<BaseResponse<PaginatedResult<PendingEstimateServiceOrder[]>>>(`${environment.apiUrl}/get-pending-estimates-service-orders/${pagination.pageNumber}/${pagination.pageSize}`);
+        return this._http.get<BaseResponse<PaginatedResult<PendingEstimateServiceOrder[]>>>(`${environment.apiUrl}/get-pending-estimate-service-orders/${pagination.pageNumber}/${pagination.pageSize}`);
     }
 
-    getWaitingResponseServiceOrders(pagination: PaginationParams): Observable<BaseResponse<PaginatedResult<WaitingResponseServiceOrder[]>>> {
-        return this._http.get<BaseResponse<PaginatedResult<WaitingResponseServiceOrder[]>>>(`${environment.apiUrl}/get-waiting-response-service-orders/${pagination.pageNumber}/${pagination.pageSize}`);
+    getAwaitingResponseServiceOrders(pagination: PaginationParams): Observable<BaseResponse<PaginatedResult<AwaitingResponseServiceOrder[]>>> {
+        return this._http.get<BaseResponse<PaginatedResult<AwaitingResponseServiceOrder[]>>>(`${environment.apiUrl}/get-awaiting-response-service-orders/${pagination.pageNumber}/${pagination.pageSize}`);
     }
 
     getApprovedServiceOrders(pagination: PaginationParams): Observable<BaseResponse<PaginatedResult<ApprovedServiceOrder[]>>> {
-        return this._http.get<BaseResponse<PaginatedResult<ApprovedServiceOrder[]>>>(`${environment.apiUrl}/get-pending-purchase-service-orders/${pagination.pageNumber}/${pagination.pageSize}`);
+        return this._http.get<BaseResponse<PaginatedResult<ApprovedServiceOrder[]>>>(`${environment.apiUrl}/get-approved-service-orders/${pagination.pageNumber}/${pagination.pageSize}`);
     }
 
-    getRefusedServiceOrders(pagination: PaginationParams): Observable<BaseResponse<PaginatedResult<RefusedServiceOrder[]>>> {
-        return this._http.get<BaseResponse<PaginatedResult<RefusedServiceOrder[]>>>(`${environment.apiUrl}/get-rejected-estimate-service-orders/${pagination.pageNumber}/${pagination.pageSize}`);
+    getRejectedServiceOrders(pagination: PaginationParams): Observable<BaseResponse<PaginatedResult<RejectedServiceOrder[]>>> {
+        return this._http.get<BaseResponse<PaginatedResult<RejectedServiceOrder[]>>>(`${environment.apiUrl}/get-rejected-service-orders/${pagination.pageNumber}/${pagination.pageSize}`);
     }
 
-    getWaitingPartServiceOrders(pagination: PaginationParams): Observable<BaseResponse<PaginatedResult<WaitingPartServiceOrder[]>>> {
-        return this._http.get<BaseResponse<PaginatedResult<WaitingPartServiceOrder[]>>>(`${environment.apiUrl}/get-waiting-parts-service-orders/${pagination.pageNumber}/${pagination.pageSize}`);
+    getAwaitingPartServiceOrders(pagination: PaginationParams): Observable<BaseResponse<PaginatedResult<AwaitingPartServiceOrder[]>>> {
+        return this._http.get<BaseResponse<PaginatedResult<AwaitingPartServiceOrder[]>>>(`${environment.apiUrl}/get-awaiting-part-service-orders/${pagination.pageNumber}/${pagination.pageSize}`);
     }
 
-    getReadyServiceOrders(pagination: PaginationParams): Observable<BaseResponse<PaginatedResult<ReadyServiceOrder[]>>> {
-        return this._http.get<BaseResponse<PaginatedResult<ReadyServiceOrder[]>>>(`${environment.apiUrl}/get-waiting-pickup-service-orders/${pagination.pageNumber}/${pagination.pageSize}`);
+    getReadyForPickupServiceOrders(pagination: PaginationParams): Observable<BaseResponse<PaginatedResult<ReadyForPickupServiceOrder[]>>> {
+        return this._http.get<BaseResponse<PaginatedResult<ReadyForPickupServiceOrder[]>>>(`${environment.apiUrl}/get-ready-for-pickup-service-orders/${pagination.pageNumber}/${pagination.pageSize}`);
     }
 }

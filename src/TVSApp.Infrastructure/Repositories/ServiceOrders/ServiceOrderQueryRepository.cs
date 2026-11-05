@@ -151,7 +151,7 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         return new BaseResponse<List<ServiceOrder>>(serviceOrders, 200, $"{serviceOrders.Count} ordens obtidas com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<PendingEstimateServiceOrder>>> GetPendingEstimatesAsync(int pageNumber, int pageSize)
+    public async Task<BaseResponse<PaginatedResult<PendingEstimateServiceOrder>>> GetPendingEstimateAsync(int pageNumber, int pageSize)
     {
         if (pageNumber < 1)
             return new BaseResponse<PaginatedResult<PendingEstimateServiceOrder>>(null, 400, "O número da página deve ser maior que zero.");
@@ -170,24 +170,24 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
 
         var totalCount = await query.CountAsync();
 
-        var deliveredServiceOrders = await query
+        var pendingEstimateServiceOrders = await query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
         int? totalPages = totalCount > 0 ? (int?)Math.Ceiling(totalCount / (double)pageSize) : null;
 
-        var result = new PaginatedResult<PendingEstimateServiceOrder>(deliveredServiceOrders, totalCount, pageNumber, pageSize, totalPages);
+        var result = new PaginatedResult<PendingEstimateServiceOrder>(pendingEstimateServiceOrders, totalCount, pageNumber, pageSize, totalPages);
         return new BaseResponse<PaginatedResult<PendingEstimateServiceOrder>>(result, 200, "Ordens de serviço pendentes de orçamento recuperadas com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<WaitingResponseServiceOrder?>>> GetWaitingResponseAsync(int pageNumber, int pageSize)
+    public async Task<BaseResponse<PaginatedResult<AwaitingResponseServiceOrder>>> GetAwaitingResponseAsync(int pageNumber, int pageSize)
     {
         if (pageNumber < 1)
-            return new BaseResponse<PaginatedResult<WaitingResponseServiceOrder?>>(null, 400, "O número da página deve ser maior que zero.");
+            return new BaseResponse<PaginatedResult<AwaitingResponseServiceOrder>>(null, 400, "O número da página deve ser maior que zero.");
 
         if (pageSize < 1)
-            return new BaseResponse<PaginatedResult<WaitingResponseServiceOrder?>>(null, 400, "O tamanho da página deve ser maior que zero.");
+            return new BaseResponse<PaginatedResult<AwaitingResponseServiceOrder>>(null, 400, "O tamanho da página deve ser maior que zero.");
 
         var sixMonthAgo = DateTime.UtcNow.AddMonths(-6);
 
@@ -197,29 +197,29 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
                         x.RepairStatus == ERepairStatus.Waiting && x.InspectionDate >= sixMonthAgo &&
                         (x.RepairResult != ERepairResult.Unrepaired || x.RepairResult == ERepairResult.NoDefectFound))
             .OrderByDescending(x => x.Id)
-            .Select(so => new WaitingResponseServiceOrder(so.Id, so.Customer.Name.CustomerName, so.Product.Model, 
+            .Select(so => new AwaitingResponseServiceOrder(so.Id, so.Customer.Name.CustomerName, so.Product.Model, 
                 so.Solution != null ? so.Solution.ServiceOrderSolution : null, so.TotalAmount, so.InspectionDate));
 
         var totalCount = await query.CountAsync();
 
-        var waitingResponseServiceOrders = await query
+        var awaitingResponseServiceOrders = await query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
         int? totalPages = totalCount > 0 ? (int?)Math.Ceiling(totalCount / (double)pageSize) : null;
 
-        var result = new PaginatedResult<WaitingResponseServiceOrder?>(waitingResponseServiceOrders, totalCount, pageNumber, pageSize, totalPages);
-        return new BaseResponse<PaginatedResult<WaitingResponseServiceOrder?>>(result, 200, "Ordens de serviço aguardando resposta do cliente recuperadas com sucesso!");
+        var result = new PaginatedResult<AwaitingResponseServiceOrder>(awaitingResponseServiceOrders, totalCount, pageNumber, pageSize, totalPages);
+        return new BaseResponse<PaginatedResult<AwaitingResponseServiceOrder>>(result, 200, "Ordens de serviço aguardando resposta do cliente recuperadas com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<ApprovedServiceOrder?>>> GetApprovedAsync(int pageNumber, int pageSize)
+    public async Task<BaseResponse<PaginatedResult<ApprovedServiceOrder>>> GetApprovedAsync(int pageNumber, int pageSize)
     {
         if (pageNumber < 1)
-            return new BaseResponse<PaginatedResult<ApprovedServiceOrder?>>(null, 400, "O número da página deve ser maior que zero.");
+            return new BaseResponse<PaginatedResult<ApprovedServiceOrder>>(null, 400, "O número da página deve ser maior que zero.");
 
         if (pageSize < 1)
-            return new BaseResponse<PaginatedResult<ApprovedServiceOrder?>>(null, 400, "O tamanho da página deve ser maior que zero.");
+            return new BaseResponse<PaginatedResult<ApprovedServiceOrder>>(null, 400, "O tamanho da página deve ser maior que zero.");
 
         var sixMountsAgo = DateTime.UtcNow.AddMonths(-6);
 
@@ -234,27 +234,27 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
 
         var totalCount = await query.CountAsync();
 
-        var pendingPartPurchaseServiceOrders = await query
+        var approvedServiceOrders = await query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
         int? totalPages = totalCount > 0 ? (int?)Math.Ceiling(totalCount / (double)pageSize) : null;
 
-        var result = new PaginatedResult<ApprovedServiceOrder?>(pendingPartPurchaseServiceOrders, totalCount, pageNumber, pageSize, totalPages);
-        return new BaseResponse<PaginatedResult<ApprovedServiceOrder?>>(result, 200, "Ordens de serviço pendentes de compra de peça recuperadas com sucesso!");
+        var result = new PaginatedResult<ApprovedServiceOrder>(approvedServiceOrders, totalCount, pageNumber, pageSize, totalPages);
+        return new BaseResponse<PaginatedResult<ApprovedServiceOrder>>(result, 200, "Ordens de serviço pendentes de compra de peça recuperadas com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<RefusedServiceOrder?>>> GetRefusedAsync(
+    public async Task<BaseResponse<PaginatedResult<RejectedServiceOrder>>> GetRejectedAsync(
         int pageNumber,
         int pageSize)
     {
         if (pageNumber < 1)
-            return new BaseResponse<PaginatedResult<RefusedServiceOrder?>>(
+            return new BaseResponse<PaginatedResult<RejectedServiceOrder>>(
                 null, 400, "O número da página deve ser maior que zero.");
 
         if (pageSize < 1)
-            return new BaseResponse<PaginatedResult<RefusedServiceOrder?>>(
+            return new BaseResponse<PaginatedResult<RejectedServiceOrder>>(
                 null, 400, "O tamanho da página deve ser maior que zero.");
 
         var oneMonthAgo = DateTime.UtcNow.AddMonths(-1);
@@ -265,31 +265,31 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
                         x.RepairStatus == ERepairStatus.Disapproved &&
                         x.ResponseDate >= oneMonthAgo)
             .OrderByDescending(x => x.Id)
-            .Select(so => new RefusedServiceOrder(so.Id, so.Customer.Name.CustomerName, so.Product.Model, so.Solution != null ? so.Solution.ServiceOrderSolution : null, so.ResponseDate));
+            .Select(so => new RejectedServiceOrder(so.Id, so.Customer.Name.CustomerName, so.Product.Model, so.Solution != null ? so.Solution.ServiceOrderSolution : null, so.ResponseDate));
 
         var totalCount = await query.CountAsync();
 
-        var rejectedEstimateServiceOrders = await query
+        var rejectedServiceOrders = await query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
         int? totalPages = totalCount > 0 ? (int?)Math.Ceiling(totalCount / (double)pageSize) : null;
 
-        var result = new PaginatedResult<RefusedServiceOrder?>(
-            rejectedEstimateServiceOrders, totalCount, pageNumber, pageSize, totalPages);
+        var result = new PaginatedResult<RejectedServiceOrder>(
+            rejectedServiceOrders, totalCount, pageNumber, pageSize, totalPages);
         
-        return new BaseResponse<PaginatedResult<RefusedServiceOrder?>>(
+        return new BaseResponse<PaginatedResult<RejectedServiceOrder>>(
             result, 200, "Ordens de serviço com orçamento rejeitado recuperadas com sucesso!");
     }
     
-    public async Task<BaseResponse<PaginatedResult<WaitingPartServiceOrder?>>> GetWaitingPartAsync(int pageNumber, int pageSize)
+    public async Task<BaseResponse<PaginatedResult<AwaitingPartServiceOrder>>> GetAwaitingPartAsync(int pageNumber, int pageSize)
     {
         if (pageNumber < 1)
-            return new BaseResponse<PaginatedResult<WaitingPartServiceOrder?>>(null, 400, "O número da página deve ser maior que zero.");
+            return new BaseResponse<PaginatedResult<AwaitingPartServiceOrder>>(null, 400, "O número da página deve ser maior que zero.");
 
         if (pageSize < 1)
-            return new BaseResponse<PaginatedResult<WaitingPartServiceOrder?>>(null, 400, "O tamanho da página deve ser maior que zero.");
+            return new BaseResponse<PaginatedResult<AwaitingPartServiceOrder>>(null, 400, "O tamanho da página deve ser maior que zero.");
 
         var treeMonthAgo = DateTime.UtcNow.AddMonths(-3);
 
@@ -300,28 +300,28 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
                         x.PurchasePartDate.HasValue &&
                         x.PurchasePartDate >= treeMonthAgo)
             .OrderByDescending(x => x.Id)
-            .Select(so => new WaitingPartServiceOrder(so.Id, so.Customer.Name.CustomerName, so.Product.Model, so.Solution != null ? so.Solution.ServiceOrderSolution : null, so.PurchasePartDate));
+            .Select(so => new AwaitingPartServiceOrder(so.Id, so.Customer.Name.CustomerName, so.Product.Model, so.Solution != null ? so.Solution.ServiceOrderSolution : null, so.PurchasePartDate));
 
         var totalCount = await query.CountAsync();
 
-        var waitingPartsServiceOrders = await query
+        var awaitingPartServiceOrders = await query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
         int? totalPages = totalCount > 0 ? (int?)Math.Ceiling(totalCount / (double)pageSize) : null;
 
-        var result = new PaginatedResult<WaitingPartServiceOrder?>(waitingPartsServiceOrders, totalCount, pageNumber, pageSize, totalPages);
-        return new BaseResponse<PaginatedResult<WaitingPartServiceOrder?>>(result, 200, "Ordens de serviço aguardando peça recuperadas com sucesso!");
+        var result = new PaginatedResult<AwaitingPartServiceOrder>(awaitingPartServiceOrders, totalCount, pageNumber, pageSize, totalPages);
+        return new BaseResponse<PaginatedResult<AwaitingPartServiceOrder>>(result, 200, "Ordens de serviço aguardando peça recuperadas com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<ReadyServiceOrder?>>> GetReadyAsync(int pageNumber, int pageSize)
+    public async Task<BaseResponse<PaginatedResult<ReadyForPickupServiceOrder>>> GetReadyForPickupAsync(int pageNumber, int pageSize)
     {
         if (pageNumber < 1)
-            return new BaseResponse<PaginatedResult<ReadyServiceOrder?>>(null, 400, "O número da página deve ser maior que zero.");
+            return new BaseResponse<PaginatedResult<ReadyForPickupServiceOrder>>(null, 400, "O número da página deve ser maior que zero.");
 
         if (pageSize < 1)
-            return new BaseResponse<PaginatedResult<ReadyServiceOrder?>>(null, 400, "O tamanho da página deve ser maior que zero.");
+            return new BaseResponse<PaginatedResult<ReadyForPickupServiceOrder>>(null, 400, "O tamanho da página deve ser maior que zero.");
 
         var sixMonths = DateTime.UtcNow.AddMonths(-6);
 
@@ -331,19 +331,19 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
                 (x.RepairDate >= sixMonths || x.RepairDate == null) && 
                 (x.ServiceOrderStatus == EServiceOrderStatus.Repaired || x.ServiceOrderStatus == EServiceOrderStatus.ReadyToPickUp))
             .OrderByDescending(x => x.Id)
-            .Select(so => new ReadyServiceOrder(so.Id, so.Customer.Name.CustomerName, so.Product.Model, so.RepairDate, so.RepairResult.ToString(), so.RepairStatus.ToString()));
+            .Select(so => new ReadyForPickupServiceOrder(so.Id, so.Customer.Name.CustomerName, so.Product.Model, so.RepairDate, so.RepairResult.ToString(), so.RepairStatus.ToString()));
 
         var totalCount = await query.CountAsync();
 
-        var waitingPickUpServiceOrders = await query
+        var readyForPickupServiceOrders = await query
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
         int? totalPages = totalCount > 0 ? (int?)Math.Ceiling(totalCount / (double)pageSize) : null;
 
-        var result = new PaginatedResult<ReadyServiceOrder?>(waitingPickUpServiceOrders, totalCount, pageNumber, pageSize, totalPages);
-        return new BaseResponse<PaginatedResult<ReadyServiceOrder?>>(result, 200, "Ordens de serviço aguardando coleta recuperadas com sucesso!");
+        var result = new PaginatedResult<ReadyForPickupServiceOrder>(readyForPickupServiceOrders, totalCount, pageNumber, pageSize, totalPages);
+        return new BaseResponse<PaginatedResult<ReadyForPickupServiceOrder>>(result, 200, "Ordens de serviço aguardando coleta recuperadas com sucesso!");
     }
 
     public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetDeliveredAsync(int pageNumber, int pageSize)

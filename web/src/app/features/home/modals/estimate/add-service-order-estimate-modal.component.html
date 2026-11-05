@@ -10,7 +10,7 @@
     <mat-spinner diameter="36" aria-label="Carregando ordem de serviço"></mat-spinner>
   </div>
 } @else if (serviceOrder(); as order) {
-  <form class="body" [formGroup]="form" (ngSubmit)="sendQuote()">
+  <form class="body" [formGroup]="form" (ngSubmit)="sendEstimate()">
     <div class="columns">
       <!-- Etiqueta: o que já se sabe da OS, só para consulta. -->
       <aside class="ticket" aria-label="Dados da ordem de serviço">
@@ -111,17 +111,17 @@
           </mat-form-field>
         </div>
 
-        <div class="guarantee">
+        <div class="warranty">
           <mat-form-field appearance="outline">
             <mat-label>Garantia</mat-label>
-            <input matInput type="text" formControlName="guarantee" autocomplete="off" />
+            <input matInput type="text" formControlName="warranty" autocomplete="off" />
           </mat-form-field>
           <div class="presets" role="group" aria-label="Preencher garantia">
-            @for (preset of guaranteePresets; track preset) {
+            @for (preset of warrantyPresets; track preset) {
               <button type="button" class="preset"
-                      [class.active]="formValue().guarantee === preset"
-                      [attr.aria-pressed]="formValue().guarantee === preset"
-                      (click)="setGuarantee(preset)">{{ preset }}</button>
+                      [class.active]="formValue().warranty === preset"
+                      [attr.aria-pressed]="formValue().warranty === preset"
+                      (click)="setWarranty(preset)">{{ preset }}</button>
             }
           </div>
         </div>
