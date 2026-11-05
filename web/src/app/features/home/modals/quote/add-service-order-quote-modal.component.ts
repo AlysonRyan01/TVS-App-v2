@@ -1,16 +1,19 @@
-import { Component, inject, OnInit, signal } from "@angular/core";
+import { Component, computed, inject, OnInit, signal } from "@angular/core";
+import { toSignal } from "@angular/core/rxjs-interop";
+import { CurrencyPipe } from "@angular/common";
 import { FormBuilder, Validators, ReactiveFormsModule } from "@angular/forms";
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from "@angular/material/dialog";
+import { TextFieldModule } from "@angular/cdk/text-field";
 import { ServiceOrder } from "../../../../shared/models/service-order.interface";
 import { AddServiceOrderQuoteModalService } from "./add-service-order-quote-modal.service";
 import { finalize } from "rxjs";
 import { HttpErrorResponse } from "@angular/common/http";
 import { SnackbarService } from "../../../../shared/snackbar/snackbar.service";
-import { enumOptions, ERepairResult } from "../../../../shared/enums";
+import { EnumLabelPipe, enumOptions, ERepairResult } from "../../../../shared/enums";
 import { MatButtonModule } from "@angular/material/button";
+import { MatButtonToggleModule } from "@angular/material/button-toggle";
 import { MatInputModule } from "@angular/material/input";
 import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatSelectModule } from "@angular/material/select";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 
 @Component({
@@ -18,13 +21,17 @@ import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
     styleUrl: './add-service-order-quote-modal.component.scss',
     templateUrl: './add-service-order-quote-modal.component.html',
     imports: [
-    ReactiveFormsModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatSelectModule,
-    MatProgressSpinnerModule]
+        ReactiveFormsModule,
+        CurrencyPipe,
+        EnumLabelPipe,
+        TextFieldModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatButtonModule,
+        MatButtonToggleModule,
+        MatProgressSpinnerModule,
+    ]
 })
 export class AddServiceOrderQuoteModalComponent implements OnInit {
     private _dialogRef = inject(MatDialogRef<AddServiceOrderQuoteModalComponent>);
@@ -38,21 +45,32 @@ export class AddServiceOrderQuoteModalComponent implements OnInit {
     id = inject<number>(MAT_DIALOG_DATA)
 
     repairResultOptions = enumOptions('repairResult');
+    guaranteePresets = ['90 dias', '6 meses', '1 ano'];
 
-    form = this._fb.nonNullable.group({
-        solution: ['', Validators.required],
-        estimateMessage: ['', Validators.required],
-        totalCost: [0, [Validators.required, Validators.min(0)]],
-        guarantee: [''],
-        partPurchaseCost: [0, [Validators.required, Validators.min(0)]],
-        repairResult: [ERepairResult.Repair]
+    form = this._fb.group({
+        repairResult: this._fb.nonNullable.control(ERepairResult.Repair),
+        solution: this._fb.nonNullable.control('', Validators.required),
+        estimateMessage: this._fb.nonNullable.control('', Validators.required),
+        partPurchaseCost: this._fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
+        totalCost: this._fb.control<number | null>(null, [Validators.required, Validators.min(0)]),
+        guarantee: this._fb.nonNullable.control(''),
     })
+
+    protected formValue = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
+
+    protected margin = computed(() => {
+        const { totalCost, partPurchaseCost } = this.formValue();
+        if (totalCost == null || partPurchaseCost == null) {
+            return null;
+        }
+        return totalCost - partPurchaseCost;
+    });
 
     ngOnInit(): void {
         this.loadServiceOrder();
     }
 
-    private loadServiceOrder() {
+    protected loadServiceOrder() {
         this.isLoading.set(true);
 
         this._service.getServiceOrderById(this.id).
@@ -67,6 +85,7 @@ export class AddServiceOrderQuoteModalComponent implements OnInit {
 
                 const serviceOrder = result.data;
                 this.serviceOrder.set(serviceOrder);
+                this.prefill(serviceOrder);
             },
             error: (error: HttpErrorResponse) => {
                 const message = error.error?.message ??
@@ -75,6 +94,24 @@ export class AddServiceOrderQuoteModalComponent implements OnInit {
                 this._snackbar.open(message);
             }
         })
+    }
+
+    /** Se a OS já tiver um orçamento salvo, ele aparece para ser corrigido. */
+    private prefill(order: ServiceOrder) {
+        this.form.patchValue({
+            ...(typeof order.repairResult === 'number' ? { repairResult: order.repairResult } : {}),
+            ...(order.solution ? { solution: order.solution } : {}),
+            ...(order.estimateMessage ? { estimateMessage: order.estimateMessage } : {}),
+            ...(order.guarantee ? { guarantee: order.guarantee } : {}),
+            ...(order.partPurchaseCost ? { partPurchaseCost: order.partPurchaseCost } : {}),
+            ...(order.totalAmount ? { totalCost: order.totalAmount } : {}),
+        });
+    }
+
+    protected setGuarantee(value: string) {
+        const control = this.form.controls.guarantee;
+        control.setValue(control.value === value ? '' : value);
+        control.markAsDirty();
     }
 
     protected sendQuote() {
@@ -99,12 +136,12 @@ export class AddServiceOrderQuoteModalComponent implements OnInit {
         )
         .subscribe({
             next: () => {
-                this._snackbar.open("Orçamento enviado com sucesso");
+                this._snackbar.open("Orçamento enviado.");
                 this._dialogRef.close(true);
             },
             error: (error: HttpErrorResponse) => {
                 const message = error.error?.message ??
-                    (typeof error.error === 'string' ? error.error : 'Erro ao tentar enviar orçamento.');
+                    (typeof error.error === 'string' ? error.error : 'Não foi possível enviar o orçamento. Tente de novo.');
 
                 this._snackbar.open(message);
             }

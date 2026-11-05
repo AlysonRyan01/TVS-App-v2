@@ -37,3 +37,11 @@ body {
   height: 100%;
 }
 /* You can add global styles to this file, and also import other style files */
+
+// Diálogos em tela cheia (ex.: orçamento): sem cantos arredondados nem margem.
+.fullscreen-dialog {
+  @include mat.dialog-overrides((
+    container-shape: 0,
+    container-color: #fff,
+  ));
+}

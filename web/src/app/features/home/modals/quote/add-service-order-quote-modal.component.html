@@ -1,106 +1,167 @@
+<header class="bar">
+  <h1 class="bar-title" mat-dialog-title>Orçamento</h1>
+  <button class="close" type="button" mat-dialog-close aria-label="Fechar sem salvar">
+    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+  </button>
+</header>
+
 @if (isLoading()) {
-  <div class="loading">
-    <mat-spinner diameter="40"></mat-spinner>
+  <div class="state" role="status">
+    <mat-spinner diameter="36" aria-label="Carregando ordem de serviço"></mat-spinner>
   </div>
-} @else {
-  <h1 class="title">Adicionar orçamento, ordem: {{ id }}</h1>
+} @else if (serviceOrder(); as order) {
+  <form class="body" [formGroup]="form" (ngSubmit)="sendQuote()">
+    <div class="columns">
+      <!-- Etiqueta: o que já se sabe da OS, só para consulta. -->
+      <aside class="ticket" aria-label="Dados da ordem de serviço">
+        <p class="ticket-number"><span class="sr-only">Ordem de serviço </span>OS {{ id }}</p>
 
-  @if (serviceOrder(); as order) {
-    <div class="order-infos">
-      <div class="customer-infos">
-        <mat-form-field>
-          <mat-label>Cliente</mat-label>
-          <input matInput [value]="order.name" readonly />
+        <div class="ticket-group">
+          <p class="ticket-name">{{ order.name }}</p>
+          @if (order.phone) {
+            <a class="ticket-phone" [href]="'tel:' + order.phone">{{ order.phone }}</a>
+          }
+          @if (order.phone2) {
+            <a class="ticket-phone" [href]="'tel:' + order.phone2">{{ order.phone2 }}</a>
+          }
+        </div>
+
+        <dl class="ticket-device">
+          <div>
+            <dt>Aparelho</dt>
+            <dd>{{ order.type | enumLabel: 'product' }} {{ order.brand }}</dd>
+          </div>
+          <div>
+            <dt>Modelo</dt>
+            <dd>{{ order.model || '—' }}</dd>
+          </div>
+          <div>
+            <dt>Nº de série</dt>
+            <dd class="mono">{{ order.serialNumber || '—' }}</dd>
+          </div>
+          @if (order.accessories) {
+            <div>
+              <dt>Acessórios</dt>
+              <dd>{{ order.accessories }}</dd>
+            </div>
+          }
+        </dl>
+
+        <figure class="ticket-defect">
+          <figcaption>Defeito relatado pelo cliente</figcaption>
+          <blockquote>{{ order.defect || 'Não informado na entrada.' }}</blockquote>
+        </figure>
+      </aside>
+
+      <div class="fields">
+        <fieldset class="result">
+          <legend>Resultado da avaliação</legend>
+          <mat-button-toggle-group formControlName="repairResult" aria-label="Resultado da avaliação"
+                                   hideSingleSelectionIndicator>
+            @for (opt of repairResultOptions; track opt.value) {
+              <mat-button-toggle [value]="opt.value">{{ opt.label }}</mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+        </fieldset>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Solução</mat-label>
+          <input matInput type="text" formControlName="solution" autocomplete="off" />
+          <mat-hint>O que vai ser feito no aparelho.</mat-hint>
+          @if (form.controls.solution.hasError('required')) {
+            <mat-error>Descreva a solução.</mat-error>
+          }
         </mat-form-field>
 
-        <mat-form-field>
-          <mat-label>Telefone</mat-label>
-          <input matInput [value]="order.phone" readonly />
-        </mat-form-field>
-      </div>
-
-      <div class="product-infos">
-        <mat-form-field>
-          <mat-label>Tipo</mat-label>
-          <input matInput [value]="order.type" readonly />
+        <mat-form-field appearance="outline">
+          <mat-label>Mensagem para o cliente</mat-label>
+          <textarea matInput rows="4" formControlName="estimateMessage"
+                    cdkTextareaAutosize cdkAutosizeMinRows="4" cdkAutosizeMaxRows="10"></textarea>
+          <mat-hint>Texto que o cliente recebe junto com o orçamento.</mat-hint>
+          @if (form.controls.estimateMessage.hasError('required')) {
+            <mat-error>Escreva a mensagem para o cliente.</mat-error>
+          }
         </mat-form-field>
 
-        <mat-form-field>
-          <mat-label>Marca</mat-label>
-          <input matInput [value]="order.brand" readonly />
-        </mat-form-field>
+        <div class="money">
+          <mat-form-field appearance="outline" floatLabel="always">
+            <mat-label>Custo das peças</mat-label>
+            <span matTextPrefix>R$&nbsp;</span>
+            <input matInput type="number" inputmode="decimal" step="0.01" min="0"
+                   formControlName="partPurchaseCost" placeholder="0,00" />
+            <mat-hint>Quanto a loja paga. O cliente não vê.</mat-hint>
+            @if (form.controls.partPurchaseCost.hasError('required')) {
+              <mat-error>Informe o custo das peças (0 se não usar).</mat-error>
+            } @else if (form.controls.partPurchaseCost.hasError('min')) {
+              <mat-error>O valor não pode ser negativo.</mat-error>
+            }
+          </mat-form-field>
 
-        <mat-form-field>
-          <mat-label>Modelo</mat-label>
-          <input matInput [value]="order.model" readonly />
-        </mat-form-field>
+          <mat-form-field appearance="outline" floatLabel="always">
+            <mat-label>Valor total</mat-label>
+            <span matTextPrefix>R$&nbsp;</span>
+            <input matInput type="number" inputmode="decimal" step="0.01" min="0"
+                   formControlName="totalCost" placeholder="0,00" />
+            <mat-hint>Quanto o cliente paga.</mat-hint>
+            @if (form.controls.totalCost.hasError('required')) {
+              <mat-error>Informe o valor total.</mat-error>
+            } @else if (form.controls.totalCost.hasError('min')) {
+              <mat-error>O valor não pode ser negativo.</mat-error>
+            }
+          </mat-form-field>
+        </div>
 
-        <mat-form-field>
-          <mat-label>Nº de série</mat-label>
-          <input matInput [value]="order.serialNumber" readonly />
-        </mat-form-field>
-
-        <mat-form-field>
-          <mat-label>Defeito</mat-label>
-          <input matInput [value]="order.defect" readonly />
-        </mat-form-field>
+        <div class="guarantee">
+          <mat-form-field appearance="outline">
+            <mat-label>Garantia</mat-label>
+            <input matInput type="text" formControlName="guarantee" autocomplete="off" />
+          </mat-form-field>
+          <div class="presets" role="group" aria-label="Preencher garantia">
+            @for (preset of guaranteePresets; track preset) {
+              <button type="button" class="preset"
+                      [class.active]="formValue().guarantee === preset"
+                      [attr.aria-pressed]="formValue().guarantee === preset"
+                      (click)="setGuarantee(preset)">{{ preset }}</button>
+            }
+          </div>
+        </div>
       </div>
     </div>
-  }
 
-  <form class="quote-form" [formGroup]="form" (ngSubmit)="sendQuote()">
-    <mat-form-field>
-      <mat-label>Resultado do reparo</mat-label>
-      <mat-select formControlName="repairResult">
-        @for (opt of repairResultOptions; track opt.value) {
-          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+    <footer class="summary">
+      <div class="total" aria-live="polite">
+        <span class="total-label">Valor total</span>
+        <span class="total-value">{{ (formValue().totalCost ?? 0) | currency: 'BRL' : 'symbol' : '1.2-2' }}</span>
+        @if (margin() !== null) {
+          <span class="total-margin" [class.negative]="margin()! < 0">
+            @if (margin()! < 0) {
+              Valor total abaixo do custo das peças
+            } @else {
+              Sobra {{ margin() | currency: 'BRL' : 'symbol' : '1.2-2' }} para a mão de obra
+            }
+          </span>
         }
-      </mat-select>
-    </mat-form-field>
+      </div>
 
-    <mat-form-field>
-      <mat-label>Solução</mat-label>
-      <input matInput type="text" formControlName="solution" />
-      @if (form.controls.solution.hasError('required')) {
-        <mat-error>Informe a solução</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field>
-      <mat-label>Mensagem do orçamento</mat-label>
-      <textarea matInput rows="3" formControlName="estimateMessage"></textarea>
-      @if (form.controls.estimateMessage.hasError('required')) {
-        <mat-error>Informe a mensagem do orçamento</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field>
-      <mat-label>Custo das peças</mat-label>
-      <span matTextPrefix>R$&nbsp;</span>
-      <input matInput type="number" step="0.01" min="0" formControlName="partPurchaseCost" />
-      @if (form.controls.partPurchaseCost.hasError('required')) {
-        <mat-error>Informe o custo das peças</mat-error>
-      } @else if (form.controls.partPurchaseCost.hasError('min')) {
-        <mat-error>O valor não pode ser negativo</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field>
-      <mat-label>Custo total</mat-label>
-      <span matTextPrefix>R$&nbsp;</span>
-      <input matInput type="number" step="0.01" min="0" formControlName="totalCost" />
-      @if (form.controls.totalCost.hasError('required')) {
-        <mat-error>Informe o custo total</mat-error>
-      } @else if (form.controls.totalCost.hasError('min')) {
-        <mat-error>O valor não pode ser negativo</mat-error>
-      }
-    </mat-form-field>
-
-    <mat-form-field>
-      <mat-label>Garantia</mat-label>
-      <input matInput type="text" formControlName="guarantee" />
-    </mat-form-field>
-
-    <button matButton type="submit" [disabled]="isSending() || !serviceOrder()">Enviar</button>
+      <div class="actions">
+        <button matButton type="button" mat-dialog-close [disabled]="isSending()">Cancelar</button>
+        <button matButton="filled" type="submit" class="send" [disabled]="isSending()">
+          @if (isSending()) {
+            <mat-spinner diameter="18" aria-hidden="true"></mat-spinner>
+            Enviando…
+          } @else {
+            Enviar orçamento
+          }
+        </button>
+      </div>
+    </footer>
   </form>
+} @else {
+  <div class="state">
+    <p class="state-message">Não foi possível carregar a OS {{ id }}. Confira a conexão e tente de novo.</p>
+    <div class="actions">
+      <button matButton type="button" mat-dialog-close>Fechar</button>
+      <button matButton="filled" type="button" class="send" (click)="loadServiceOrder()">Tentar de novo</button>
+    </div>
+  </div>
 }

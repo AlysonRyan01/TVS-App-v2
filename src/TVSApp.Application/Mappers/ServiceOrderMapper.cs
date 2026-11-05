@@ -20,7 +20,7 @@ public static class ServiceOrderMapper
         };
     }
     
-    public static ServiceOrderDto MapToServiceOrderDto(ServiceOrder serviceOrder)
+    public static ServiceOrderDto MapToServiceOrderDto(this ServiceOrder serviceOrder)
     {
         return new ServiceOrderDto
         {

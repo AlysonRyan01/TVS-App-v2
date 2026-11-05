@@ -76,6 +76,28 @@ $rule-soft: #f3e6e2;
   @include mat.progress-spinner-overrides((
     active-indicator-color: $brand-red,
   ));
+
+  // Mesmo botão vermelho do modal de orçamento.
+  @include mat.button-overrides((
+    filled-container-color: $brand-red,
+    filled-label-text-color: #fff,
+    filled-container-shape: 0.25rem,
+    filled-label-text-font: $font-body,
+    filled-label-text-weight: 500,
+    filled-label-text-tracking: 0,
+  ));
+}
+
+// Hover e foco do botão da tabela; o âmbar segue o foco do resto do sistema.
+td .mat-mdc-unelevated-button {
+  &:hover {
+    background-color: $brand-red-deep;
+  }
+
+  &:focus-visible {
+    outline: 3px solid $signal;
+    outline-offset: 2px;
+  }
 }
 
 // Abas: alinhadas à esquerda, coladas na folha.

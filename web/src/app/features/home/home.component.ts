@@ -20,12 +20,16 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { SnackbarService } from "../../shared/snackbar/snackbar.service";
 import { CurrencyPipe } from "@angular/common";
 import { EnumLabelPipe } from "../../shared/enums";
+import { MatButtonModule } from "@angular/material/button";
+import { DialogRef } from "@angular/cdk/dialog";
+import { MatDialog } from "@angular/material/dialog";
+import { AddServiceOrderQuoteModalComponent } from "./modals/quote/add-service-order-quote-modal.component";
 
 @Component({
     selector: 'app-home',
     styleUrl: 'home.component.scss',
     templateUrl: 'home.component.html',
-    imports: [BaseLayoutComponent, MatTabsModule, MatTableModule, DatePipe, MatPaginator, MatProgressSpinner, CurrencyPipe, EnumLabelPipe],
+    imports: [BaseLayoutComponent, MatTabsModule, MatTableModule, DatePipe, MatPaginator, MatProgressSpinner, CurrencyPipe, EnumLabelPipe, MatButtonModule],
 })
 export class HomeComponent implements OnInit {
     private _service = inject(HomeService);
@@ -52,16 +56,34 @@ export class HomeComponent implements OnInit {
     protected waitingPartServiceOrdersPagination = signal<TablePagination>(this.createPagination());
     protected readyServiceOrdersPagination = signal<TablePagination>(this.createPagination());
 
-    protected pendingColumns = ['number','customer','model','entryDate'];
+    protected pendingColumns = ['number','customer','model','entryDate','action'];
     protected waitingResponseColumns = ['number','customer','model','solution','amount','inspectionIn'];
     protected approvedColumns = ['number', 'company', 'customer', 'model', 'solution', 'approvedIn'];
     protected refusedColumns = ['number', 'customer', 'model', 'solution', 'refusedIn'];
     protected waitingPartColumns = ['number', 'customer', 'model', 'solution', 'purchasedIn'];
     protected readyColumns = ['number', 'customer', 'model', 'repairDate', 'situation', 'response'];
 
+    protected dialog = inject(MatDialog);
 
     ngOnInit(): void {
         this.loadPendingServiceOrders();
+    }
+
+    protected openDialog(id: number) {
+        this.dialog.open(AddServiceOrderQuoteModalComponent, {
+            data: id,
+            width: '100vw',
+            height: '100vh',
+            maxWidth: '100vw',
+            maxHeight: '100vh',
+            panelClass: 'fullscreen-dialog',
+            autoFocus: 'dialog',
+        }).afterClosed().subscribe(sent => {
+            // A OS sai da fila de orçamentos pendentes assim que o orçamento é enviado.
+            if (sent) {
+                this.loadPendingServiceOrders();
+            }
+        })
     }
 
     private loadPendingServiceOrders() {

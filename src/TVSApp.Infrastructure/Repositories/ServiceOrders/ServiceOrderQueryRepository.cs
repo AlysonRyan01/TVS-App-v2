@@ -17,7 +17,7 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         _context = context;
     }
     
-    public async Task<BaseResponse<ServiceOrder?>> GetById(long id)
+    public async Task<BaseResponse<ServiceOrder?>> GetByIdAsync(long id)
     {
         if (id <= 0)
             return new BaseResponse<ServiceOrder?>(null, 400, "O ID não pode ser igual ou menor que 0");
@@ -33,7 +33,7 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         return new BaseResponse<ServiceOrder?>(serviceOrder, 200, "Ordem de serviço recuperada com sucesso!");
     }
 
-    public async Task<BaseResponse<ServiceOrder?>> GetByIdForUpdate(long id)
+    public async Task<BaseResponse<ServiceOrder?>> GetByIdForUpdateAsync(long id)
     {
         if (id <= 0)
             return new BaseResponse<ServiceOrder?>(null, 400, "O ID não pode ser igual ou menor que 0");
@@ -73,7 +73,7 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         return new BaseResponse<PaginatedResult<ServiceOrder?>>(result, 200, "Ordens de serviço retornadas com sucesso!");
     }
 
-    public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByCustomerName(string customerName)
+    public async Task<BaseResponse<List<ServiceOrder>>> GetByCustomerNameAsync(string customerName)
     {
         var searchTerm = customerName.Trim().ToUpper();
     
@@ -91,7 +91,7 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         return new BaseResponse<List<ServiceOrder>>(serviceOrders, 200, $"{serviceOrders.Count} ordens obtidas com sucesso!");
     }
 
-    public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersBySerialNumber(string serialNumber)
+    public async Task<BaseResponse<List<ServiceOrder>>> GetBySerialNumberAsync(string serialNumber)
     {
         var serviceOrders = await _context.ServiceOrders
             .Include(so => so.Customer)
@@ -106,7 +106,7 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         return new BaseResponse<List<ServiceOrder>>(serviceOrders, 200, $"{serviceOrders.Count} ordens obtidas com sucesso!");
     }
 
-    public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByModel(string model)
+    public async Task<BaseResponse<List<ServiceOrder>>> GetByModelAsync(string model)
     {
         var serviceOrders = await _context.ServiceOrders
             .Include(so => so.Customer)
@@ -121,7 +121,7 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         return new BaseResponse<List<ServiceOrder>>(serviceOrders, 200, $"{serviceOrders.Count} ordens obtidas com sucesso!");
     }
 
-    public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByEnterprise(EEnterprise enterprise)
+    public async Task<BaseResponse<List<ServiceOrder>>> GetByEnterpriseAsync(EEnterprise enterprise)
     {
         var serviceOrders = await _context.ServiceOrders
             .Include(so => so.Customer)
@@ -136,7 +136,7 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         return new BaseResponse<List<ServiceOrder>>(serviceOrders, 200, $"{serviceOrders.Count} ordens obtidas com sucesso!");
     }
 
-    public async Task<BaseResponse<List<ServiceOrder>>> GetServiceOrdersByDate(DateTime startDate, DateTime endDate)
+    public async Task<BaseResponse<List<ServiceOrder>>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
     {
         var serviceOrders = await _context.ServiceOrders
             .Include(so => so.Customer)
@@ -151,13 +151,13 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         return new BaseResponse<List<ServiceOrder>>(serviceOrders, 200, $"{serviceOrders.Count} ordens obtidas com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<PendingEstimateServiceOrder?>>> GetPendingEstimatesAsync(int pageNumber, int pageSize)
+    public async Task<BaseResponse<PaginatedResult<PendingEstimateServiceOrder>>> GetPendingEstimatesAsync(int pageNumber, int pageSize)
     {
         if (pageNumber < 1)
-            return new BaseResponse<PaginatedResult<PendingEstimateServiceOrder?>>(null, 400, "O número da página deve ser maior que zero.");
+            return new BaseResponse<PaginatedResult<PendingEstimateServiceOrder>>(null, 400, "O número da página deve ser maior que zero.");
 
         if (pageSize < 1)
-            return new BaseResponse<PaginatedResult<PendingEstimateServiceOrder?>>(null, 400, "O tamanho da página deve ser maior que zero.");
+            return new BaseResponse<PaginatedResult<PendingEstimateServiceOrder>>(null, 400, "O tamanho da página deve ser maior que zero.");
 
         var fourMonthAgo = DateTime.UtcNow.AddMonths(-4);
 
@@ -177,8 +177,8 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
 
         int? totalPages = totalCount > 0 ? (int?)Math.Ceiling(totalCount / (double)pageSize) : null;
 
-        var result = new PaginatedResult<PendingEstimateServiceOrder?>(deliveredServiceOrders, totalCount, pageNumber, pageSize, totalPages);
-        return new BaseResponse<PaginatedResult<PendingEstimateServiceOrder?>>(result, 200, "Ordens de serviço pendentes de orçamento recuperadas com sucesso!");
+        var result = new PaginatedResult<PendingEstimateServiceOrder>(deliveredServiceOrders, totalCount, pageNumber, pageSize, totalPages);
+        return new BaseResponse<PaginatedResult<PendingEstimateServiceOrder>>(result, 200, "Ordens de serviço pendentes de orçamento recuperadas com sucesso!");
     }
 
     public async Task<BaseResponse<PaginatedResult<WaitingResponseServiceOrder?>>> GetWaitingResponseAsync(int pageNumber, int pageSize)
@@ -213,7 +213,7 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         return new BaseResponse<PaginatedResult<WaitingResponseServiceOrder?>>(result, 200, "Ordens de serviço aguardando resposta do cliente recuperadas com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<ApprovedServiceOrder?>>> GetPendingPartPurchase(int pageNumber, int pageSize)
+    public async Task<BaseResponse<PaginatedResult<ApprovedServiceOrder?>>> GetApprovedAsync(int pageNumber, int pageSize)
     {
         if (pageNumber < 1)
             return new BaseResponse<PaginatedResult<ApprovedServiceOrder?>>(null, 400, "O número da página deve ser maior que zero.");
@@ -245,7 +245,7 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         return new BaseResponse<PaginatedResult<ApprovedServiceOrder?>>(result, 200, "Ordens de serviço pendentes de compra de peça recuperadas com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<RefusedServiceOrder?>>> GetRejectedEstimateServiceOrders(
+    public async Task<BaseResponse<PaginatedResult<RefusedServiceOrder?>>> GetRefusedAsync(
         int pageNumber,
         int pageSize)
     {
@@ -283,7 +283,7 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
             result, 200, "Ordens de serviço com orçamento rejeitado recuperadas com sucesso!");
     }
     
-    public async Task<BaseResponse<PaginatedResult<WaitingPartServiceOrder?>>> GetWaitingPartsAsync(int pageNumber, int pageSize)
+    public async Task<BaseResponse<PaginatedResult<WaitingPartServiceOrder?>>> GetWaitingPartAsync(int pageNumber, int pageSize)
     {
         if (pageNumber < 1)
             return new BaseResponse<PaginatedResult<WaitingPartServiceOrder?>>(null, 400, "O número da página deve ser maior que zero.");
@@ -315,7 +315,7 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         return new BaseResponse<PaginatedResult<WaitingPartServiceOrder?>>(result, 200, "Ordens de serviço aguardando peça recuperadas com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<ReadyServiceOrder?>>> GetWaitingPickupAsync(int pageNumber, int pageSize)
+    public async Task<BaseResponse<PaginatedResult<ReadyServiceOrder?>>> GetReadyAsync(int pageNumber, int pageSize)
     {
         if (pageNumber < 1)
             return new BaseResponse<PaginatedResult<ReadyServiceOrder?>>(null, 400, "O número da página deve ser maior que zero.");

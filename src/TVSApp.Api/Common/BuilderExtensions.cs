@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuestPDF.Infrastructure;
+using TVS_App.Application.Handlers;
 using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Requests.CustomerRequests.CustomerCommands;
 using TVS_App.Domain.Repositories.Customers;
@@ -63,6 +64,7 @@ public static class BuilderExtensions
 
     public static void AddDependencies(this WebApplicationBuilder builder)
     {
+        builder.Services.AddScoped<IServiceOrderQueryHandler, ServiceOrderQueryHandler>();
         builder.Services.AddSingleton<IWhatsAppQueue, WhatsAppQueue>();
         builder.Services.AddHostedService<WhatsAppNotificationWorker>();
         builder.Services.AddSingleton<IEmailQueue, EmailQueue>();

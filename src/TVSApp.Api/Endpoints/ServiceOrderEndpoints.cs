@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using TVS_App.Api.Extensions;
 using TVS_App.Api.SignalR;
 using TVS_App.Application.DTOs.ServiceOrder;
+using TVS_App.Application.Handlers;
 using TVS_App.Application.Requests.NotificationRequests.NotificationCommands;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries;
@@ -89,15 +90,10 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-service-order-by-id/{id}", async (
-                ISender handler,
-                long id) =>
+        app.MapGet("/get-service-order-by-id/{id}", 
+            async (IServiceOrderQueryHandler handler, long id) =>
             {
-                var command = new GetServiceOrderByIdQuery(id); 
-                command.Validate();
-
-                var getOrderResult = await handler.Send(command);
-
+                var getOrderResult = await handler.GetServiceOrderById(id);
                 return getOrderResult.ToResult();
             }).WithTags("ServiceOrder").RequireAuthorization();
 
@@ -231,75 +227,45 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
 
-        app.MapGet("/get-pending-estimates-service-orders/{pageNumber}/{pageSize}", async (ISender handler, int pageNumber, int pageSize) =>
+        app.MapGet("/get-pending-estimates-service-orders/{pageNumber}/{pageSize}", 
+            async (IServiceOrderQueryHandler handler, int pageNumber, int pageSize) =>
         {
-            var command = new GetPendingEstimatesQuery(pageNumber, pageSize);
-            command.Validate();
-
-            var getOrderResult = await handler.Send(command);
-
+            var getOrderResult = await handler.GetPendingEstimateServiceOrders(pageNumber, pageSize);
             return getOrderResult.ToResult();
         }).WithTags("ServiceOrder").RequireAuthorization();
 
-        app.MapGet("/get-waiting-response-service-orders/{pageNumber}/{pageSize}", async (ISender handler, int pageNumber, int pageSize) =>
+        app.MapGet("/get-waiting-response-service-orders/{pageNumber}/{pageSize}", 
+            async (IServiceOrderQueryHandler handler, int pageNumber, int pageSize) =>
         {
-            var command = new GetWaitingResponseQuery(pageNumber, pageSize);
-            command.Validate();
-
-            var getOrderResult = await handler.Send(command);
-
+            var getOrderResult = await handler.GetWaitingResponseServiceOrders(pageNumber, pageSize);
             return getOrderResult.ToResult();
         }).WithTags("ServiceOrder").RequireAuthorization();
 
-        app.MapGet("/get-pending-purchase-service-orders/{pageNumber}/{pageSize}", async (
-                ISender handler, 
-                int pageNumber, 
-                int pageSize) =>
+        app.MapGet("/get-pending-purchase-service-orders/{pageNumber}/{pageSize}", 
+            async (IServiceOrderQueryHandler handler, int pageNumber, int pageSize) =>
         {
-            var command = new GetPendingPurchasePartQuery(pageNumber, pageSize);
-            command.Validate();
-
-            var getOrderResult = await handler.Send(command);
-
+            var getOrderResult = await handler.GetApprovedServiceOrders(pageNumber, pageSize);
             return getOrderResult.ToResult();
         }).WithTags("ServiceOrder").RequireAuthorization();
         
-        app.MapGet("/get-rejected-estimate-service-orders/{pageNumber}/{pageSize}", async (
-                ISender handler, 
-                int pageNumber, 
-                int pageSize) =>
-            {
-                var command = new GetRejectedEstimateServiceOrdersQuery(pageNumber, pageSize);
-                command.Validate();
-
-                var getOrderResult = await handler.Send(command);
-
-                return getOrderResult.ToResult();
-            }).WithTags("ServiceOrder").RequireAuthorization();
-
-        app.MapGet("/get-waiting-parts-service-orders/{pageNumber}/{pageSize}", async (
-                ISender handler, 
-                int pageNumber, 
-                int pageSize) =>
+        app.MapGet("/get-rejected-estimate-service-orders/{pageNumber}/{pageSize}", 
+            async (IServiceOrderQueryHandler handler, int pageNumber, int pageSize) =>
         {
-            var command = new GetWaitingPartsQuery(pageNumber, pageSize);
-            command.Validate();
-
-            var getOrderResult = await handler.Send(command);
-
+            var getOrderResult = await handler.GetRefusedServiceOrders(pageNumber, pageSize);
             return getOrderResult.ToResult();
         }).WithTags("ServiceOrder").RequireAuthorization();
 
-        app.MapGet("/get-waiting-pickup-service-orders/{pageNumber}/{pageSize}", async (
-                ISender handler, 
-                int pageNumber, 
-                int pageSize) =>
+        app.MapGet("/get-waiting-parts-service-orders/{pageNumber}/{pageSize}", 
+            async (IServiceOrderQueryHandler handler, int pageNumber, int pageSize) =>
         {
-            var command = new GetWaitingPickupQuery(pageNumber, pageSize);
-            command.Validate();
+            var getOrderResult = await handler.GetWaitingPartServiceOrders(pageNumber, pageSize);
+            return getOrderResult.ToResult();
+        }).WithTags("ServiceOrder").RequireAuthorization();
 
-            var getOrderResult = await handler.Send(command);
-
+        app.MapGet("/get-waiting-pickup-service-orders/{pageNumber}/{pageSize}", 
+            async (IServiceOrderQueryHandler handler, int pageNumber, int pageSize) =>
+        {
+            var getOrderResult = await handler.GetReadyServiceOrders(pageNumber, pageSize);
             return getOrderResult.ToResult();
         }).WithTags("ServiceOrder").RequireAuthorization();
 
