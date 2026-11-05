@@ -1,4 +1,5 @@
-import { Component, inject, OnInit, signal } from "@angular/core";
+import { Component, DestroyRef, inject, OnInit, signal } from "@angular/core";
+import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { BaseLayoutComponent } from "../../shared/layout/base-layout/base-layout.component";
 import { MatTabsModule } from "@angular/material/tabs";
 import { MatTableModule } from "@angular/material/table";
@@ -15,7 +16,8 @@ import { MatPaginator } from "@angular/material/paginator";
 import { PageEvent } from '@angular/material/paginator';
 import { MatTabChangeEvent } from "@angular/material/tabs";
 import { MatProgressSpinner } from "@angular/material/progress-spinner";
-import { finalize } from "rxjs";
+import { debounceTime, finalize } from "rxjs";
+import { ServiceOrderHubService } from "../../shared/realtime/service-order-hub.service";
 import { HttpErrorResponse } from "@angular/common/http";
 import { SnackbarService } from "../../shared/snackbar/snackbar.service";
 import { CurrencyPipe } from "@angular/common";
@@ -69,8 +71,26 @@ export class HomeComponent implements OnInit {
 
     protected dialog = inject(MatDialog);
 
+    private _hub = inject(ServiceOrderHubService);
+    private _destroyRef = inject(DestroyRef);
+
+    /** Aba aberta agora: é a que recarrega quando outra tela muda uma OS. */
+    private _selectedTab = 0;
+
     ngOnInit(): void {
         this.loadPendingEstimateServiceOrders();
+        this.listenToServiceOrderUpdates();
+    }
+
+    /**
+     * Outra tela (ou outro computador) mudou uma OS: recarrega a aba aberta, mantendo a página.
+     * O debounce junta avisos em sequência num recarregamento só.
+     */
+    private listenToServiceOrderUpdates() {
+        this._hub.start();
+        this._hub.updates
+            .pipe(debounceTime(500), takeUntilDestroyed(this._destroyRef))
+            .subscribe(() => this.loadTab(this._selectedTab));
     }
 
     protected openEstimateDialog(id: number) {
@@ -381,7 +401,12 @@ export class HomeComponent implements OnInit {
     }
 
     protected onTabChange(changeEvent: MatTabChangeEvent) {
-        switch (changeEvent.index) {
+        this._selectedTab = changeEvent.index;
+        this.loadTab(changeEvent.index);
+    }
+
+    private loadTab(index: number) {
+        switch (index) {
             case 0:
                 this.loadPendingEstimateServiceOrders();
                 break;
