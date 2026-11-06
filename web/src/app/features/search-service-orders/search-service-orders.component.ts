@@ -18,6 +18,7 @@ import { SearchServiceOrdersService } from "./search-service-orders.service";
 import { ServiceOrderSearchItem, ServiceOrderSearchParams } from "./models/service-order-search.model";
 import { ServiceOrder } from "../../shared/models/service-order.interface";
 import { ServiceOrderDetailsDialogComponent } from "./service-order-details-dialog/service-order-details-dialog.component";
+import { StackedTableDirective } from '../../shared/stacked-table/stacked-table.directive';
 
 const PAGE_SIZE = 20;
 
@@ -37,7 +38,7 @@ const FILTER_GROUPS = [['number'], ['customer'], ['model'], ['serialNumber'], ['
     selector: 'app-search-service-orders',
     templateUrl: './search-service-orders.component.html',
     styleUrl: './search-service-orders.component.scss',
-    imports: [
+    imports: [StackedTableDirective, 
         BaseLayoutComponent,
         ReactiveFormsModule,
         DatePipe,

@@ -1,5 +1,6 @@
 @use '@angular/material' as mat;
 @use '../../shared/styles/brand' as *;
+@use '../../shared/styles/stacked-table' as *;
 
 $rule: #ead8d3;
 
@@ -124,7 +125,9 @@ $rule: #ead8d3;
 
 .section-title { margin: 0 0 0.75rem; color: $brand-red; font-size: 1rem; font-weight: 700; }
 
-.scroll { overflow-x: auto; }
+// position: relative mantém dentro da área rolável os elementos absolutos da tabela (ex.: .sr-only);
+// sem isso eles se posicionam em relação à página e a deixam mais larga que a tela no celular.
+.scroll { position: relative; overflow-x: auto; }
 
 table { width: 100%; min-width: 60rem; }
 
@@ -179,7 +182,13 @@ table { width: 100%; min-width: 60rem; }
   position: absolute;
   width: 1px;
   height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+// Celular: cada linha da tabela vira um cartão "Rótulo: valor" (sem arrastar para o lado).
+@include stacked-table;

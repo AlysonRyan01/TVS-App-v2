@@ -14,6 +14,7 @@ import { SnackbarService } from "../../shared/snackbar/snackbar.service";
 import { MetricsService } from "./metrics.service";
 import { DashboardMetrics, DeliveredProduct, MetricsPeriod } from "./models/dashboard-metrics.model";
 import { RankedBarsComponent } from "./ranked-bars/ranked-bars.component";
+import { StackedTableDirective } from '../../shared/stacked-table/stacked-table.directive';
 
 const MONTHS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto',
     'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
@@ -27,7 +28,7 @@ function brDate(value: string): string {
     selector: 'app-metrics',
     templateUrl: './metrics.component.html',
     styleUrl: './metrics.component.scss',
-    imports: [
+    imports: [StackedTableDirective, 
         BaseLayoutComponent,
         FormsModule,
         CurrencyPipe,

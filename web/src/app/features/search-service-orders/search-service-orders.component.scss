@@ -1,5 +1,6 @@
 @use '@angular/material' as mat;
 @use '../../shared/styles/brand' as *;
+@use '../../shared/styles/stacked-table' as *;
 
 $desktop: 56rem;
 $rule: #ead8d3;
@@ -175,3 +176,6 @@ td.cell-customer { font-weight: 500; }
   color: $ink-muted;
   font-size: 0.875rem;
 }
+
+// Celular: cada linha da tabela vira um cartão "Rótulo: valor" (sem arrastar para o lado).
+@include stacked-table($inset: 0.75rem);

@@ -30,12 +30,13 @@ import { PartPurchaseModalComponent } from "./modals/part-purchase/part-purchase
 import { RejectedReleaseModalComponent } from "./modals/rejected-release/rejected-release-modal.component";
 import { RepairModalComponent } from "./modals/repair/repair-modal.component";
 import { DeliveryModalComponent } from "./modals/delivery/delivery-modal.component";
+import { StackedTableDirective } from '../../shared/stacked-table/stacked-table.directive';
 
 @Component({
     selector: 'app-home',
     styleUrl: 'home.component.scss',
     templateUrl: 'home.component.html',
-    imports: [BaseLayoutComponent, MatTabsModule, MatTableModule, DatePipe, MatPaginator, MatProgressSpinner, CurrencyPipe, EnumLabelPipe, MatButtonModule],
+    imports: [StackedTableDirective, BaseLayoutComponent, MatTabsModule, MatTableModule, DatePipe, MatPaginator, MatProgressSpinner, CurrencyPipe, EnumLabelPipe, MatButtonModule],
 })
 export class HomeComponent implements OnInit {
     private _service = inject(HomeService);

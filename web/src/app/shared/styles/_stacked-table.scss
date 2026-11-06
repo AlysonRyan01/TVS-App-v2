@@ -1,0 +1,92 @@
+@use 'brand' as *;
+
+// Tabelas no celular: abaixo de $below, cada linha vira um cartão com "Rótulo: valor" em coluna,
+// sem rolagem lateral. Os rótulos vêm do StackedTableDirective (data-label = texto do cabeçalho).
+// Uso: @include stacked-table; no fim do .scss do componente que tem <table mat-table>.
+// thead/tbody são criados pelo Angular Material em tempo de execução e não recebem o atributo de
+// escopo do componente: por isso as regras ficam em `:host ::ng-deep` (continuam limitadas ao componente).
+@mixin stacked-table($below: 56rem, $rule: #ead8d3, $inset: 0) {
+  @media (max-width: #{$below - 0.01rem}) {
+    // A área da tabela continua sendo a que rola na vertical (algumas telas têm altura fixa);
+    // só a rolagem lateral deixa de existir.
+    :host ::ng-deep .scroll {
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    :host ::ng-deep table.stacked-table {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      background: transparent;
+
+      thead { display: none; }
+
+      tbody {
+        display: block;
+        padding: $inset; // telas sem margem própria: afasta os cartões das bordas
+      }
+
+      tr.mat-mdc-row {
+        display: block;
+        height: auto;
+        margin: 0 0 0.75rem;
+        padding: 0.375rem 0.875rem;
+        border: 1px solid $rule;
+        border-radius: 0.5rem;
+        background-color: #fff;
+      }
+
+      td.mat-mdc-cell {
+        display: flex;
+        gap: 1rem;
+        align-items: baseline;
+        justify-content: space-between;
+        box-sizing: border-box;
+        width: auto;
+        min-width: 0;
+        max-width: none;
+        padding: 0.5rem 0;
+        border: 0;
+        border-bottom: 1px solid #f3e6e2;
+        position: relative; // ancora elementos absolutos da célula (ex.: .sr-only) no próprio cartão
+        text-align: right;
+        white-space: normal;
+        overflow-wrap: anywhere;
+
+        &:last-child { border-bottom: 0; }
+
+        // Campos e rótulos internos não quebram no meio (ex.: "R$" do valor da peça).
+        label, input, button, label > span { overflow-wrap: normal; white-space: nowrap; }
+
+        &[data-label]::before {
+          content: attr(data-label);
+          flex: 0 0 auto;
+          max-width: 45%;
+          color: $ink-muted;
+          font-size: 0.75rem;
+          font-weight: 600;
+          letter-spacing: 0.03em;
+          text-align: left;
+          text-transform: uppercase;
+        }
+
+        // Célula de ação (botão): sem rótulo, botão ocupando a largura do cartão.
+        &:has(> button) {
+          justify-content: stretch;
+          padding-top: 0.75rem;
+
+          &::before { display: none; }
+          > button { width: 100%; }
+        }
+      }
+
+      // Linha "nenhum resultado": sem aparência de cartão de dados.
+      tr.empty-row td.mat-mdc-cell {
+        justify-content: center;
+        text-align: center;
+        border-bottom: 0;
+      }
+    }
+  }
+}
