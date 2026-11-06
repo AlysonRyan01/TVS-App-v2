@@ -6,6 +6,13 @@
 		respond 404
 	}
 
+	# Grafana em /grafana no mesmo endereço do sistema (funciona só com o IP, sem DNS).
+	# Sem strip do prefixo: o Grafana roda com serve_from_sub_path.
+	redir /grafana /grafana/
+	handle /grafana/* {
+		reverse_proxy grafana:3000
+	}
+
 	handle_path /api/* {
 		reverse_proxy api:8080
 	}
@@ -21,8 +28,9 @@
 	header /index.html Cache-Control "no-cache"
 }
 
-# Grafana (observabilidade). Com um subdomínio no GRAFANA_ADDRESS, o Caddy emite o HTTPS sozinho.
+# Opcional: Grafana num subdomínio próprio (precisa de DNS). Com ele, o Caddy emite o HTTPS sozinho.
 {$GRAFANA_ADDRESS:grafana.localhost} {
 	encode zstd gzip
+	redir / /grafana/
 	reverse_proxy grafana:3000
 }

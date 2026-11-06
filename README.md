@@ -79,7 +79,7 @@ encaminhado ao WhatsApp da loja e atualização automática das telas abertas (S
                  ┌──────────────────────── VPS (Docker Compose) ───────────────────────────┐
 navegador ─────► │ web (Caddy :80/:443) ──► /api/* ──► api (.NET :8080) ──► Azure SQL       │
 site público ──► │   ├─ arquivos do Angular              ├─ /osHub (SignalR, tempo real)     │
-                 │   └─ GRAFANA_ADDRESS ──► grafana       └─ fila ──► worker ──► Evolution API│
+                 │   └─ /grafana ──► grafana              └─ fila ──► worker ──► Evolution API│
                  │                             ▲                                (WhatsApp)   │
                  │        alloy ──► loki (logs) / prometheus (métricas)                       │
                  └──────────────────────────────────────────────────────────────────────────┘
@@ -991,7 +991,7 @@ Resumo:
 | `loki` | armazena logs (30 dias) | — |
 | `prometheus` | armazena métricas (15 dias) | — |
 | `alloy` | coleta logs dos containers e métricas | — |
-| `grafana` | painéis e alertas, via `https://GRAFANA_ADDRESS` | — |
+| `grafana` | painéis e alertas, via `/grafana` (e subdomínio opcional) | — |
 
 Volumes: `caddy_data` (certificados — não apague), `caddy_config`, `loki_data`,
 `prometheus_data`, `grafana_data`.
@@ -1023,7 +1023,8 @@ docker compose down                    # para tudo (volumes e dados ficam)
 | `CORS_ORIGINS` | não | sites externos que chamam a API (ex.: o site público) |
 | `EVOLUTION_BASE_URL`, `EVOLUTION_API_KEY`, `EVOLUTION_INSTANCE` | para WhatsApp | Evolution API |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | só em banco novo | cria o primeiro usuário |
-| `GRAFANA_ADDRESS` | para acessar o Grafana | subdomínio do Grafana (ex.: `grafana.seudominio.com`) |
+| `GRAFANA_ADDRESS` | não | subdomínio próprio do Grafana com HTTPS (ex.: `grafana.seudominio.com`); sem ele, use `/grafana` |
+| `GRAFANA_ROOT_URL` | não | endereço completo do Grafana para links absolutos (ex.: `http://IP_DA_VPS/grafana/`) |
 | `GRAFANA_ADMIN_USER` | não | usuário do Grafana (padrão `admin`) |
 | `GRAFANA_ADMIN_PASSWORD` | **sim** | senha do Grafana — sem ela o `docker compose up` não sobe |
 | `ASPNETCORE_ENVIRONMENT` | não | deixe `Production` |
@@ -1047,8 +1048,15 @@ containers e VPS ─────────────────────
 
 ### Acesso
 
-`https://GRAFANA_ADDRESS` com `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD`. Sem cadastro aberto
-e sem acesso anônimo. Os painéis ficam na pasta **TVS**:
+| Situação | Endereço |
+|----------|----------|
+| Sem DNS (só o IP da VPS) | `http://IP_DA_VPS/grafana` |
+| Com domínio do sistema | `https://SEU_DOMINIO/grafana` |
+| Com subdomínio próprio (`GRAFANA_ADDRESS`) | `https://GRAFANA_ADDRESS` |
+
+Login com `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD`; sem cadastro aberto e sem acesso
+anônimo. Pelo IP a conexão é **HTTP** e a senha trafega sem criptografia — use uma senha exclusiva
+para o Grafana. Os painéis ficam na pasta **TVS**:
 
 | Painel | Mostra |
 |--------|--------|

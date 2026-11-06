@@ -6,7 +6,7 @@ repassa `/api` para a API (inclusive o tempo real) e emite o HTTPS sozinho quand
 ```
 navegador ──► Caddy (web, portas 80/443) ──► /api/* ──► api:8080 (.NET) ──► Azure SQL
                     ├─► arquivos do Angular
-                    └─► GRAFANA_ADDRESS ──► grafana:3000 ──► Loki (logs) / Prometheus (métricas)
+                    └─► /grafana ──► grafana:3000 ──► Loki (logs) / Prometheus (métricas)
                                                                  ▲
                                           alloy (coleta logs dos containers e métricas) ┘
 ```
@@ -16,7 +16,8 @@ navegador ──► Caddy (web, portas 80/443) ──► /api/* ──► api:80
 - Docker e o plugin Compose (`docker compose version`).
 - Portas 80 e 443 liberadas no firewall.
 - Para HTTPS: o domínio (ex.: `gerenciamento.tvseletronica.com`) apontando (registro A) para o IP da VPS.
-- Para o Grafana: o subdomínio dele (ex.: `grafana.tvseletronica.com`) também com registro A para o IP da VPS.
+- Grafana: funciona sem DNS em `http://IP_DA_VPS/grafana`. Opcional: subdomínio próprio (ex.:
+  `grafana.tvseletronica.com`) com registro A para o IP da VPS, para ter HTTPS.
 - Memória: a pilha de observabilidade usa até ~1,5 GB de RAM (limites por container); prefira VPS com 4 GB.
 - **Azure SQL**: no Portal do Azure, servidor SQL > **Rede** > regras de firewall > adicionar o **IP público
   da VPS** (`curl -4 ifconfig.me` na VPS). Sem isso a API não conecta e fica reiniciando.
@@ -44,7 +45,8 @@ Pronto: abra `https://SEU_DOMINIO` (ou `http://IP_DA_VPS` se `SITE_ADDRESS=:80`)
 | `CORS_ORIGINS` | não | Sites externos que chamam a API (ex.: `https://www.tvseletronica.com`) |
 | `EVOLUTION_BASE_URL`, `EVOLUTION_API_KEY`, `EVOLUTION_INSTANCE` | sim, para WhatsApp | Evolution API |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | só em banco novo | Cria o primeiro usuário ao subir (se o e-mail ainda não existir) |
-| `GRAFANA_ADDRESS` | para acessar o Grafana | Subdomínio do Grafana (ex.: `grafana.tvseletronica.com`), HTTPS automático |
+| `GRAFANA_ADDRESS` | não | Subdomínio próprio do Grafana (ex.: `grafana.tvseletronica.com`), HTTPS automático. Sem ele, use `/grafana` |
+| `GRAFANA_ROOT_URL` | não | Endereço completo do Grafana para links absolutos (ex.: `http://IP_DA_VPS/grafana/`) |
 | `GRAFANA_ADMIN_USER`, `GRAFANA_ADMIN_PASSWORD` | sim (senha) | Login do Grafana. Sem a senha o `docker compose up` recusa subir |
 | `ASPNETCORE_ENVIRONMENT` | não | Deixe `Production` (em `Development` o WhatsApp vai para o número de teste) |
 
@@ -88,9 +90,11 @@ Sobe junto com o resto (`docker compose up -d --build`), em 4 containers sem por
 | `alloy` | Lê os logs de todos os containers (socket do Docker) e coleta métricas da API, da VPS e dos containers | 256 MB | — |
 | `loki` | Guarda os logs (volume `loki_data`) | 512 MB | 30 dias |
 | `prometheus` | Guarda as métricas (volume `prometheus_data`) | 512 MB | 15 dias |
-| `grafana` | Painéis e alertas, publicado pelo Caddy em `https://GRAFANA_ADDRESS` | 256 MB | — |
+| `grafana` | Painéis e alertas, publicado pelo Caddy em `/grafana` (e no subdomínio, se houver) | 256 MB | — |
 
-- **Acesso**: `https://GRAFANA_ADDRESS` com `GRAFANA_ADMIN_USER`/`GRAFANA_ADMIN_PASSWORD`. Não há
+- **Acesso**: `http://IP_DA_VPS/grafana` (sem DNS), `https://SEU_DOMINIO/grafana` ou
+  `https://GRAFANA_ADDRESS` (subdomínio opcional), com `GRAFANA_ADMIN_USER`/`GRAFANA_ADMIN_PASSWORD`.
+  Pelo IP a conexão é HTTP: a senha trafega sem criptografia — use uma senha exclusiva do Grafana. Não há
   cadastro aberto nem acesso anônimo. A senha do `.env` só vale na primeira subida; depois, troque
   pelo próprio Grafana (ou `docker compose exec grafana grafana cli admin reset-admin-password NOVA`).
 - **Painéis** (pasta *TVS*): *Visão geral* (API no ar, requisições/min, % de erros, latência,
