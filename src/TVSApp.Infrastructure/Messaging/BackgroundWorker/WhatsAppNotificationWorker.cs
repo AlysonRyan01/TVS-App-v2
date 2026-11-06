@@ -1,20 +1,16 @@
-using System.Diagnostics.Metrics;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Observability;
 using TVS_App.Application.Requests.WhatsAppQueueRequests;
 using TVS_App.Infrastructure.Messaging.Queue;
+using TVS_App.Infrastructure.Services.Whatsapp;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Infrastructure.Messaging.BackgroundWorker;
 
 public class WhatsAppNotificationWorker : BackgroundService
 {
-    private static readonly Meter Meter = new(BusinessEvents.MeterName);
-    private static readonly Counter<long> Messages =
-        Meter.CreateCounter<long>("whatsapp_messages_total", description: "Mensagens de WhatsApp por tipo e resultado");
-
     private readonly IWhatsAppQueue _queue;
     private readonly IWhatsappService _whatsappService;
     private readonly ILogger<WhatsAppNotificationWorker> _logger;
@@ -78,9 +74,7 @@ public class WhatsAppNotificationWorker : BackgroundService
             Log(false, messageType, serviceOrderId, phone, ex.Message, ex);
         }
 
-        Messages.Add(1,
-            new KeyValuePair<string, object?>("type", messageType),
-            new KeyValuePair<string, object?>("outcome", outcome));
+        WhatsAppMetrics.RecordMessage(messageType, outcome == "success");
     }
 
     private void Log(bool success, string messageType, string? serviceOrderId, string phone, string? reason, Exception? ex = null)

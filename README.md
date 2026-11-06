@@ -113,7 +113,8 @@ avisa as telas pelo SignalR (`"Atualizar"`) e registra um evento de negócio nos
 │   ├── TVSApp.Application/     # handlers, comandos/requests, DTOs, interfaces, observabilidade (eventos, LogMask)
 │   ├── TVSApp.Infrastructure/  # EF Core (DbContext, migrations), repositórios, JWT, PDFs, WhatsApp, fila e worker
 │   ├── TVSApp.Api/             # Program.cs, endpoints, middlewares, SignalR, Dockerfile
-│   └── TVSApp.Tests/           # testes MSTest (Domain, Application, Handlers)
+│   ├── TVSApp.Tests/           # testes unitários MSTest (Domain, Application, Handlers, Infrastructure)
+│   └── TVSApp.IntegrationTests/ # verificação ponta a ponta: API real + SQL Server descartável + WhatsApp falso
 ├── web/                        # sistema em Angular + Caddyfile + Dockerfile (Caddy servindo o build)
 ├── observability/              # configs de Alloy, Loki, Prometheus e Grafana (painéis e alertas)
 ├── specs/                      # especificações de cada feature (Spec Kit): spec, plan, tasks...
@@ -221,6 +222,31 @@ Testes MSTest das regras de negócio, sem banco nem rede:
 | `Domain/` | documentos (CPF/CNPJ), resposta de orçamento, compra de peça, conserto, entrega, liberação de reprovados |
 | `Handlers/` | handlers de OS (comandos e consultas), clientes e métricas |
 | `Application/` | cálculo do dashboard, comprovante de pagamento, valor por extenso, mascaramento de logs, catálogo de eventos |
+| `Infrastructure/` | estado da conexão do WhatsApp e mensagem de teste (Evolution simulada) |
+
+### Verificação ponta a ponta (substitui o teste manual com cliente falso)
+
+```bash
+dotnet test src/TVSApp.IntegrationTests --logger "console;verbosity=normal"
+```
+
+Precisa só do **Docker rodando** (não usa `.env`, Azure SQL nem a Evolution real). Em ~1 minuto:
+
+1. sobe um SQL Server descartável e a API real (ambiente `Production`), aplicando as migrations do zero;
+2. percorre o ciclo pela API, como o sistema faria: login, cliente, abrir OS (PDF), orçamento,
+   aprovação pela loja e pelo link do cliente (inclusive código errado), reprovação e liberação,
+   Philco/Britania, peça, conserto, entrega (PDF), pagamentos e comprovante, venda, contato do site,
+   busca, listas, métricas e envio de teste;
+3. confere, em cada etapa, **a mensagem de WhatsApp exata** que seria enviada (número, nº da OS,
+   texto) — ou que nenhuma foi gerada quando não deve.
+
+**Nada é enviado de verdade:** a Evolution é substituída por um falso que só registra as mensagens, e
+o endereço configurado é `http://evolution.invalid` (mesmo que algo falhasse, não há para onde
+enviar). No fim, uma linha por cenário (`Aprovado …` / `Com falha …`); numa falha, a etapa e o
+"esperado / obtido". Rode antes de publicar uma atualização.
+
+O envio **real** (para conferir que chega no celular) é feito sob demanda na VPS — ver
+[Rotas internas](#rotas-internas).
 
 Build do frontend:
 
@@ -273,6 +299,7 @@ criar venda, entregar, reimprimir e comprovante de pagamento — e `GET /`.
 |--------|--------|
 | `200` | sucesso |
 | `400` | validação recusada (ex.: "O modelo da ordem de serviço não pode estar vazio"), regra de negócio violada ou credenciais inválidas no login |
+| `409` | orçamento já respondido ("Esse orçamento já foi respondido.") |
 | `401` | sem token ou token inválido/expirado (rotas protegidas) |
 | `404` | registro não encontrado (o envelope traz a mensagem) |
 | `500` | erro inesperado (a mensagem vem no envelope; detalhes nos logs pelo `X-Correlation-Id`) |
@@ -636,8 +663,27 @@ await connection.start();
 |--------|------|-------|-----------|
 | `GET` | `/` | Não | Verificação de saúde: responde `RUNNING` (usado no healthcheck do Docker) |
 | `GET` | `/internal/metrics` | Não (só rede interna) | Métricas técnicas no formato Prometheus, coletadas pelo Alloy |
+| `POST` | `/internal/whatsapp/test-message` | Não (só rede interna) | Envia uma mensagem **real** de teste para `WHATSAPP_TEST_PHONE` |
 
-`/internal/metrics` **não é acessível pela internet**: o Caddy responde `404` para
+#### `POST /internal/whatsapp/test-message`
+
+Envio real de teste, **só sob demanda**, para o número do dono (`WHATSAPP_TEST_PHONE`). Não cria
+cliente nem OS. Rode na VPS:
+
+```bash
+docker compose exec api curl -s -X POST localhost:8080/internal/whatsapp/test-message
+```
+
+| Situação | HTTP | `message` |
+|----------|------|-----------|
+| Enviada | `200` | "Mensagem de teste enviada para 41*****0000." |
+| Evolution recusou ou fora do ar | `502` | "Falha ao enviar a mensagem de teste: …" (motivo) |
+| `WHATSAPP_TEST_PHONE` vazio | `400` | "Configure WHATSAPP_TEST_PHONE no .env para usar o envio de teste." |
+
+Texto recebido: "🧪 *Mensagem de teste* do sistema TVS Eletrônica — dd/MM/aaaa HH:mm. Se você
+recebeu, o envio de WhatsApp está funcionando." Evento `whatsapp.test`.
+
+As rotas `/internal/*` **não são acessíveis pela internet**: o Caddy responde `404` para
 `/api/internal/*`.
 
 ---
@@ -1032,6 +1078,7 @@ docker compose down                    # para tudo (volumes e dados ficam)
 | `GRAFANA_ROOT_URL` | não | endereço completo do Grafana para links absolutos (ex.: `http://IP_DA_VPS/grafana/`) |
 | `GRAFANA_ADMIN_USER` | não | usuário do Grafana (padrão `admin`) |
 | `GRAFANA_ADMIN_PASSWORD` | **sim** | senha do Grafana — sem ela o `docker compose up` não sobe |
+| `WHATSAPP_TEST_PHONE` | não | número do dono para o envio real de teste sob demanda (só dígitos com DDD) |
 | `ASPNETCORE_ENVIRONMENT` | não | deixe `Production` |
 
 Desenvolvimento com Docker: `docker compose -f docker-compose.dev.yml up` (ver
@@ -1067,7 +1114,7 @@ para o Grafana. Os painéis ficam na pasta **TVS**:
 |--------|--------|
 | **Visão geral** | API no ar, requisições/min, % de erros 5xx, latência p50/p95 por rota, eventos de negócio por dia, alertas |
 | **Logs** | busca livre, filtro por nº da OS e nível, volume por nível |
-| **WhatsApp** | enviadas × falhas por dia e por tipo, taxa de falha, últimas falhas com motivo |
+| **WhatsApp** | conexão do número (conectado/desconectado), enviadas × falhas por dia e por tipo, taxa de falha, últimas falhas com motivo |
 | **Servidor** | CPU, memória, disco e rede da VPS; CPU e memória por container |
 
 ### Alertas
@@ -1079,6 +1126,7 @@ Aparecem só no Grafana (Alerting → regras, pasta TVS) — **nenhum aviso é e
 | API fora do ar | API não responde à coleta por 2 min |
 | Taxa de erros alta | mais de 5% de respostas 5xx por 5 min |
 | WhatsApp falhando | 3 ou mais falhas em 10 min |
+| WhatsApp desconectado | número da loja desconectado ou Evolution sem responder por 5 min |
 | Disco quase cheio | uso do disco da VPS acima de 85% por 5 min |
 
 ### Seguir uma requisição e achar uma OS
@@ -1120,13 +1168,15 @@ Registrados com resultado `success`/`failure` (ver `src/TVSApp.Application/Obser
 | `payment.added` / `payment.updated` / `payment.removed` | pagamentos |
 | `payment.receipt_printed` | comprovante gerado |
 | `whatsapp.enqueued` / `whatsapp.sent` / `whatsapp.failed` | ciclo de cada mensagem de WhatsApp |
+| `whatsapp.test` | envio real de teste sob demanda |
 
 ### Métricas
 
 | Métrica | Rótulos | O que mede |
 |---------|---------|------------|
 | `tvs_business_events_total` | `event`, `outcome` | eventos de negócio |
-| `tvs_whatsapp_messages_total` | `type`, `outcome` | mensagens de WhatsApp enviadas/falhas |
+| `tvs_whatsapp_messages_total` | `type`, `outcome` | mensagens de WhatsApp enviadas/falhas (`type="TestMessage"` no envio de teste) |
+| `tvs_whatsapp_connected` | — | `1` conectado / `0` desconectado ou Evolution fora do ar (consultado a cada minuto, sem enviar mensagens); ausente se a Evolution não estiver configurada |
 | `http_requests_received_total` | `method`, `endpoint`, `code` | requisições por rota e status |
 | `http_request_duration_seconds` | `method`, `endpoint`, `code` | latência (histograma) |
 | `up{job="tvs-api"}` | — | API respondendo à coleta |

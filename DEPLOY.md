@@ -45,6 +45,7 @@ Pronto: abra `https://SEU_DOMINIO` (ou `http://IP_DA_VPS` se `SITE_ADDRESS=:80`)
 | `JWT_ISSUER`, `JWT_AUDIENCE` | não | Padrão `tvs-app` |
 | `CORS_ORIGINS` | não | Sites externos que chamam a API (ex.: `https://www.tvseletronica.com`) |
 | `EVOLUTION_BASE_URL`, `EVOLUTION_API_KEY`, `EVOLUTION_INSTANCE` | sim, para WhatsApp | Evolution API (outro servidor, ou `http://evolution-api:8080` se ela rodar aqui — seção 6) |
+| `WHATSAPP_TEST_PHONE` | não | Número do dono para o envio real de teste sob demanda (ver seção 4) |
 | `COMPOSE_PROFILES` | não | `whatsapp` sobe a Evolution API nesta VPS (seção 6) |
 | `EVOLUTION_DB_PASSWORD`, `EVOLUTION_MANAGER_PORT` | só com a Evolution aqui | Senha do banco interno da Evolution; porta local do painel (padrão `8090`) |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | só em banco novo | Cria o primeiro usuário ao subir (se o e-mail ainda não existir) |
@@ -82,7 +83,17 @@ docker compose logs -f api           # logs da API
 docker compose logs -f web           # logs do Caddy (HTTPS, acessos)
 docker compose restart api
 docker compose down                  # para tudo (volumes e dados ficam)
+
+# WhatsApp: mensagem REAL de teste para WHATSAPP_TEST_PHONE (sob demanda, não cria dados)
+docker compose exec api curl -s -X POST localhost:8080/internal/whatsapp/test-message
 ```
+
+- Antes de publicar uma versão, rode no seu computador a verificação ponta a ponta
+  (`dotnet test src/TVSApp.IntegrationTests`, ver README › Testes): ela confere o ciclo inteiro e
+  as mensagens de WhatsApp sem enviar nada.
+- A conexão do WhatsApp é monitorada a cada minuto (painel **WhatsApp** › "Conexão do WhatsApp" e
+  alerta **WhatsApp desconectado** no Grafana). Se cair, reconecte o número lendo o QR Code no
+  painel da Evolution e confirme com o envio de teste acima.
 
 ## 5. Observabilidade (logs, métricas e painéis)
 

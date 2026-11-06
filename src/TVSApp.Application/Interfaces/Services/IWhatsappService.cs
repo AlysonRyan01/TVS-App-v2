@@ -1,3 +1,4 @@
+using TVS_App.Application.DTOs;
 using TVS_App.Application.Requests.WhatsAppQueueRequests;
 using TVS_App.Domain.Enums;
 using TVS_App.Domain.Shared;
@@ -16,4 +17,10 @@ public interface IWhatsappService
     Task<BaseResponse<string>> SendThankYouForEstimateApprovalAsync(string serviceOrder, string customerName, string phoneNumber, decimal amount);
     Task<BaseResponse<string>> SendEstimateDisapprovalAcknowledgmentAsync(string serviceOrder, string customerName, string phoneNumber);
     Task<BaseResponse<string>> NotifyOwnerSiteContactAsync(SendSiteContactMessageRequest request);
+
+    /// <summary>Consulta se o número da loja está conectado na Evolution, sem enviar mensagem.</summary>
+    Task<WhatsAppConnectionStatus> GetConnectionStateAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Envia uma mensagem marcada como teste para o número informado (sob demanda).</summary>
+    Task<BaseResponse<string>> SendTestMessageAsync(string? phoneNumber);
 }

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>TVS_App.IntegrationTests</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageReference Include="MSTest" Version="3.6.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.4" />
+    <PackageReference Include="Testcontainers.MsSql" Version="4.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TVSApp.Api\TVSApp.Api.csproj" />
+    <ProjectReference Include="..\TVSApp.Application\TVSApp.Application.csproj" />
+    <ProjectReference Include="..\TVSApp.Infrastructure\TVSApp.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -29,4 +29,5 @@ public static class BusinessEvents
     public const string WhatsAppEnqueued = "whatsapp.enqueued";
     public const string WhatsAppSent = "whatsapp.sent";
     public const string WhatsAppFailed = "whatsapp.failed";
+    public const string WhatsAppTest = "whatsapp.test";
 }

@@ -16,6 +16,7 @@ services:
       EvolutionApiSettings__Instance: ${EVOLUTION_INSTANCE:-}
       Admin__Email: ${ADMIN_EMAIL:-}
       Admin__Password: ${ADMIN_PASSWORD:-}
+      WhatsAppTest__Phone: ${WHATSAPP_TEST_PHONE:-}
     networks:
       - appnetwork
 

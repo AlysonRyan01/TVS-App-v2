@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using TVS_App.Api.Endpoints.Auth;
 using TVS_App.Api.Endpoints.Customers;
+using TVS_App.Api.Endpoints.Internal;
 using TVS_App.Api.Endpoints.Metrics;
 using TVS_App.Api.Endpoints.Public;
 using TVS_App.Api.Endpoints.ServiceOrders;
@@ -30,6 +31,7 @@ public static class AppExtensions
         app.MapMetricsQueryEndpoints();
         app.MapPublicQueryEndpoints();
         app.MapPublicCommandEndpoints();
+        app.MapInternalWhatsAppEndpoints();
     }
     
     public static void AddSignalR(this WebApplication app)

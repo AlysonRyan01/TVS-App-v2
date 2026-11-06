@@ -30,3 +30,4 @@ app.MapGet("/", () => "RUNNING");
 app.MapObservability();
 
 app.Run();
+public partial class Program;

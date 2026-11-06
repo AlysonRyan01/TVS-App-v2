@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\TVSApp.Domain\TVSApp.Domain.csproj" />
     <ProjectReference Include="..\TVSApp.Application\TVSApp.Application.csproj" />
+    <ProjectReference Include="..\TVSApp.Infrastructure\TVSApp.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

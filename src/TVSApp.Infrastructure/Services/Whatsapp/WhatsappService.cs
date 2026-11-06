@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using TVS_App.Application.DTOs;
 using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Requests.WhatsAppQueueRequests;
 using TVS_App.Domain.Enums;
@@ -301,6 +302,73 @@ public class WhatsappService : IWhatsappService
                    $"💙 Agradecemos pela confiança!";
             
         return await Send(text, phoneNumber);
+    }
+
+    public async Task<WhatsAppConnectionStatus> GetConnectionStateAsync(CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(_settings.BaseUrl))
+            return new WhatsAppConnectionStatus(WhatsAppConnectionState.NotConfigured);
+
+        try
+        {
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeout.CancelAfter(TimeSpan.FromSeconds(10));
+
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"{_settings.BaseUrl}/instance/connectionState/{_settings.Instance}");
+            request.Headers.Add("apikey", _settings.ApiKey);
+            using var response = await _httpClient.SendAsync(request, timeout.Token);
+
+            if (!response.IsSuccessStatusCode)
+                return new WhatsAppConnectionStatus(WhatsAppConnectionState.Unavailable, $"Evolution respondeu HTTP {(int)response.StatusCode}");
+
+            var body = await response.Content.ReadAsStringAsync(timeout.Token);
+            using var json = JsonDocument.Parse(body);
+            var state = json.RootElement.TryGetProperty("instance", out var instance)
+                        && instance.TryGetProperty("state", out var stateElement)
+                ? stateElement.GetString()
+                : null;
+
+            return state switch
+            {
+                "open" => new WhatsAppConnectionStatus(WhatsAppConnectionState.Connected),
+                null or "" => new WhatsAppConnectionStatus(WhatsAppConnectionState.Unavailable, "resposta sem o estado da instância"),
+                _ => new WhatsAppConnectionStatus(WhatsAppConnectionState.Disconnected, $"instância em \"{state}\"")
+            };
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return new WhatsAppConnectionStatus(WhatsAppConnectionState.Unavailable, "tempo esgotado ao consultar a Evolution");
+        }
+        catch (JsonException)
+        {
+            return new WhatsAppConnectionStatus(WhatsAppConnectionState.Unavailable, "resposta inválida da Evolution");
+        }
+        catch (HttpRequestException ex)
+        {
+            return new WhatsAppConnectionStatus(WhatsAppConnectionState.Unavailable, ex.Message);
+        }
+    }
+
+    public async Task<BaseResponse<string>> SendTestMessageAsync(string? phoneNumber)
+    {
+        if (string.IsNullOrWhiteSpace(phoneNumber))
+            return new BaseResponse<string>(null, 400, "Configure WHATSAPP_TEST_PHONE no .env para usar o envio de teste.");
+
+        var now = TimeZoneInfo.ConvertTime(DateTime.UtcNow, BrazilTimeZone());
+        var text = $"🧪 *Mensagem de teste* do sistema TVS Eletrônica — {now:dd/MM/yyyy HH:mm}. " +
+                   "Se você recebeu, o envio de WhatsApp está funcionando.";
+
+        var result = await Send(text, phoneNumber);
+        if (!result.IsSuccess)
+            return new BaseResponse<string>(null, 502, $"Falha ao enviar a mensagem de teste: {result.Message}");
+
+        return new BaseResponse<string>(FormatPhoneNumber(phoneNumber), 200, "Mensagem de teste enviada.");
+    }
+
+    private static TimeZoneInfo BrazilTimeZone()
+    {
+        try { return TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo"); }
+        catch (TimeZoneNotFoundException) { return TimeZoneInfo.Utc; }
     }
 
     public async Task<BaseResponse<string>> Send(string message, string phoneNumber)

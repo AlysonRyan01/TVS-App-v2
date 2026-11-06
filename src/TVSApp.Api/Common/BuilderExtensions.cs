@@ -82,6 +82,9 @@ public static class BuilderExtensions
         builder.Services.AddScoped<TVS_App.Application.Handlers.Metrics.IMetricsQueryHandler, TVS_App.Application.Handlers.Metrics.MetricsQueryHandler>();
         builder.Services.AddHttpClient<IWhatsappService, WhatsappService>();
         builder.Services.Configure<EvolutionApiSettings>(builder.Configuration.GetSection("EvolutionApiSettings"));
+        builder.Services.Configure<WhatsAppMonitorSettings>(builder.Configuration.GetSection("WhatsAppMonitor"));
+        builder.Services.Configure<WhatsAppTestSettings>(builder.Configuration.GetSection("WhatsAppTest"));
+        builder.Services.AddHostedService<WhatsAppConnectionMonitor>();
     }
 
     public static void AddJwtService(this WebApplicationBuilder builder)

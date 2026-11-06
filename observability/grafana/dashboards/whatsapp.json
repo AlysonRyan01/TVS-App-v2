@@ -22,6 +22,147 @@
   },
   "panels": [
     {
+      "id": 9,
+      "type": "stat",
+      "title": "Conexão do WhatsApp",
+      "description": "Estado do número da loja na Evolution, verificado a cada minuto (sem enviar mensagens).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(tvs_whatsapp_connected)",
+          "instant": true
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Não monitorado",
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Conectado",
+                  "color": "green",
+                  "index": 0
+                },
+                "0": {
+                  "text": "Desconectado",
+                  "color": "red",
+                  "index": 1
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "id": 10,
+      "type": "state-timeline",
+      "title": "Estado da conexão",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 18,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(tvs_whatsapp_connected)",
+          "legendFormat": "WhatsApp"
+        }
+      ],
+      "options": {
+        "showValue": "never",
+        "mergeValues": true,
+        "legend": {
+          "showLegend": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Conectado",
+                  "color": "green"
+                },
+                "0": {
+                  "text": "Desconectado",
+                  "color": "red"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
       "id": 1,
       "type": "stat",
       "title": "Enviadas",
@@ -32,7 +173,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 0,
+        "y": 5,
         "w": 6,
         "h": 4
       },
@@ -88,7 +229,7 @@
       },
       "gridPos": {
         "x": 6,
-        "y": 0,
+        "y": 5,
         "w": 6,
         "h": 4
       },
@@ -148,7 +289,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 0,
+        "y": 5,
         "w": 6,
         "h": 4
       },
@@ -212,7 +353,7 @@
       },
       "gridPos": {
         "x": 18,
-        "y": 0,
+        "y": 5,
         "w": 6,
         "h": 4
       },
@@ -269,7 +410,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 4,
+        "y": 9,
         "w": 12,
         "h": 9
       },
@@ -325,7 +466,7 @@
       },
       "gridPos": {
         "x": 12,
-        "y": 4,
+        "y": 9,
         "w": 12,
         "h": 9
       },
@@ -381,7 +522,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 13,
+        "y": 18,
         "w": 24,
         "h": 9
       },
@@ -416,7 +557,7 @@
       },
       "gridPos": {
         "x": 0,
-        "y": 22,
+        "y": 27,
         "w": 24,
         "h": 10
       },

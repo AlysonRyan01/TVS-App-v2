@@ -114,3 +114,30 @@ groups:
           severity: warning
         annotations:
           summary: O disco da VPS passou de 85% de uso.
+
+      - uid: tvs-whatsapp-desconectado
+        title: WhatsApp desconectado
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: { from: 600, to: 0 }
+            datasourceUid: prometheus
+            model:
+              refId: A
+              expr: max(tvs_whatsapp_connected)
+              instant: true
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              refId: C
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator: { type: lt, params: [1] }
+        for: 5m
+        noDataState: OK
+        execErrState: Error
+        labels:
+          severity: critical
+        annotations:
+          summary: O WhatsApp da loja está desconectado ou a Evolution não responde há mais de 5 minutos. Reconecte o número lendo o QR Code no painel da Evolution.
