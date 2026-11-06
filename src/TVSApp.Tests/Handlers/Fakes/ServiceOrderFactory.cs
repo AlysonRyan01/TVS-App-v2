@@ -15,7 +15,7 @@ public static class ServiceOrderFactory
             new Phone("41999999999"),
             new Phone("41988888888"),
             null,
-            new Cpf("12345678909"))
+            new Document("12345678909"))
         {
             Id = 7
         };

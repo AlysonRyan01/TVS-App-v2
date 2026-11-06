@@ -1,0 +1,35 @@
+@if (customer(); as customer) {
+  <article class="customer-card" aria-label="Cliente escolhido">
+    <p class="customer-name">{{ customer.name }}</p>
+    <p class="customer-line">{{ maskPhone(customer.phone) }}@if (customer.phone2) { · {{ maskPhone(customer.phone2) }} }</p>
+    @if (customer.document) {
+      <p class="customer-line mono">{{ formatDocument(customer.document) }}</p>
+    }
+    @if (addressSummary(customer)) {
+      <p class="customer-line muted">{{ addressSummary(customer) }}</p>
+    }
+    <div class="customer-actions">
+      <button matButton type="button" (click)="openExisting(customer)">Ver dados</button>
+      <button matButton="outlined" type="button" (click)="changeCustomer()">Trocar cliente</button>
+    </div>
+  </article>
+} @else {
+  <app-customer-search (selected)="openExisting($event)" (createNew)="useSearchTermAsName($event)" />
+
+  <!-- Sem [formGroup] aqui (fica no app-customer-form): por isso (submit) com preventDefault, não (ngSubmit). -->
+  <form class="new-customer" (submit)="$event.preventDefault(); createCustomer()">
+    <h3 class="section-title">Criar cliente</h3>
+    <app-customer-form />
+
+    <div class="form-actions">
+      <button matButton="filled" type="submit" [disabled]="isSavingCustomer()">
+        @if (isSavingCustomer()) {
+          <mat-spinner diameter="18" aria-hidden="true"></mat-spinner>
+          Criando cliente…
+        } @else {
+          Criar cliente
+        }
+      </button>
+    </div>
+  </form>
+}

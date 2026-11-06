@@ -237,6 +237,160 @@ public class ServiceOrderCommandHandler : IServiceOrderCommandHandler
         return new BaseResponse<string?>(serviceOrder.Product.Location, 200, "Localização do produto adicionada com sucesso!");
     }
 
+    // Igual a old-handlers/CreateServiceOrderAndReturnPdfHandler.cs: valida, normaliza, cria, gera o termo de
+    // entrada e envia o WhatsApp de boas-vindas (todas as empresas). Se o PDF falhar, a OS já está criada.
+    // Diferença: devolve também o número da OS, para a tela mostrar "OS {número} criada.".
+    public async Task<BaseResponse<CreatedServiceOrderPdf>> CreateServiceOrder(CreateServiceOrderCommand command)
+    {
+        command.Validate();
+        var normalized = command.Normalize();
+
+        var product = new Product(normalized.ProductBrand, normalized.ProductModel,
+            normalized.ProductSerialNumber, normalized.ProductDefect, normalized.Accessories, normalized.ProductType);
+
+        var serviceOrder = new ServiceOrder(normalized.Enterprise, normalized.CustomerId, product);
+
+        var createServiceOrder = await _commandRepository.CreateAsync(serviceOrder);
+        if (!createServiceOrder.IsSuccess)
+            return new BaseResponse<CreatedServiceOrderPdf>(null, 500, createServiceOrder.Message);
+
+        if (createServiceOrder.Data != null)
+            serviceOrder = createServiceOrder.Data;
+
+        var createPdf = await _pdfGenerator.GenerateCheckInDocumentAsync(serviceOrder);
+        if (!createPdf.IsSuccess || createPdf.Data == null)
+            return new BaseResponse<CreatedServiceOrderPdf>(null, 500, createPdf.Message);
+
+        _whatsAppQueue.Enqueue(new SendWelcomeMessageRequest(
+            serviceOrder.Id.ToString(),
+            serviceOrder.Customer.Name.CustomerName,
+            serviceOrder.Customer.Phone.CustomerPhone));
+
+        return new BaseResponse<CreatedServiceOrderPdf>(
+            new CreatedServiceOrderPdf(serviceOrder.Id, createPdf.Data), createPdf.Code, createPdf.Message);
+    }
+
+    // Igual a old-handlers/CreateSalesServiceOrderHandler.cs: a venda é uma OS com defeito "VENDA", empresa
+    // Particular, já entregue e aprovada, com o valor no custo de peça. Gera o comprovante de venda e envia o
+    // WhatsApp de venda. Se o PDF falhar, a OS já está criada.
+    // Diferença: devolve também o número da OS, para a tela mostrar "Venda registrada (OS {número}).".
+    public async Task<BaseResponse<CreatedServiceOrderPdf>> CreateSalesServiceOrder(CreateSalesServiceOrderCommand command)
+    {
+        command.Validate();
+        var normalized = command.Normalize();
+
+        var product = new Product(normalized.ProductBrand, normalized.ProductModel,
+            normalized.ProductSerialNumber, "VENDA", "", normalized.ProductType);
+
+        var serviceOrder = new ServiceOrder(EEnterprise.Particular, normalized.CustomerId, product);
+
+        serviceOrder.EditGuarantee(new Guarantee(normalized.Guarantee));
+        serviceOrder.EditPartCost(new PartCost(normalized.Amount));
+        serviceOrder.EditServiceOrderStatus(EServiceOrderStatus.Delivered);
+        serviceOrder.EditRepairResult(ERepairResult.Repair);
+        serviceOrder.EditRepairStatus(ERepairStatus.Approved);
+        serviceOrder.EditDeliveryDate(DateTime.UtcNow);
+
+        var createServiceOrder = await _commandRepository.CreateAsync(serviceOrder);
+        if (!createServiceOrder.IsSuccess)
+            return new BaseResponse<CreatedServiceOrderPdf>(null, 500, createServiceOrder.Message);
+
+        if (createServiceOrder.Data != null)
+            serviceOrder = createServiceOrder.Data;
+
+        var createPdf = await _pdfGenerator.GenerateSaleDocumentAsync(serviceOrder);
+        if (!createPdf.IsSuccess || createPdf.Data == null)
+            return new BaseResponse<CreatedServiceOrderPdf>(null, 500, createPdf.Message);
+
+        _whatsAppQueue.Enqueue(new SendProductSaleMessageRequest(
+            serviceOrder.Customer.Name.CustomerName,
+            serviceOrder.Customer.Phone.CustomerPhone,
+            serviceOrder.PartCost.ServiceOrderPartCost,
+            serviceOrder.Guarantee!.ServiceOrderGuarantee,
+            serviceOrder.Product.Type));
+
+        return new BaseResponse<CreatedServiceOrderPdf>(
+            new CreatedServiceOrderPdf(serviceOrder.Id, createPdf.Data), createPdf.Code, createPdf.Message);
+    }
+
+    // Igual a old-handlers/RegenerateAndReturnPdfHandler.cs: gera de novo o documento da OS (entrada,
+    // entrega ou venda, escolhido pelo RegenerateDocument conforme a situação).
+    public async Task<BaseResponse<byte[]>> RegeneratePdf(long id)
+    {
+        var result = await _queryRepository.GetByIdForUpdateAsync(id);
+        if (result.Data == null)
+            return new BaseResponse<byte[]>(null, 404, "Essa ordem de serviço não existe");
+
+        var createPdf = await _pdfGenerator.RegeneratePdfAsync(result.Data);
+        if (!createPdf.IsSuccess || createPdf.Data == null)
+            return new BaseResponse<byte[]>(null, 500, createPdf.Message);
+
+        return createPdf;
+    }
+
+    // Baseado em old-handlers/EditServiceOrderHandler.cs, com diferenças de propósito:
+    // - não mexe no cliente (editado em /clientes) nem na situação/orçamento (fluxos da Home);
+    // - preserva a localização (o antigo criava um Product novo e a apagava);
+    // - OS de venda continua com defeito "VENDA" e sem acessórios, para seguir contando como venda.
+    public async Task<BaseResponse<ServiceOrderDto?>> UpdateServiceOrder(long id, EditServiceOrderCommand command)
+    {
+        command.Validate();
+        var normalized = command.Normalize();
+
+        var result = await _queryRepository.GetByIdForUpdateAsync(id);
+        if (result.Data == null)
+            return new BaseResponse<ServiceOrderDto?>(null, 404, "Essa ordem de serviço não existe");
+
+        var serviceOrder = result.Data;
+        var isSale = serviceOrder.Product.Defect == "VENDA";
+
+        serviceOrder.Product.UpdateProduct(
+            normalized.Brand!,
+            normalized.Model,
+            normalized.SerialNumber,
+            isSale ? "VENDA" : normalized.Defect!,
+            isSale ? string.Empty : normalized.Accessories!,
+            normalized.Type);
+        serviceOrder.Product.AddLocation(normalized.Location!);
+
+        serviceOrder.EditEnterprise(normalized.Enterprise);
+        serviceOrder.EditEntryDate(normalized.EntryDate!.Value);
+        serviceOrder.EditInspectionDate(normalized.InspectionDate);
+        serviceOrder.EditResponseDate(normalized.ResponseDate);
+        serviceOrder.EditRepairDate(normalized.RepairDate);
+        serviceOrder.EditPurchasePartDate(normalized.PurchasePartDate);
+        serviceOrder.EditDeliveryDate(normalized.DeliveryDate);
+        serviceOrder.EditSolution(new Solution(normalized.Solution!));
+        serviceOrder.EditGuarantee(new Guarantee(normalized.Guarantee!));
+        serviceOrder.EditPartCost(new PartCost(normalized.PartCost));
+        serviceOrder.EditLaborCost(new LaborCost(normalized.LaborCost));
+
+        var update = await _commandRepository.UpdateAsync(serviceOrder);
+        if (!update.IsSuccess)
+            return new BaseResponse<ServiceOrderDto?>(null, 500, update.Message);
+
+        return new BaseResponse<ServiceOrderDto?>(
+            serviceOrder.MapToServiceOrderDto(), 200, "Ordem de serviço alterada com sucesso!");
+    }
+
+    // Igual a old-handlers/UpdatePartPurchaseCostHandler.cs: grava o valor pago na peça (tela Métricas).
+    // Negativo é recusado pelo value object PartPurchaseCost (ValueObjectException → 400).
+    public async Task<BaseResponse<ServiceOrderDto?>> UpdatePartPurchaseCost(long id, decimal partPurchaseCost)
+    {
+        var result = await _queryRepository.GetByIdForUpdateAsync(id);
+        if (result.Data == null)
+            return new BaseResponse<ServiceOrderDto?>(null, 404, "Essa ordem de serviço não existe");
+
+        var serviceOrder = result.Data;
+        serviceOrder.EditPartPurchaseCost(new PartPurchaseCost(partPurchaseCost));
+
+        var update = await _commandRepository.UpdateAsync(serviceOrder);
+        if (!update.IsSuccess)
+            return new BaseResponse<ServiceOrderDto?>(null, 500, update.Message);
+
+        return new BaseResponse<ServiceOrderDto?>(serviceOrder.MapToServiceOrderDto(), 200, "Valor da peça atualizado.");
+    }
+
     private async Task<BaseResponse<ServiceOrderDto?>> RespondToEstimate(
         long id,
         Action<ServiceOrder> respond,

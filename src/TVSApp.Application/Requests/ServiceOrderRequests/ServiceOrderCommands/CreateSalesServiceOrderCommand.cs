@@ -1,7 +1,5 @@
-using MediatR;
 using TVS_App.Application.Exceptions;
 using TVS_App.Domain.Enums;
-using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 
@@ -12,7 +10,7 @@ public record CreateSalesServiceOrderCommand(
     string ProductSerialNumber,
     string Guarantee,
     decimal Amount,
-    EProduct ProductType = EProduct.Tv) : IRequest<BaseResponse<byte[]>>
+    EProduct ProductType = EProduct.Tv)
 {
     public void Validate()
     {

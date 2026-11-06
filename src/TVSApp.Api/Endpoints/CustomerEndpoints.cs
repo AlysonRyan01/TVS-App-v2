@@ -6,6 +6,8 @@ using TVS_App.Application.DTOs;
 using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.Requests.CustomerRequests.CustomerCommands;
 using TVS_App.Application.Requests.CustomerRequests.CustomersQueries;
+using TVS_App.Application.Handlers.Customers;
+using TVS_App.Api.Extensions;
 using TVS_App.Domain.Shared;
 
 namespace TVS_App.Api.Endpoints;
@@ -14,54 +16,43 @@ public static class CustomerEndpoints
 {
     public static void MapCustomerEndpoints(this WebApplication app)
     {
-        app.MapPost("/create-customer", async (
-                ISender handler, 
-                CreateCustomerCommand command, 
+        // Rotas REST da tela "Adicionar OS" (feature 009).
+        app.MapGet("/customers", async (ICustomerQueryHandler handler, [FromQuery] string name) =>
+        {
+            var result = await handler.SearchByName(name);
+            return result.ToResult();
+        }).WithTags("Customer").RequireAuthorization();
+
+        app.MapPost("/customers", async (
+                ICustomerCommandHandler handler,
+                CreateCustomerCommand command,
                 IHubContext<ServiceOrderHub> hubContext) =>
         {
-            var normalizedCommand = command.Normalize();
-            normalizedCommand.Validate();
+            var result = await handler.Create(command);
+            if (result.IsSuccess)
+                await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
-            var createResult = await handler.Send(normalizedCommand);
-            if (!createResult.IsSuccess)
-                return Results.Ok(createResult);
+            return result.ToResult();
+        }).WithTags("Customer").RequireAuthorization();
 
-            await hubContext.Clients.All.SendAsync("Atualizar", createResult.Message);
-
-            return Results.Ok(createResult);
-        })
-        .WithTags("Customer")
-        .WithName("CreateCustomer")
-        .WithSummary("Cria um novo cliente no sistema.")
-        .WithDescription("Recebe os dados do cliente via comando (CreateCustomerCommand), " 
-                         + "valida, normaliza e envia para o handler.")
-        .Produces<BaseResponse<CustomerDto?>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<CustomerDto?>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
-
-        app.MapPut("/update-customer", async (
-                ISender handler, 
-                UpdateCustomerCommand command, 
+        app.MapPut("/customers/{id:long}", async (
+                ICustomerCommandHandler handler,
+                long id,
+                UpdateCustomerCommand command,
                 IHubContext<ServiceOrderHub> hubContext) =>
         {
-            var normalizedCommand = command.Normalize();
-            normalizedCommand.Validate();
+            var result = await handler.Update(id, command);
+            if (result.IsSuccess)
+                await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
-            var updateResult = await handler.Send(normalizedCommand);
-            if (!updateResult.IsSuccess)
-                return Results.Ok(updateResult);
+            return result.ToResult();
+        }).WithTags("Customer").RequireAuthorization();
 
-            await hubContext.Clients.All.SendAsync("Atualizar", updateResult.Message);
-
-            return Results.Ok(updateResult);
-        })
-        .WithTags("Customer")
-        .WithName("UpdateCustomer")
-        .WithSummary("Atualiza os dados de um cliente existente.")
-        .WithDescription("Recebe um comando do tipo UpdateCustomerCommand, valida e normaliza os dados")
-        .Produces<BaseResponse<string>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
+        app.MapGet("/addresses/{cep}", async (IAddressService addressService, string cep) =>
+        {
+            var result = await addressService.GetAddressByCep(cep);
+            return result.ToResult();
+        }).WithTags("Customer").RequireAuthorization();
 
         app.MapGet("/get-customer-by-id/{id}", async (
                 ISender handler, 
@@ -84,23 +75,6 @@ public static class CustomerEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
         
-        app.MapGet("/get-customer-by-name", async (
-                ISender handler, 
-                string name) =>
-        {
-            var command = new GetCustomerByNameQuery(name);
-            var customers = await handler.Send(command);
-            
-            return Results.Ok(customers);
-        })
-        .WithTags("Customer")
-        .WithName("GetCustomerByName")
-        .WithSummary("Busca clientes pelo nome.")
-        .WithDescription(
-            "Recebe o nome como parâmetro de query string, e retorna uma lista de clientes com nomes semelhantes. "
-            + "Caso o nome não seja informado, retorna uma resposta vazia.")
-        .Produces<IEnumerable<CustomerDto>>(StatusCodes.Status200OK, "application/json")
-        .RequireAuthorization();
         
         app.MapGet("/get-all-customers/{pageSize}/{pageNumber}", async (
                 ISender handler,
@@ -123,17 +97,5 @@ public static class CustomerEndpoints
         .Produces<BaseResponse<PaginatedResult<CustomerDto>>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
         
-        app.MapGet("/get-address-by-zip-code", async (IAddressService addressService, string zipCode) =>
-            {
-                var response = await addressService.GetAddressByCep(zipCode);
-
-                return response.IsSuccess ? Results.Ok(response) : Results.BadRequest(response);
-            })
-            .WithTags("ServiceOrder")
-            .WithName("GetAddressByCep")
-            .WithSummary("Obtem o endereço por CEP.")
-            .WithDescription("Obtem o endereço por CEP.")
-            .Produces<BaseResponse<AddressDto>>(StatusCodes.Status200OK, "application/pdf")
-            .Produces<BaseResponse<AddressDto>>(StatusCodes.Status400BadRequest, "application/json");
     }
 }

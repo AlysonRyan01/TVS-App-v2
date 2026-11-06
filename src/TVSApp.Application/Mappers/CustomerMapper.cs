@@ -21,7 +21,7 @@ public static class CustomerMapper
             Phone = customer.Phone.CustomerPhone,
             Phone2 = customer.Phone2.CustomerPhone,
             Email = customer.Email?.CustomerEmail,
-            Cpf = customer.Cpf.Number
+            Document = customer.Document?.Number
         };
     }
 
@@ -37,8 +37,7 @@ public static class CustomerMapper
             new Phone(
                 customerDto.Phone2),
             string.IsNullOrWhiteSpace(customerDto.Email) ? null : new Email(customerDto.Email),
-            new Cpf(
-                customerDto.Cpf));
+            Document.FromOptional(customerDto.Document));
         
         customer.Id = customerDto.Id;
         

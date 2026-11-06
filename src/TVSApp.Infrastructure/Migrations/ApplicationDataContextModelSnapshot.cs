@@ -519,7 +519,7 @@ namespace TVS_App.Infrastructure.Migrations
                                 .HasForeignKey("CustomerId");
                         });
 
-                    b.OwnsOne("TVS_App.Domain.ValueObjects.Customer.Cpf", "Cpf", b1 =>
+                    b.OwnsOne("TVS_App.Domain.ValueObjects.Customer.Document", "Document", b1 =>
                         {
                             b1.Property<long>("CustomerId")
                                 .HasColumnType("bigint");
@@ -528,7 +528,7 @@ namespace TVS_App.Infrastructure.Migrations
                                 .IsRequired()
                                 .HasMaxLength(20)
                                 .HasColumnType("nvarchar(20)")
-                                .HasColumnName("Cpf");
+                                .HasColumnName("Document");
 
                             b1.HasKey("CustomerId");
 
@@ -579,8 +579,7 @@ namespace TVS_App.Infrastructure.Migrations
                     b.Navigation("Address")
                         .IsRequired();
 
-                    b.Navigation("Cpf")
-                        .IsRequired();
+                    b.Navigation("Document");
 
                     b.Navigation("Email");
 

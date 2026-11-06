@@ -14,4 +14,9 @@ public interface IServiceOrderCommandHandler
     Task<BaseResponse<ServiceOrderDto?>> RegisterRepair(long id);
     Task<BaseResponse<byte[]>> RegisterDelivery(long id);
     Task<BaseResponse<string?>> AddProductLocation(AddProductLocationCommand command);
+    Task<BaseResponse<CreatedServiceOrderPdf>> CreateServiceOrder(CreateServiceOrderCommand command);
+    Task<BaseResponse<CreatedServiceOrderPdf>> CreateSalesServiceOrder(CreateSalesServiceOrderCommand command);
+    Task<BaseResponse<byte[]>> RegeneratePdf(long id);
+    Task<BaseResponse<ServiceOrderDto?>> UpdatePartPurchaseCost(long id, decimal partPurchaseCost);
+    Task<BaseResponse<ServiceOrderDto?>> UpdateServiceOrder(long id, EditServiceOrderCommand command);
 }

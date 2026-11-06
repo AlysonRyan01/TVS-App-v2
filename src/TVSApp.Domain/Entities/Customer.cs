@@ -9,14 +9,14 @@ public class Customer : Entity
 
     protected Customer() { }
     
-    public Customer(Name name, Address address, Phone phone, Phone phone2, Email? email, Cpf cpf)
+    public Customer(Name name, Address address, Phone phone, Phone phone2, Email? email, Document? document)
     {
         Name = name;
         Address = address;
         Phone = phone;
         Phone2 = phone2;
         Email = email;
-        Cpf = cpf;
+        Document = document;
     }
     
     public Name Name { get; private set; } = null!;
@@ -24,7 +24,7 @@ public class Customer : Entity
     public Phone Phone { get; private set; } = null!;
     public Phone Phone2 { get; private set; } = null!;
     public Email? Email { get; private set; }
-    public Cpf Cpf { get; private set; } = null!;
+    public Document? Document { get; private set; }
     
     public IReadOnlyCollection<ServiceOrder> ServiceOrders => _serviceOrders.AsReadOnly();
 
@@ -52,9 +52,9 @@ public class Customer : Entity
         Email = new Email(email);
     }
 
-    public void UpdateCpf(string cpf)
+    public void UpdateDocument(string? document)
     {
-        Cpf = new Cpf(cpf);
+        Document = Document.FromOptional(document);
     }
     
     public void AddServiceOrder(ServiceOrder serviceOrder)

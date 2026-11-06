@@ -1,0 +1,48 @@
+<div class="search">
+  <label class="search-label" for="customer-search-input">Buscar cliente</label>
+  <div class="search-field">
+    <span class="material-symbols-outlined" aria-hidden="true">search</span>
+    <input
+      id="customer-search-input"
+      type="search"
+      autocomplete="off"
+      placeholder="Digite o nome do cliente"
+      [value]="term()"
+      (input)="onInput($any($event.target).value)" />
+    @if (isSearching()) {
+      <mat-spinner diameter="18" aria-label="Buscando clientes"></mat-spinner>
+    }
+  </div>
+
+  @if (term().trim().length > 0 && term().trim().length < minLetters) {
+    <p class="search-hint">Digite pelo menos 3 letras.</p>
+  } @else if (errorMessage()) {
+    <p class="search-hint error">{{ errorMessage() }}</p>
+  } @else if (searched()) {
+    @if (results().length) {
+      <ul class="results" aria-label="Clientes encontrados">
+        @for (customer of results(); track customer.id) {
+          <li>
+            <button type="button" class="result" (click)="selected.emit(customer)">
+              <span class="result-name">{{ customer.name }}</span>
+              <span class="result-meta">{{ customer.phone ? maskPhone(customer.phone) : 'Sem telefone' }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+      @if (hasMore()) {
+        <p class="search-hint">Refine a busca para ver mais.</p>
+      }
+    } @else {
+      @if (allowCreate()) {
+        <p class="search-hint">Nenhum cliente encontrado. Cadastre abaixo.</p>
+        <button matButton="outlined" type="button" class="create-new" (click)="createNew.emit(term().trim())">
+          <span class="material-symbols-outlined" aria-hidden="true">person_add</span>
+          Usar “{{ term().trim() }}” no cadastro
+        </button>
+      } @else {
+        <p class="search-hint">Nenhum cliente encontrado.</p>
+      }
+    }
+  }
+</div>

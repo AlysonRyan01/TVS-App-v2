@@ -1,0 +1,222 @@
+// Telas em duas colunas (Adicionar OS e Vender): ① Cliente | ② formulário.
+// Global (não no componente) porque as duas telas e o app-customer-picker usam as mesmas classes,
+// e assim nenhum componente passa do orçamento de 4 kB. Ative com host: { class: 'two-column-page' }.
+@use '@angular/material' as mat;
+@use 'brand' as *;
+
+$desktop: 56rem;
+$rule: #ead8d3;
+
+.two-column-page {
+  & {
+    display: block;
+    color: $ink;
+    font-family: $font-body;
+
+    @include mat.form-field-overrides((
+      outlined-outline-color: $rule,
+      outlined-hover-outline-color: $ink-muted,
+      outlined-focus-outline-color: $brand-red,
+      outlined-focus-label-text-color: $brand-red,
+      outlined-caret-color: $brand-red,
+      outlined-container-shape: 0.25rem,
+    ));
+
+    @include mat.button-overrides((
+      filled-container-color: $brand-red,
+      filled-label-text-color: #fff,
+      filled-container-shape: 0.25rem,
+      filled-container-height: 48px,
+      filled-horizontal-padding: 1.75rem,
+      filled-disabled-container-color: $rule,
+      filled-disabled-label-text-color: $ink-muted,
+      outlined-label-text-color: $brand-red,
+      outlined-outline-color: $brand-red,
+      outlined-container-shape: 0.25rem,
+      text-label-text-color: $ink,
+    ));
+  }
+
+  // Duas colunas iguais (50% / 50%); cada uma rola sozinha no computador.
+  .page {
+    min-height: calc(100dvh - 3.5rem);
+    background-color: #fff;
+
+    @media (min-width: $desktop) {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      height: 100dvh;
+      min-height: 28rem;
+    }
+  }
+
+  .column {
+    box-sizing: border-box;
+    padding: 1.5rem 1.25rem;
+
+    @media (min-width: $desktop) {
+      overflow: auto;
+      padding: 2rem;
+    }
+  }
+
+  // O cliente fica no painel claro, como a etiqueta dos modais.
+  .customer-column {
+    border-bottom: 1px solid $rule;
+    background-color: $surface;
+
+    @media (min-width: $desktop) {
+      border-right: 1px solid $rule;
+      border-bottom: 0;
+    }
+  }
+
+  .new-customer {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid $rule;
+  }
+
+  .section-title {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .column-title {
+    display: flex;
+    gap: 0.625rem;
+    align-items: center;
+    margin: 0 0 1.25rem;
+    font-family: $font-display;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .step {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background-color: $brand-red;
+    color: #fff;
+    font-size: 0.9375rem;
+  }
+
+  .customer-card {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid $rule;
+    border-left: 4px solid $brand-red;
+    border-radius: 0.25rem;
+    background-color: #fff;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  .customer-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .customer-line {
+    font-size: 0.9375rem;
+
+    &.muted {
+      color: $ink-muted;
+    }
+  }
+
+  .mono {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .customer-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    margin-top: 0.75rem;
+  }
+
+  .device-form {
+    display: grid;
+
+    .section-title {
+      margin-top: 0.75rem;
+    }
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 1rem;
+
+    @media (max-width: 40rem) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // Botões de criar (cliente e ordem) ocupam a largura toda do formulário.
+  .device-actions,
+  .form-actions {
+    display: grid;
+    padding-top: 0.5rem;
+
+    button {
+      width: 100%;
+    }
+
+    mat-spinner {
+      display: inline-block;
+      margin-right: 0.5rem;
+      vertical-align: middle;
+    }
+  }
+
+  // Sem cliente escolhido: a ordem de serviço fica desfocada, com o aviso por cima.
+  .device-area {
+    position: relative;
+
+    &.locked .device-form {
+      filter: blur(3px);
+      opacity: 0.6;
+      pointer-events: none;
+      user-select: none;
+    }
+  }
+
+  .device-lock {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: grid;
+    align-content: start;
+    justify-items: center;
+    gap: 0.5rem;
+    padding: 6rem 1.5rem 0;
+    color: $ink;
+    text-align: center;
+
+    .material-symbols-outlined {
+      color: $brand-red;
+      font-size: 2.5rem;
+    }
+
+    p {
+      max-width: 22rem;
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 500;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .device-form {
+      transition: filter 150ms ease, opacity 150ms ease;
+    }
+  }
+}

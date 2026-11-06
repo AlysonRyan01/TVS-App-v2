@@ -169,6 +169,9 @@ $sidebar-width: 16rem;
 .content {
   box-sizing: border-box;
   min-width: 0;
+  // Contexto de empilhamento próprio: z-index de dentro da página (ex.: cabeçalho sticky das tabelas
+  // do Material, que usa 100+) não passa por cima da barra, do fundo escuro nem do menu do celular.
+  isolation: isolate;
 }
 
 h1 {

@@ -1,0 +1,26 @@
+<header class="dialog-bar">
+  <h1 class="dialog-title" mat-dialog-title>{{ isEdit ? 'Editar cliente' : 'Confirmar cliente' }}</h1>
+  <button class="close" type="button" mat-dialog-close [disabled]="isSaving()" [attr.aria-label]="isEdit ? 'Fechar sem salvar' : 'Fechar sem usar o cliente'">
+    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+  </button>
+</header>
+
+<!-- Sem [formGroup] aqui (fica no app-customer-form): por isso (submit) com preventDefault, não (ngSubmit). -->
+<form class="dialog-body" (submit)="$event.preventDefault(); save()">
+  <p class="dialog-intro">{{ isEdit ? 'Altere os dados e salve.' : 'Confira os dados com o cliente. Se algo mudou, corrija antes de confirmar.' }}</p>
+
+  <app-customer-form [customer]="data.customer" />
+
+  <footer class="dialog-actions">
+    <button matButton type="button" mat-dialog-close [disabled]="isSaving()">Cancelar</button>
+    <!-- Um botão só: sem alterações, usa o cliente como está; com alterações, salva e usa. -->
+    <button matButton="filled" type="submit" [disabled]="isSaving() || customerForm().form.invalid">
+      @if (isSaving()) {
+        <mat-spinner diameter="18" aria-hidden="true"></mat-spinner>
+        Salvando…
+      } @else {
+        {{ isEdit ? 'Salvar' : 'Confirmar' }}
+      }
+    </button>
+  </footer>
+</form>

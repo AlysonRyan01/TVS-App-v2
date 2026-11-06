@@ -23,12 +23,11 @@ export class BaseLayoutComponent {
 
   navItems: NavItem[] = [
     { label: 'Gerenciar', icon: 'dashboard', route: '/' },
-    { label: 'Adicionar OS', icon: 'add' },
-    { label: 'Vender', icon: 'sell' },
-    { label: 'Buscar OS', icon: 'search' },
-    { label: 'Geral', icon: 'settings' },
-    { label: 'Notificações', icon: 'notifications' },
-    { label: 'Métricas', icon: 'bar_chart' },
+    { label: 'Adicionar OS', icon: 'add', route: '/adicionar' },
+    { label: 'Vender', icon: 'sell', route: '/vender' },
+    { label: 'Buscar OS', icon: 'search', route: '/buscar' },
+    { label: 'Clientes', icon: 'group', route: '/clientes' },
+    { label: 'Métricas', icon: 'bar_chart', route: '/metricas' },
   ];
 
   @HostListener('document:keydown.escape')

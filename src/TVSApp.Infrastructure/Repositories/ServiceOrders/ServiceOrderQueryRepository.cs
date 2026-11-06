@@ -48,79 +48,6 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         return new BaseResponse<ServiceOrder?>(serviceOrder, 200, "Ordem de serviço recuperada com sucesso!");
     }
 
-    public async Task<BaseResponse<PaginatedResult<ServiceOrder?>>> GetAllAsync(int pageNumber, int pageSize)
-    {
-        if (pageNumber < 1)
-            return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 400, "O número da página deve ser maior que zero.");
-    
-        if (pageSize < 1)
-            return new BaseResponse<PaginatedResult<ServiceOrder?>>(null, 400, "O tamanho da página deve ser maior que zero.");
-
-        var totalCount = await _context.ServiceOrders.CountAsync();
-
-        var serviceOrders = await _context.ServiceOrders
-            .Include(x => x.Customer)
-            .AsNoTracking()
-            .OrderByDescending(x => x.Id)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
-        int? totalPages = totalCount > 0 ? (int?)Math.Ceiling(totalCount / (double)pageSize) : null;
-
-        var result = new PaginatedResult<ServiceOrder?>(serviceOrders, totalCount, pageNumber, pageSize, totalPages);
-
-        return new BaseResponse<PaginatedResult<ServiceOrder?>>(result, 200, "Ordens de serviço retornadas com sucesso!");
-    }
-
-    public async Task<BaseResponse<List<ServiceOrder>>> GetByCustomerNameAsync(string customerName)
-    {
-        var searchTerm = customerName.Trim().ToUpper();
-    
-        var serviceOrders = await _context.ServiceOrders
-            .Include(so => so.Customer)
-            .AsNoTracking()
-            .Where(so => EF.Functions.Like(so.Customer.Name.CustomerName, $"%{searchTerm}%"))
-            .OrderByDescending(so => so.Id)
-            .Take(5)
-            .ToListAsync();
-            
-        if (!serviceOrders.Any())
-            return new BaseResponse<List<ServiceOrder>>(serviceOrders, 401, "Nenhuma ordem de serviço foi encontrada.");
-
-        return new BaseResponse<List<ServiceOrder>>(serviceOrders, 200, $"{serviceOrders.Count} ordens obtidas com sucesso!");
-    }
-
-    public async Task<BaseResponse<List<ServiceOrder>>> GetBySerialNumberAsync(string serialNumber)
-    {
-        var serviceOrders = await _context.ServiceOrders
-            .Include(so => so.Customer)
-            .AsNoTracking()
-            .Where(so => so.Product.SerialNumber.Contains(serialNumber))
-            .OrderByDescending(so => so.Id)
-            .ToListAsync();
-            
-        if (!serviceOrders.Any())
-            return new BaseResponse<List<ServiceOrder>>(serviceOrders, 401, "Nenhuma ordem de serviço foi encontrada.");
-            
-        return new BaseResponse<List<ServiceOrder>>(serviceOrders, 200, $"{serviceOrders.Count} ordens obtidas com sucesso!");
-    }
-
-    public async Task<BaseResponse<List<ServiceOrder>>> GetByModelAsync(string model)
-    {
-        var serviceOrders = await _context.ServiceOrders
-            .Include(so => so.Customer)
-            .AsNoTracking()
-            .Where(so => so.Product.Model.Contains(model))
-            .OrderByDescending(so => so.Id)
-            .ToListAsync();
-            
-        if (!serviceOrders.Any())
-            return new BaseResponse<List<ServiceOrder>>(serviceOrders, 401, "Nenhuma ordem de serviço foi encontrada.");
-            
-        return new BaseResponse<List<ServiceOrder>>(serviceOrders, 200, $"{serviceOrders.Count} ordens obtidas com sucesso!");
-    }
-
     public async Task<BaseResponse<List<ServiceOrder>>> GetByEnterpriseAsync(EEnterprise enterprise)
     {
         var serviceOrders = await _context.ServiceOrders
@@ -136,19 +63,57 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         return new BaseResponse<List<ServiceOrder>>(serviceOrders, 200, $"{serviceOrders.Count} ordens obtidas com sucesso!");
     }
 
-    public async Task<BaseResponse<List<ServiceOrder>>> GetByDateRangeAsync(DateTime startDate, DateTime endDate)
+    // Tela "Buscar OS": o filtro chega validado pelo handler, com um campo só preenchido.
+    public async Task<BaseResponse<PaginatedResult<ServiceOrderSearchItem>>> SearchAsync(
+        ServiceOrderSearchFilter filter, int pageNumber, int pageSize)
     {
-        var serviceOrders = await _context.ServiceOrders
-            .Include(so => so.Customer)
-            .AsNoTracking()
-            .Where(so => so.EntryDate >= startDate && so.EntryDate <= endDate)
-            .OrderBy(so => so.Id)
+        var query = _context.ServiceOrders.AsNoTracking();
+
+        if (filter.Number.HasValue)
+            query = query.Where(x => x.Id == filter.Number.Value);
+
+        if (filter.Customer != null)
+            query = query.Where(x => EF.Functions.Like(x.Customer.Name.CustomerName, $"%{filter.Customer}%"));
+
+        if (filter.Model != null)
+            query = query.Where(x => EF.Functions.Like(x.Product.Model, $"%{filter.Model}%"));
+
+        if (filter.SerialNumber != null)
+            query = query.Where(x => EF.Functions.Like(x.Product.SerialNumber, $"%{filter.SerialNumber}%"));
+
+        if (filter.From.HasValue)
+            query = query.Where(x => x.EntryDate >= filter.From.Value);
+
+        if (filter.To.HasValue)
+        {
+            var endExclusive = filter.To.Value.AddDays(1); // o dia final entra inteiro
+            query = query.Where(x => x.EntryDate < endExclusive);
+        }
+
+        var projected = query
+            .OrderByDescending(x => x.Id)
+            .Select(x => new ServiceOrderSearchItem(
+                x.Id,
+                x.Customer.Name.CustomerName,
+                x.Product.Type,
+                x.Product.Brand,
+                x.Product.Model,
+                x.Product.SerialNumber,
+                x.Enterprise,
+                x.ServiceOrderStatus,
+                x.Product.Defect == "VENDA",
+                x.EntryDate));
+
+        var totalCount = await projected.CountAsync();
+        var items = await projected
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
-            
-        if (!serviceOrders.Any())
-            return new BaseResponse<List<ServiceOrder>>(serviceOrders, 401, "Nenhuma ordem de serviço foi encontrada.");
-            
-        return new BaseResponse<List<ServiceOrder>>(serviceOrders, 200, $"{serviceOrders.Count} ordens obtidas com sucesso!");
+
+        int? totalPages = totalCount > 0 ? (int?)Math.Ceiling(totalCount / (double)pageSize) : null;
+
+        return new BaseResponse<PaginatedResult<ServiceOrderSearchItem>>(
+            new PaginatedResult<ServiceOrderSearchItem>(items, totalCount, pageNumber, pageSize, totalPages));
     }
 
     public async Task<BaseResponse<PaginatedResult<PendingEstimateServiceOrder>>> GetPendingEstimateAsync(int pageNumber, int pageSize)

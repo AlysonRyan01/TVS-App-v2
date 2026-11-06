@@ -1,0 +1,9 @@
+<app-base-layout title="Clientes">
+  <div class="page">
+    <section class="card" aria-labelledby="customers-title">
+      <h2 class="card-title" id="customers-title">Editar cliente</h2>
+      <p class="card-intro">Busque o cliente pelo nome e clique nele para alterar os dados.</p>
+      <app-customer-search [allowCreate]="false" (selected)="edit($event)" />
+    </section>
+  </div>
+</app-base-layout>

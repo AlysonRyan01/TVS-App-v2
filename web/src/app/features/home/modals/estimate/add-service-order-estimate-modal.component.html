@@ -20,19 +20,13 @@
 
       <mat-form-field appearance="outline">
         <mat-label>Solução</mat-label>
-        <input matInput type="text" formControlName="solution" autocomplete="off" />
-        @if (form.controls.solution.hasError('required')) {
-          <mat-error>Descreva a solução.</mat-error>
-        }
+        <input matInput type="text" formControlName="solution" required autocomplete="off" />
       </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>Mensagem para o cliente</mat-label>
-        <textarea matInput rows="4" formControlName="estimateMessage"
+        <textarea matInput rows="4" formControlName="estimateMessage" required
                   cdkTextareaAutosize cdkAutosizeMinRows="4" cdkAutosizeMaxRows="10"></textarea>
-        @if (form.controls.estimateMessage.hasError('required')) {
-          <mat-error>Escreva a mensagem para o cliente.</mat-error>
-        }
       </mat-form-field>
 
       <div class="money">
@@ -40,24 +34,14 @@
           <mat-label>Valor total</mat-label>
           <span matTextPrefix>R$&nbsp;</span>
           <input matInput type="number" inputmode="decimal" step="0.01" min="0"
-                 formControlName="totalCost" placeholder="0,00" />
-          @if (form.controls.totalCost.hasError('required')) {
-            <mat-error>Informe o valor total.</mat-error>
-          } @else if (form.controls.totalCost.hasError('min')) {
-            <mat-error>O valor não pode ser negativo.</mat-error>
-          }
+                 formControlName="totalCost" required placeholder="0,00" />
         </mat-form-field>
 
         <mat-form-field appearance="outline" floatLabel="always">
           <mat-label>Custo das peças</mat-label>
           <span matTextPrefix>R$&nbsp;</span>
           <input matInput type="number" inputmode="decimal" step="0.01" min="0"
-                 formControlName="partPurchaseCost" placeholder="0,00" />
-          @if (form.controls.partPurchaseCost.hasError('required')) {
-            <mat-error>Informe o custo das peças (0 se não usar).</mat-error>
-          } @else if (form.controls.partPurchaseCost.hasError('min')) {
-            <mat-error>O valor não pode ser negativo.</mat-error>
-          }
+                 formControlName="partPurchaseCost" required placeholder="0,00" />
         </mat-form-field>
       </div>
 

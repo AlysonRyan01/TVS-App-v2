@@ -1,0 +1,20 @@
+<section class="chart" [attr.aria-label]="title()">
+  <h2 class="chart-title">{{ title() }}</h2>
+
+  @if (rows().length) {
+    <ul class="rows">
+      @for (row of rows(); track row.label) {
+        <li class="row" [attr.title]="row.label + ': ' + row.value + ' (' + row.share + '%)'">
+          <span class="name">{{ row.label }}</span>
+          <span class="track" aria-hidden="true">
+            <span class="bar" [style.width.%]="row.width"></span>
+          </span>
+          <span class="figure"><strong>{{ row.value }}</strong> · {{ row.share }}%</span>
+        </li>
+      }
+    </ul>
+    <p class="chart-total">Total: {{ total() }}</p>
+  } @else {
+    <p class="empty">Sem dados no período</p>
+  }
+</section>

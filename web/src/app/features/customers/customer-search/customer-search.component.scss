@@ -1,0 +1,118 @@
+@use '@angular/material' as mat;
+@use '../../../shared/styles/brand' as *;
+
+$rule: #ead8d3;
+
+.search {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.search-label {
+  color: $ink-muted;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.search-field {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  height: 48px;
+  padding: 0 0.75rem;
+  border: 1px solid $rule;
+  border-radius: 0.25rem;
+  background-color: #fff;
+
+  &:focus-within {
+    border-color: $brand-red;
+    outline: 2px solid $brand-red;
+    outline-offset: -1px;
+  }
+
+  .material-symbols-outlined {
+    color: $ink-muted;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: $ink;
+    font: inherit;
+    font-size: 1rem;
+  }
+}
+
+.search-hint {
+  margin: 0;
+  color: $ink-muted;
+  font-size: 0.875rem;
+
+  &.error {
+    color: $brand-red-bright;
+  }
+}
+
+.results {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  border: 1px solid $rule;
+  border-radius: 0.25rem;
+  background-color: #fff;
+  list-style: none;
+  overflow: hidden;
+
+  li + li {
+    border-top: 1px solid $rule;
+  }
+}
+
+.result {
+  display: grid;
+  gap: 0.125rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 0;
+  background: transparent;
+  color: $ink;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $field;
+  }
+
+  &:focus-visible {
+    outline: 3px solid $signal;
+    outline-offset: -3px;
+  }
+}
+
+.result-name {
+  font-weight: 600;
+}
+
+.result-meta {
+  color: $ink-muted;
+  font-size: 0.875rem;
+}
+
+.create-new {
+  justify-self: start;
+
+  @include mat.button-overrides((
+    outlined-label-text-color: $brand-red,
+    outlined-outline-color: $brand-red,
+    outlined-container-shape: 0.25rem,
+  ));
+
+  .material-symbols-outlined {
+    margin-right: 0.375rem;
+    font-size: 1.25rem;
+  }
+}

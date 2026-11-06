@@ -50,10 +50,20 @@ public class FakeServiceOrderQueryRepository : IServiceOrderQueryRepository
     }
 
     public Task<BaseResponse<ServiceOrder?>> GetByIdAsync(long id) => throw new NotImplementedException();
-    public Task<BaseResponse<PaginatedResult<ServiceOrder>>> GetAllAsync(int pageNumber, int pageSize) => throw new NotImplementedException();
-    public Task<BaseResponse<List<ServiceOrder>>> GetByCustomerNameAsync(string customerName) => throw new NotImplementedException();
-    public Task<BaseResponse<List<ServiceOrder>>> GetBySerialNumberAsync(string serialNumber) => throw new NotImplementedException();
-    public Task<BaseResponse<List<ServiceOrder>>> GetByModelAsync(string model) => throw new NotImplementedException();
     public Task<BaseResponse<List<ServiceOrder>>> GetByEnterpriseAsync(EEnterprise enterprise) => throw new NotImplementedException();
-    public Task<BaseResponse<List<ServiceOrder>>> GetByDateRangeAsync(DateTime startDate, DateTime endDate) => throw new NotImplementedException();
+
+    public ServiceOrderSearchFilter? LastSearchFilter { get; private set; }
+    public int SearchCalls { get; private set; }
+
+    /// <summary>Resposta forçada do SearchAsync. Nulo = página vazia com 200.</summary>
+    public BaseResponse<PaginatedResult<ServiceOrderSearchItem>>? SearchResponse { get; set; }
+
+    public Task<BaseResponse<PaginatedResult<ServiceOrderSearchItem>>> SearchAsync(ServiceOrderSearchFilter filter, int pageNumber, int pageSize)
+    {
+        SearchCalls++;
+        LastSearchFilter = filter;
+        LastPagination = (pageNumber, pageSize);
+        return Task.FromResult(SearchResponse ?? new BaseResponse<PaginatedResult<ServiceOrderSearchItem>>(
+            new PaginatedResult<ServiceOrderSearchItem>(new List<ServiceOrderSearchItem>(), 0, pageNumber, pageSize, null)));
+    }
 }

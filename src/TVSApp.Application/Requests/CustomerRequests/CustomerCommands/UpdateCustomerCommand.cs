@@ -1,4 +1,3 @@
-using MediatR;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.Exceptions;
 using TVS_App.Domain.Shared;
@@ -17,8 +16,8 @@ public record UpdateCustomerCommand(
     string Phone,
     string Phone2,
     string Email,
-    string Cpf
-) : IRequest<BaseResponse<CustomerDto?>>
+    string? Document
+)
 {
     public void Validate()
     {
@@ -30,9 +29,6 @@ public record UpdateCustomerCommand(
 
         if (string.IsNullOrWhiteSpace(Phone))
             throw new CommandException<UpdateCustomerCommand>("O telefone do cliente não pode estar vazio");
-
-        if (Cpf.Length != 11)
-            throw new CommandException<UpdateCustomerCommand>("O CPF deve ter 11 caracteres");
     }
 
     public UpdateCustomerCommand Normalize()
@@ -49,7 +45,7 @@ public record UpdateCustomerCommand(
             Phone = Phone.Trim(),
             Phone2 = Phone2.Trim(),
             Email = Email.Trim().ToLower(),
-            Cpf = Cpf.Replace(".", "").Replace("-", "").Trim()
+            Document = Document?.Trim()
         };
     }
 }

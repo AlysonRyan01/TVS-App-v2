@@ -17,5 +17,19 @@ public class FakeServiceOrderCommandRepository : IServiceOrderCommandRepository
         return Task.FromResult(UpdateResponse ?? new BaseResponse<ServiceOrder?>(serviceOrder));
     }
 
-    public Task<BaseResponse<ServiceOrder?>> CreateAsync(ServiceOrder serviceOrder) => throw new NotImplementedException();
+    public ServiceOrder? LastCreated { get; private set; }
+
+    /// <summary>Resposta forçada do CreateAsync. Nulo = sucesso (OS com Id 1 e o cliente de teste, como o repositório real).</summary>
+    public BaseResponse<ServiceOrder?>? CreateResponse { get; set; }
+
+    public Task<BaseResponse<ServiceOrder?>> CreateAsync(ServiceOrder serviceOrder)
+    {
+        LastCreated = serviceOrder;
+        if (CreateResponse is not null)
+            return Task.FromResult(CreateResponse);
+
+        serviceOrder.Id = 1;
+        serviceOrder.UpdateCustomer(ServiceOrderFactory.Create().Customer);
+        return Task.FromResult(new BaseResponse<ServiceOrder?>(serviceOrder));
+    }
 }

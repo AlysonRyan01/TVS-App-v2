@@ -110,17 +110,10 @@ input {
     outline-offset: 2px;
   }
 
-  // Classes aplicadas pelo Reactive Forms; mesma condição do @if do template.
+  // Classes aplicadas pelo Reactive Forms: campo inválido e já tocado fica com a borda de alerta.
   &.ng-invalid.ng-touched {
-    margin-bottom: 0;
     border-color: $signal;
   }
-}
-
-small {
-  margin: 0.375rem 0 1.25rem;
-  color: $signal;
-  font: 400 0.875rem / 1.4 Roboto, Arial, sans-serif;
 }
 
 button {

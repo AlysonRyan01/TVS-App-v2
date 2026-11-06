@@ -19,6 +19,10 @@ public class DashboardMetricsDto
     // KPI: gasto com peças (produtos entregues no período)
     public decimal TotalPartsSpend { get; set; }
 
+    // KPIs: valor total (reparos + vendas) e total líquido (valor total − gasto com peças)
+    public decimal TotalValue { get; set; }
+    public decimal NetTotal { get; set; }
+
     // Lista: produtos entregues no período (reparos + vendas)
     public List<DeliveredProductDto> DeliveredProducts { get; set; } = [];
 

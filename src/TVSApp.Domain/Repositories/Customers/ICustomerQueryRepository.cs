@@ -6,6 +6,7 @@ namespace TVS_App.Domain.Repositories.Customers;
 public interface ICustomerQueryRepository
 {
     Task<BaseResponse<Customer?>> GetByIdAsync(long id);
-    Task<BaseResponse<List<Customer>>> GetCustomerByName(string name);
+    /// <summary>Clientes cujo nome contém o texto, os mais recentes primeiro, até <paramref name="limit"/>.</summary>
+    Task<BaseResponse<List<Customer>>> GetCustomerByName(string name, int limit);
     Task<BaseResponse<PaginatedResult<Customer?>>> GetAllAsync(int pageNumber, int pageSize);
 }

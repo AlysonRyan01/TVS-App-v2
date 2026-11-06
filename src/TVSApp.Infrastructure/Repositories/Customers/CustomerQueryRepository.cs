@@ -29,7 +29,7 @@ public class CustomerQueryRepository : ICustomerQueryRepository
         return new BaseResponse<Customer?>(customer, 200, "Cliente recuperado com sucesso!"); 
     }
 
-    public async Task<BaseResponse<List<Customer>>> GetCustomerByName(string name)
+    public async Task<BaseResponse<List<Customer>>> GetCustomerByName(string name, int limit)
     {
         if (string.IsNullOrWhiteSpace(name))
             return new BaseResponse<List<Customer>>(new List<Customer>(), 400, "O nome não pode ser vazio.");
@@ -39,8 +39,8 @@ public class CustomerQueryRepository : ICustomerQueryRepository
         var customers = await _context.Customers
             .AsNoTracking()
             .Where(c => c.Name.CustomerName.Contains(searchTerm))
-            .OrderBy(c => c.Name.CustomerName)
-            .Take(6)
+            .OrderByDescending(c => c.Id)
+            .Take(limit)
             .ToListAsync();
 
         return new BaseResponse<List<Customer>>(customers, 200, "Clientes obtidos com sucesso!");

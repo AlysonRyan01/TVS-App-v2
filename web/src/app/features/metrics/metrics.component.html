@@ -1,0 +1,134 @@
+<app-base-layout title="Métricas">
+  <div class="page">
+    <header class="head">
+      <div>
+        <h1 class="title">
+          <span class="material-symbols-outlined" aria-hidden="true">bar_chart</span>
+          Métricas
+        </h1>
+        @if (subtitle()) {
+          <p class="subtitle">{{ subtitle() }}</p>
+        }
+      </div>
+
+      <form class="period" (ngSubmit)="consult()" aria-label="Período">
+        <mat-form-field appearance="outline" class="f-month">
+          <mat-label>Mês</mat-label>
+          <mat-select name="month" [ngModel]="month()" (ngModelChange)="month.set($event); onMonthOrYearChange()">
+            @for (m of months; track m.value) {
+              <mat-option [value]="m.value">{{ m.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="f-year">
+          <mat-label>Ano</mat-label>
+          <mat-select name="year" [ngModel]="year()" (ngModelChange)="year.set($event); onMonthOrYearChange()">
+            @for (y of years; track y) {
+              <mat-option [value]="y">{{ y }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <span class="divider" aria-hidden="true"></span>
+
+        <mat-form-field appearance="outline" class="f-date" [class.mat-form-field-invalid]="rangeError()">
+          <mat-label>De</mat-label>
+          <input matInput type="date" name="from" [ngModel]="from()" (ngModelChange)="from.set($event)" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="f-date" [class.mat-form-field-invalid]="rangeError()">
+          <mat-label>Até</mat-label>
+          <input matInput type="date" name="to" [ngModel]="to()" (ngModelChange)="to.set($event)" />
+        </mat-form-field>
+
+        <button matButton="filled" type="submit" [disabled]="rangeError() || isLoading()">
+          @if (isLoading()) {
+            <mat-spinner diameter="18" aria-hidden="true"></mat-spinner>
+          } @else {
+            <span class="material-symbols-outlined" aria-hidden="true">search</span>
+          }
+          Consultar
+        </button>
+      </form>
+    </header>
+
+    @if (metrics(); as m) {
+      <section class="cards" aria-label="Indicadores">
+        <article class="card"><h2>Total de ordens</h2><p class="value">{{ m.totalOrders }}</p><p class="caption">Ordens de reparo criadas</p></article>
+        <article class="card"><h2>Ordens ativas</h2><p class="value">{{ m.activeOrders }}</p><p class="caption">Não entregues</p></article>
+        <article class="card"><h2>Receita de reparos</h2><p class="value">{{ m.totalRevenue | currency: 'BRL' : 'symbol' : '1.2-2' }}</p><p class="caption">Aprovado + consertado + entregue</p></article>
+        <article class="card"><h2>Taxa de aprovação</h2><p class="value">{{ m.approvalRate | number: '1.0-1' }}%</p><p class="caption">Orçamentos aprovados vs reprovados</p></article>
+        <article class="card"><h2>Tempo médio de ciclo</h2><p class="value">{{ m.averageCycleDays | number: '1.1-1' }} dias</p><p class="caption">Entrada até entrega</p></article>
+        <article class="card"><h2>Total de vendas</h2><p class="value">{{ m.totalSales }}</p><p class="caption">Vendas realizadas</p></article>
+        <article class="card"><h2>Receita de vendas</h2><p class="value">{{ m.totalSalesRevenue | currency: 'BRL' : 'symbol' : '1.2-2' }}</p><p class="caption">Total faturado em vendas</p></article>
+        <article class="card"><h2>A receber</h2><p class="value">{{ m.pendingDeliveryRevenue | currency: 'BRL' : 'symbol' : '1.2-2' }}</p><p class="caption">Prontos ainda não entregues</p></article>
+        <article class="card"><h2>Gasto com peças</h2><p class="value">{{ m.totalPartsSpend | currency: 'BRL' : 'symbol' : '1.2-2' }}</p><p class="caption">Peças dos produtos entregues no período</p></article>
+        <article class="card"><h2>Valor total</h2><p class="value">{{ m.totalValue | currency: 'BRL' : 'symbol' : '1.2-2' }}</p><p class="caption">Receita de reparos + vendas</p></article>
+        <article class="card highlight"><h2>Total líquido</h2><p class="value">{{ m.netTotal | currency: 'BRL' : 'symbol' : '1.2-2' }}</p><p class="caption">Valor total menos gasto com peças</p></article>
+      </section>
+
+      <section class="charts">
+        <app-ranked-bars title="Ordens por situação" [labels]="m.ordersByStatusLabels" [values]="m.ordersByStatusValues" />
+        <app-ranked-bars title="Resultado dos reparos" [labels]="m.repairResultLabels" [values]="m.repairResultValues" />
+      </section>
+
+      <section class="delivered" aria-labelledby="delivered-title">
+        <h2 class="section-title" id="delivered-title">Produtos entregues no período ({{ m.deliveredProducts.length }})</h2>
+        <div class="scroll">
+          <table mat-table [dataSource]="m.deliveredProducts">
+            <ng-container matColumnDef="id">
+              <th mat-header-cell *matHeaderCellDef>Ordem</th>
+              <td mat-cell *matCellDef="let p" class="cell-number">#{{ p.id }}</td>
+            </ng-container>
+            <ng-container matColumnDef="customer">
+              <th mat-header-cell *matHeaderCellDef>Cliente</th>
+              <td mat-cell *matCellDef="let p" class="cell-customer">{{ p.customerName }}</td>
+            </ng-container>
+            <ng-container matColumnDef="product">
+              <th mat-header-cell *matHeaderCellDef>Produto</th>
+              <td mat-cell *matCellDef="let p">{{ p.productLabel }}</td>
+            </ng-container>
+            <ng-container matColumnDef="type">
+              <th mat-header-cell *matHeaderCellDef>Tipo</th>
+              <td mat-cell *matCellDef="let p">{{ p.typeLabel }}</td>
+            </ng-container>
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let p"><span class="chip" [class.sale]="p.statusLabel === 'Venda'">{{ p.statusLabel }}</span></td>
+            </ng-container>
+            <ng-container matColumnDef="enterprise">
+              <th mat-header-cell *matHeaderCellDef>Empresa</th>
+              <td mat-cell *matCellDef="let p">{{ p.enterpriseLabel }}</td>
+            </ng-container>
+            <ng-container matColumnDef="deliveredAt">
+              <th mat-header-cell *matHeaderCellDef class="cell-right">Entregue em</th>
+              <td mat-cell *matCellDef="let p" class="cell-right">{{ p.deliveryDate | date: 'dd/MM/yyyy' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="total">
+              <th mat-header-cell *matHeaderCellDef class="cell-right">Valor total</th>
+              <td mat-cell *matCellDef="let p" class="cell-right">{{ p.totalAmount | currency: 'BRL' : 'symbol' : '1.2-2' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="partCost">
+              <th mat-header-cell *matHeaderCellDef>Valor da peça</th>
+              <td mat-cell *matCellDef="let p" class="cell-part">
+                <label class="part-input">
+                  <span class="sr-only">Valor da peça da OS {{ p.id }}</span>
+                  <span aria-hidden="true">R$</span>
+                  <input #partInput type="number" min="0" step="0.01" [value]="p.partPurchaseCost" [disabled]="isSaving(p.id)"
+                         (blur)="savePartCost(p, partInput)" (keydown.enter)="partInput.blur()" />
+                </label>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="columns"></tr>
+            <tr mat-row *matRowDef="let row; columns: columns"></tr>
+            <tr class="mat-mdc-row" *matNoDataRow>
+              <td class="empty" [attr.colspan]="columns.length">Nenhum produto entregue no período.</td>
+            </tr>
+          </table>
+        </div>
+      </section>
+    } @else if (isLoading()) {
+      <div class="state" role="status"><mat-spinner diameter="36" aria-label="Carregando métricas"></mat-spinner></div>
+    }
+  </div>
+</app-base-layout>

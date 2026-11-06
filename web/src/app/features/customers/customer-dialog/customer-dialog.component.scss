@@ -1,0 +1,92 @@
+@use '@angular/material' as mat;
+@use '../../../shared/styles/brand' as *;
+
+$rule: #ead8d3;
+
+:host {
+  display: block;
+  color: $ink;
+  font-family: $font-body;
+
+  @include mat.form-field-overrides((
+    outlined-outline-color: $rule,
+    outlined-focus-outline-color: $brand-red,
+    outlined-focus-label-text-color: $brand-red,
+    outlined-caret-color: $brand-red,
+    outlined-container-shape: 0.25rem,
+  ));
+
+  @include mat.button-overrides((
+    filled-container-color: $brand-red,
+    filled-label-text-color: #fff,
+    filled-container-shape: 0.25rem,
+    outlined-label-text-color: $brand-red,
+    outlined-outline-color: $brand-red,
+    outlined-container-shape: 0.25rem,
+    text-label-text-color: $ink,
+  ));
+}
+
+.dialog-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem 0.5rem 1.5rem;
+  background-color: $brand-red;
+  color: #fff;
+}
+
+.dialog-title.mat-mdc-dialog-title {
+  margin: 0;
+  padding: 0;
+  color: #fff;
+  font-family: $font-display;
+  font-size: 1.25rem;
+  font-weight: 600;
+
+  &::before {
+    display: none;
+  }
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background-color: $brand-red-deep;
+  }
+}
+
+.dialog-body {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1.25rem 1.5rem 1rem;
+}
+
+.dialog-intro {
+  margin: 0 0 0.5rem;
+  color: $ink-muted;
+  font-size: 0.9375rem;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  padding-top: 0.5rem;
+
+  mat-spinner {
+    display: inline-block;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+  }
+}

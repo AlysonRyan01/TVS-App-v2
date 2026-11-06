@@ -1,3 +1,4 @@
 namespace TVS_App.Application.DTOs;
 
-public record AddressDto(string Cep, string Rua, string Bairro, string Cidade);
+/// <summary>Endereço obtido pelo CEP (ViaCEP).</summary>
+public record AddressDto(string ZipCode, string Street, string Neighborhood, string City, string State);

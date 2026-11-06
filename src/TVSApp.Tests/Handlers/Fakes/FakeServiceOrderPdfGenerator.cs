@@ -17,7 +17,35 @@ public class FakeServiceOrderPdfGenerator : IGenerateServiceOrderPdf
         return Task.FromResult(CheckOutResponse);
     }
 
-    public Task<BaseResponse<byte[]>> GenerateCheckInDocumentAsync(ServiceOrder serviceOrder) => throw new NotImplementedException();
-    public Task<BaseResponse<byte[]>> GenerateSaleDocumentAsync(ServiceOrder serviceOrder) => throw new NotImplementedException();
-    public Task<BaseResponse<byte[]>> RegeneratePdfAsync(ServiceOrder serviceOrder) => throw new NotImplementedException();
+    public BaseResponse<byte[]> CheckInResponse { get; set; } =
+        new(new byte[] { 0x25, 0x50, 0x44, 0x46, 0x2D }, 200, "PDF de entrada gerado");
+
+    public int CheckInCalls { get; private set; }
+
+    public Task<BaseResponse<byte[]>> GenerateCheckInDocumentAsync(ServiceOrder serviceOrder)
+    {
+        CheckInCalls++;
+        return Task.FromResult(CheckInResponse);
+    }
+    public BaseResponse<byte[]> SaleResponse { get; set; } =
+        new(new byte[] { 0x25, 0x50, 0x44, 0x46, 0x56 }, 200, "Comprovante de venda gerado");
+
+    public int SaleCalls { get; private set; }
+
+    public Task<BaseResponse<byte[]>> GenerateSaleDocumentAsync(ServiceOrder serviceOrder)
+    {
+        SaleCalls++;
+        return Task.FromResult(SaleResponse);
+    }
+
+    public BaseResponse<byte[]> RegenerateResponse { get; set; } =
+        new(new byte[] { 0x25, 0x50, 0x44, 0x46, 0x52 }, 200, "PDF gerado");
+
+    public int RegenerateCalls { get; private set; }
+
+    public Task<BaseResponse<byte[]>> RegeneratePdfAsync(ServiceOrder serviceOrder)
+    {
+        RegenerateCalls++;
+        return Task.FromResult(RegenerateResponse);
+    }
 }

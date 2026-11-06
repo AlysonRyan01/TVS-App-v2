@@ -17,78 +17,70 @@ public static class ServiceOrderEndpoints
 {
     public static void MapServiceOrderEndpoints(this WebApplication app)
     {
-        app.MapPost("/create-service-order", async (
-                ISender handler, 
-                CreateServiceOrderCommand command, 
+        app.MapPost("/service-orders", async (
+                IServiceOrderCommandHandler handler,
+                CreateServiceOrderCommand command,
+                HttpContext httpContext,
                 IHubContext<ServiceOrderHub> hubContext) =>
         {
-            var normalizedCommand = command.Normalize();
-            normalizedCommand.Validate();
+            var result = await handler.CreateServiceOrder(command);
+            if (!result.IsSuccess || result.Data == null)
+                return result.ToResult();
 
-            var createOrderResult = await handler.Send(normalizedCommand);
-            if (!createOrderResult.IsSuccess)
-                return Results.Ok(createOrderResult);
+            await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
-            await hubContext.Clients.All.SendAsync("Atualizar", createOrderResult.Message);
-
-            return Results.File(createOrderResult.Data!, "application/pdf", "ordem_servico.pdf");
-        })
-        .WithTags("ServiceOrder")
-        .WithName("CreateServiceOrder")
-        .WithSummary("Cria uma nova ordem de serviço e retorna o PDF gerado.")
-        .WithDescription("Recebe os dados da ordem de serviço via comando, valida, cria a ordem, "
-                         + "gera um PDF e envia notificações via SignalR para os clientes conectados. "
-                         + "Retorna o arquivo PDF como resposta.")
-        .Produces<BaseResponse<string>>(StatusCodes.Status200OK, "application/json")
-        .Produces<FileResult>(StatusCodes.Status200OK, "application/pdf")
-        .RequireAuthorization();
+            // O número da OS vai no cabeçalho; o corpo é o termo de entrada em PDF.
+            httpContext.Response.Headers["X-Service-Order-Id"] = result.Data.Id.ToString();
+            return Results.File(result.Data.Pdf, "application/pdf", $"ordem_servico_{result.Data.Id}.pdf");
+        }).WithTags("ServiceOrder").RequireAuthorization();
         
-        app.MapPost("/create-sales-service-order", async (
-                ISender handler, 
-                CreateSalesServiceOrderCommand command, 
+        app.MapPost("/service-orders/sales", async (
+                IServiceOrderCommandHandler handler,
+                CreateSalesServiceOrderCommand command,
+                HttpContext httpContext,
                 IHubContext<ServiceOrderHub> hubContext) =>
         {
-            var normalizedCommand = command.Normalize();
-            normalizedCommand.Validate();
+            var result = await handler.CreateSalesServiceOrder(command);
+            if (!result.IsSuccess || result.Data == null)
+                return result.ToResult();
 
-            var createOrderResult = await handler.Send(normalizedCommand);
-            if (!createOrderResult.IsSuccess)
-                return Results.Ok(createOrderResult);
+            await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
-            await hubContext.Clients.All.SendAsync("Atualizar", createOrderResult.Message);
+            // Venda = OS com defeito "VENDA". O número vai no cabeçalho; o corpo é o comprovante de venda.
+            httpContext.Response.Headers["X-Service-Order-Id"] = result.Data.Id.ToString();
+            return Results.File(result.Data.Pdf, "application/pdf", $"venda_{result.Data.Id}.pdf");
+        }).WithTags("ServiceOrder").RequireAuthorization();
 
-            return Results.File(createOrderResult.Data!, "application/pdf", "ordem_servico.pdf");
-        })
-        .WithTags("ServiceOrder")
-        .WithName("CreateSalesServiceOrder")
-        .WithSummary("Cria uma ordem de serviço do tipo venda e retorna o PDF gerado (garantia).")
-        .WithDescription("Recebe os dados da ordem de serviço de venda via comando, valida os dados, "
-                         + "processa a venda, gera o PDF da ordem e envia notificações via SignalR para os clientes conectados.")
-        .Produces<BaseResponse<string>>(StatusCodes.Status200OK, "application/json")
-        .Produces<FileResult>(StatusCodes.Status200OK, "application/pdf")
-        .RequireAuthorization();
+        app.MapGet("/service-orders/search",
+            async (IServiceOrderQueryHandler handler, [AsParameters] ServiceOrderSearchQuery query) =>
+        {
+            var result = await handler.Search(query);
+            return result.ToResult();
+        }).WithTags("ServiceOrder").RequireAuthorization();
 
-        app.MapPut("/edit-service-order", async (
-                ISender handler, 
-                EditServiceOrderCommand command, 
+        // Alterar OS (painel da Buscar OS): só os dados da OS, sem cliente nem situação.
+        app.MapPut("/service-orders/{id:long}", async (
+                IServiceOrderCommandHandler handler,
+                long id,
+                EditServiceOrderCommand command,
                 IHubContext<ServiceOrderHub> hubContext) =>
         {
-            var editOrderResult = await handler.Send(command);
-            if (!editOrderResult.IsSuccess)
-                return Results.Ok(editOrderResult);
+            var result = await handler.UpdateServiceOrder(id, command);
+            if (result.IsSuccess)
+                await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
-            await hubContext.Clients.All.SendAsync("Atualizar", editOrderResult.Message);
+            return result.ToResult();
+        }).WithTags("ServiceOrder").RequireAuthorization();
 
-            return Results.Ok(editOrderResult);
-        })
-        .WithTags("ServiceOrder")
-        .WithName("EditServiceOrder")
-        .WithSummary("Edita uma ordem de serviço existente.")
-        .WithDescription("Recebe os dados atualizados da ordem de serviço via comando, processa a edição, "
-                         + "e em caso de sucesso, notifica os clientes conectados via SignalR.")
-        .Produces<BaseResponse<string>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
+        // Reimprimir: o documento certo para a situação da OS (entrada, entrega ou venda).
+        app.MapGet("/service-orders/{id:long}/pdf", async (IServiceOrderCommandHandler handler, long id) =>
+        {
+            var result = await handler.RegeneratePdf(id);
+            if (!result.IsSuccess || result.Data == null)
+                return result.ToResult();
+
+            return Results.File(result.Data, "application/pdf", $"ordem_servico_{id}.pdf");
+        }).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapGet("/service-orders/{id:long}",
             async (IServiceOrderQueryHandler handler, long id) =>
@@ -97,59 +89,6 @@ public static class ServiceOrderEndpoints
             return result.ToResult();
         }).WithTags("ServiceOrder").RequireAuthorization();
 
-        app.MapGet("/get-service-orders-by-customer-name", async (
-                ISender handler, 
-                [FromQuery] string name) =>
-        {
-            var command = new GetServiceOrdersByCustomerNameQuery(name);
-            var getOrderResult = await handler.Send(command);
-
-            return Results.Ok(getOrderResult);
-        })
-        .WithTags("ServiceOrder")
-        .WithName("GetServiceOrdersByCustomerName")
-        .WithSummary("Busca ordens de serviço pelo nome do cliente.")
-        .WithDescription("Recebe o nome do cliente via query string e retorna todas as ordens de serviço associadas a esse nome.")
-        .Produces<BaseResponse<IEnumerable<ServiceOrderDto>>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
-        
-        app.MapGet("/get-service-orders-by-serial-number", async (ISender handler, [FromQuery] string serialNumber) =>
-        {
-            var command = new GetServiceOrdersBySerialNumberQuery(serialNumber);
-            command.Validate();
-            
-            var getOrderResult = await handler.Send(command);
-
-            return Results.Ok(getOrderResult);
-        })
-        .WithTags("ServiceOrder")
-        .WithName("GetServiceOrdersBySerialNumber")
-        .WithSummary("Busca ordens de serviço pelo número de série do produto.")
-        .WithDescription("Recebe o número de série do produto via query string, cria um comando e retorna todas as ordens de serviço associadas ao produto do cliente com esse número de série.")
-        .Produces<BaseResponse<IEnumerable<ServiceOrderDto>>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
-        
-        app.MapGet("/get-service-orders-by-model", async (
-                ISender handler, 
-                [FromQuery] string model) =>
-        {
-            var command = new GetServiceOrdersByModelQuery(model);
-            command.Validate();
-            
-            var getOrderResult = await handler.Send(command);
-
-            return Results.Ok(getOrderResult);
-        })
-        .WithTags("ServiceOrder")
-        .WithName("GetServiceOrdersByModel")
-        .WithSummary("Busca ordens de serviço pelo modelo do produto.")
-        .WithDescription("Recebe o modelo do produto via query string, cria o comando e retorna todas as ordens de serviço associadas a esse modelo.")
-        .Produces<BaseResponse<IEnumerable<ServiceOrderDto>>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
-        
         app.MapGet("/get-service-orders-by-enterprise", async (ISender handler, [FromQuery] EEnterprise enterprise) =>
         {
             var command = new GetServiceOrdersByEnterpriseQuery(enterprise);
@@ -166,26 +105,6 @@ public static class ServiceOrderEndpoints
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
         .RequireAuthorization();
         
-        app.MapGet("/get-service-orders-by-date", async (
-                ISender handler, 
-                [FromQuery] DateTime startDate, 
-                [FromQuery] DateTime endDate) =>
-        {
-            var command = new GetServiceOrdersByDateQuery(startDate, endDate);
-            command.Validate();
-            
-            var getOrderResult = await handler.Send(command);
-
-            return Results.Ok(getOrderResult);
-        })
-        .WithTags("ServiceOrder")
-        .WithName("GetServiceOrdersByDate")
-        .WithSummary("Busca ordens de serviço entre duas datas.")
-        .WithDescription("Recebe uma data inicial e uma data final via query string, e retorna todas as ordens de serviço cadastradas dentro desse intervalo.")
-        .Produces<BaseResponse<IEnumerable<ServiceOrderDto>>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
-
         app.MapGet("/get-service-order-for-customer/{id}/{code}", async (
                 ISender handler,
                 long id,
@@ -206,26 +125,6 @@ public static class ServiceOrderEndpoints
                          + "Consulta via QR CODE")
         .Produces<BaseResponse<ServiceOrderDto>>(StatusCodes.Status200OK, "application/json")
         .Produces<BaseResponse<string>>(StatusCodes.Status400BadRequest, "application/json");
-
-        app.MapGet("/get-all-service-orders/{pageNumber}/{pageSize}", async (
-                ISender handler,
-                int pageNumber,
-                int pageSize) =>
-            {
-                var command = new GetAllServiceOrdersQuery(pageNumber, pageSize);
-                command.Validate();
-
-                var getOrderResult = await handler.Send(command);
-
-                return Results.Ok(getOrderResult);
-            })
-        .WithTags("ServiceOrder")
-        .WithName("GetAllServiceOrders")
-        .WithSummary("Retorna todas as ordens de serviço paginadas.")
-        .WithDescription("Lista todas as ordens de serviço do sistema, utilizando paginação com os parâmetros `pageNumber` e `pageSize` informados na rota.")
-        .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<PaginatedResult<ServiceOrderDto?>>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
 
         app.MapGet("/service-orders/pending-estimate",
             async (IServiceOrderQueryHandler handler, int pageNumber = 1, int pageSize = 25) =>
@@ -363,20 +262,15 @@ public static class ServiceOrderEndpoints
             return result.ToResult();
         }).WithTags("ServiceOrder").RequireAuthorization();
 
-        app.MapPut("/update-service-order-part-purchase-cost", async (
-                ISender handler,
-                UpdatePartPurchaseCostCommand command) =>
+        // Valor pago na peça (tabela de entregues da tela Métricas).
+        app.MapPut("/service-orders/{id:long}/part/purchase-cost", async (
+                IServiceOrderCommandHandler handler,
+                long id,
+                UpdatePartPurchaseCostRequest body) =>
         {
-            var updatePartPurchaseCostResult = await handler.Send(command);
-            return Results.Ok(updatePartPurchaseCostResult);
-        })
-        .WithTags("ServiceOrder")
-        .WithName("UpdateServiceOrderPartPurchaseCost")
-        .WithSummary("Atualiza o valor pago na compra da peça de uma ordem de serviço.")
-        .WithDescription("Recebe o ID da ordem de serviço e o valor pago pela peça, usado para calcular o gasto com peças no dashboard de métricas.")
-        .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status200OK, "application/json")
-        .Produces<BaseResponse<ServiceOrderDto?>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
+            var result = await handler.UpdatePartPurchaseCost(id, body.PartPurchaseCost);
+            return result.ToResult();
+        }).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPut("/service-orders/{id:long}/repair", async (
                 IServiceOrderCommandHandler handler,
@@ -408,22 +302,6 @@ public static class ServiceOrderEndpoints
             return result.ToResult();
         }).WithTags("ServiceOrder").RequireAuthorization();
 
-        app.MapPost("/regenerate-service-order-pdf", async (ISender handler, RegenerateAndReturnPdfCommand command) =>
-            {
-                var regenerateServiceOrderResult = await handler.Send(command);
-                if (!regenerateServiceOrderResult.IsSuccess)
-                    return Results.Ok(regenerateServiceOrderResult);
-
-                return Results.File(regenerateServiceOrderResult.Data!, "application/pdf", "ordem_servico.pdf");
-            })
-        .WithTags("ServiceOrder")
-        .WithName("RegenerateServiceOrderPdf")
-        .WithSummary("Regenera o PDF de uma ordem de serviço existente.")
-        .WithDescription("Recebe o ID da ordem de serviço, regenera o arquivo PDF atualizado e retorna o arquivo para download.")
-        .Produces<FileResult>(StatusCodes.Status200OK, "application/pdf")
-        .Produces<BaseResponse<byte[]>>(StatusCodes.Status400BadRequest, "application/json")
-        .RequireAuthorization();
-        
         app.MapPost("/add-payment", async (ISender handler, AddPaymentCommand command) =>
         {
             var addPaymentResult = await handler.Send(command);
@@ -481,3 +359,5 @@ public static class ServiceOrderEndpoints
         .RequireAuthorization();
     }
 }
+
+public record UpdatePartPurchaseCostRequest(decimal PartPurchaseCost);

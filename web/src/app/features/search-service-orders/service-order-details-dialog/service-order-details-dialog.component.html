@@ -1,0 +1,232 @@
+<header class="bar">
+  <h1 class="bar-title" mat-dialog-title>
+    Ordem de serviço {{ data.id }}@if (editing()) { <span class="bar-mode">· alterando</span> }
+  </h1>
+  <button class="close" type="button" (click)="editing() ? cancelEditing() : close()"
+          [disabled]="isSaving()" [attr.aria-label]="editing() ? 'Cancelar alteração' : 'Fechar'">
+    <span class="material-symbols-outlined" aria-hidden="true">close</span>
+  </button>
+</header>
+
+@if (isLoading()) {
+  <div class="state" role="status">
+    <mat-spinner diameter="36" aria-label="Carregando ordem de serviço"></mat-spinner>
+  </div>
+} @else if (order(); as o) {
+  <mat-dialog-content class="content">
+    <form class="sheet" [formGroup]="form" [class.editing]="editing()" (ngSubmit)="save()">
+      <!-- Resumo: o que se procura primeiro ao abrir a OS. -->
+      <div class="summary">
+        <span class="summary-number">OS {{ data.id }}</span>
+        <span class="chip">{{ isSale(o) ? 'Venda' : (o.serviceOrderStatus | enumLabel: 'serviceOrderStatus') }}</span>
+        <span class="summary-device">{{ o.type | enumLabel: 'product' }} {{ o.brand }} {{ o.model }}</span>
+        <span class="summary-total">{{ total() | currency: 'BRL' : 'symbol' : '1.2-2' }}</span>
+      </div>
+
+      <div class="columns">
+        <div class="column">
+          <!-- Cliente: sempre só leitura (editado em Clientes). -->
+          <section>
+            <h2 class="section-title">Cliente</h2>
+            <mat-form-field appearance="outline">
+              <mat-label>Nome</mat-label>
+              <input matInput readonly [value]="o.name" />
+            </mat-form-field>
+            <div class="row">
+              <mat-form-field appearance="outline">
+                <mat-label>Telefone</mat-label>
+                <input matInput readonly [value]="maskPhone(o.phone) || '—'" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Telefone 2</mat-label>
+                <input matInput readonly [value]="maskPhone(o.phone2) || '—'" />
+              </mat-form-field>
+            </div>
+            <mat-form-field appearance="outline">
+              <mat-label>CPF/CNPJ</mat-label>
+              <input matInput readonly [value]="o.document ? formatDocument(o.document) : '—'" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Endereço</mat-label>
+              <input matInput readonly [value]="address(o) || '—'" />
+            </mat-form-field>
+          </section>
+
+          <section>
+            <h2 class="section-title">Aparelho</h2>
+            <div class="row">
+              <mat-form-field appearance="outline">
+                <mat-label>Tipo de Produto</mat-label>
+                <mat-select formControlName="type">
+                  @for (option of productOptions; track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Empresa</mat-label>
+                <mat-select formControlName="enterprise">
+                  @for (option of enterpriseOptions; track option.value) {
+                    <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="row">
+              <mat-form-field appearance="outline">
+                <mat-label>Marca</mat-label>
+                <input matInput formControlName="brand" [readonly]="!editing()" autocomplete="off" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Modelo</mat-label>
+                <input matInput formControlName="model" [readonly]="!editing()" autocomplete="off" required />
+              </mat-form-field>
+            </div>
+            <div class="row">
+              <mat-form-field appearance="outline">
+                <mat-label>Número de Série</mat-label>
+                <input matInput formControlName="serialNumber" [readonly]="!editing()" autocomplete="off" required />
+              </mat-form-field>
+              <!-- Prateleira: editável também em leitura, com salvar rápido. -->
+              <mat-form-field appearance="outline" class="location">
+                <mat-label>Localização</mat-label>
+                <input matInput formControlName="location" autocomplete="off" placeholder="Ex.: B3"
+                       (keydown.enter)="$event.preventDefault(); editing() ? null : saveLocation()" />
+                @if (locationChanged()) {
+                  <button matSuffix matIconButton type="button" class="location-save" aria-label="Salvar localização"
+                          [disabled]="!form.controls.location.value.trim() || isSavingLocation()" (click)="saveLocation()">
+                    <span class="material-symbols-outlined" aria-hidden="true">check</span>
+                  </button>
+                }
+              </mat-form-field>
+            </div>
+            @if (!isSale(o)) {
+              <mat-form-field appearance="outline">
+                <mat-label>Defeito Relatado</mat-label>
+                <textarea matInput formControlName="defect" [readonly]="!editing()" rows="2"></textarea>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Acessórios Acompanhantes</mat-label>
+                <textarea matInput formControlName="accessories" [readonly]="!editing()" rows="2"></textarea>
+              </mat-form-field>
+            }
+          </section>
+        </div>
+
+        <div class="column">
+          <section>
+            <h2 class="section-title">{{ isSale(o) ? 'Venda' : 'Orçamento' }}</h2>
+            @if (!isSale(o)) {
+              <div class="row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Situação</mat-label>
+                  <input matInput readonly [value]="o.serviceOrderStatus | enumLabel: 'serviceOrderStatus'" />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Resultado</mat-label>
+                  <input matInput readonly [value]="(o.repairResult | enumLabel: 'repairResult') || '—'" />
+                </mat-form-field>
+              </div>
+              <mat-form-field appearance="outline">
+                <mat-label>Solução</mat-label>
+                <textarea matInput formControlName="solution" [readonly]="!editing()" rows="2"></textarea>
+              </mat-form-field>
+            }
+            <mat-form-field appearance="outline">
+              <mat-label>Garantia</mat-label>
+              <input matInput formControlName="guarantee" [readonly]="!editing()" autocomplete="off" />
+            </mat-form-field>
+            <div class="row three">
+              <mat-form-field appearance="outline">
+                <mat-label>Peça</mat-label>
+                <span matTextPrefix>R$&nbsp;</span>
+                <input matInput type="number" min="0" step="0.01" class="amount" formControlName="partCost" [readonly]="!editing()" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Mão de obra</mat-label>
+                <span matTextPrefix>R$&nbsp;</span>
+                <input matInput type="number" min="0" step="0.01" class="amount" formControlName="laborCost" [readonly]="!editing()" />
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="total">
+                <mat-label>Total</mat-label>
+                <input matInput readonly class="amount" [value]="total() | currency: 'BRL' : 'symbol' : '1.2-2'" tabindex="-1" />
+              </mat-form-field>
+            </div>
+          </section>
+
+          <section>
+            <h2 class="section-title">Datas</h2>
+            <div class="row">
+              <mat-form-field appearance="outline">
+                <mat-label>Entrada</mat-label>
+                <input matInput type="date" formControlName="entryDate" [readonly]="!editing()" required />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Avaliação</mat-label>
+                <input matInput type="date" formControlName="inspectionDate" [readonly]="!editing()" />
+              </mat-form-field>
+            </div>
+            <div class="row">
+              <mat-form-field appearance="outline">
+                <mat-label>Resposta</mat-label>
+                <input matInput type="date" formControlName="responseDate" [readonly]="!editing()" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Compra de peça</mat-label>
+                <input matInput type="date" formControlName="purchasePartDate" [readonly]="!editing()" />
+              </mat-form-field>
+            </div>
+            <div class="row">
+              <mat-form-field appearance="outline">
+                <mat-label>Conserto</mat-label>
+                <input matInput type="date" formControlName="repairDate" [readonly]="!editing()" />
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Entrega</mat-label>
+                <input matInput type="date" formControlName="deliveryDate" [readonly]="!editing()" />
+              </mat-form-field>
+            </div>
+          </section>
+        </div>
+      </div>
+    </form>
+  </mat-dialog-content>
+
+  <footer class="footer">
+    @if (editing()) {
+      <button matButton type="button" (click)="cancelEditing()" [disabled]="isSaving()">Cancelar</button>
+      <button matButton="filled" type="button" (click)="save()" [disabled]="form.invalid || isSaving()">
+        @if (isSaving()) {
+          <mat-spinner diameter="18" aria-hidden="true"></mat-spinner>
+          Salvando…
+        } @else {
+          Salvar
+        }
+      </button>
+    } @else {
+      <div class="footer-actions">
+        <button matButton="outlined" type="button" (click)="reprint()" [disabled]="isPrinting()">
+          @if (isPrinting()) {
+            <mat-spinner diameter="18" aria-hidden="true"></mat-spinner>
+          } @else {
+            <span class="material-symbols-outlined" aria-hidden="true">print</span>
+          }
+          Reimprimir
+        </button>
+        <button matButton="outlined" type="button" (click)="startEditing()">
+          <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+          Alterar
+        </button>
+      </div>
+      <button matButton="filled" type="button" (click)="close()">Fechar</button>
+    }
+  </footer>
+} @else {
+  <div class="state">
+    <p>{{ errorMessage() }}</p>
+    <div class="state-actions">
+      <button matButton type="button" (click)="close()">Fechar</button>
+      <button matButton="filled" type="button" (click)="load()">Tentar de novo</button>
+    </div>
+  </div>
+}

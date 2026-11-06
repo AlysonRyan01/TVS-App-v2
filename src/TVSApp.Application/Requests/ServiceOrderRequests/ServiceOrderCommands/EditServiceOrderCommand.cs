@@ -1,31 +1,20 @@
-using MediatR;
-using TVS_App.Application.DTOs.ServiceOrder;
+using TVS_App.Application.Exceptions;
 using TVS_App.Domain.Enums;
-using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 
+/// <summary>
+/// "Alterar OS" no painel da Buscar OS. Só os dados da OS: o cliente é editado em /clientes, e a
+/// situação/orçamento mudam pelos fluxos da Home (diferenças em relação a old-handlers/EditServiceOrderHandler.cs).
+/// </summary>
 public record EditServiceOrderCommand(
-    long Id,
-    long CustomerId,
-    string Name,
-    string Street,
-    string Neighborhood,
-    string City,
-    string Number,
-    string ZipCode,
-    string State,
-    string Phone,
-    string Phone2,
-    string? Email,
-    string Cpf,
-    string Brand,
+    string? Brand,
     string Model,
     string SerialNumber,
-    string Defect,
-    string Accessories,
+    string? Defect,
+    string? Accessories,
     EProduct Type,
-    string Location,
+    string? Location,
     EEnterprise Enterprise,
     DateTime? EntryDate,
     DateTime? InspectionDate,
@@ -35,77 +24,47 @@ public record EditServiceOrderCommand(
     DateTime? DeliveryDate,
     string? Solution,
     string? Guarantee,
-    string? EstimateMessage,
     decimal PartCost,
-    decimal LaborCost,
-    EServiceOrderStatus ServiceOrderStatus,
-    ERepairStatus RepairStatus,
-    ERepairResult? RepairResult
-) : IRequest<BaseResponse<UpdateServiceOrderResponseDto?>>
+    decimal LaborCost)
 {
+    public void Validate()
+    {
+        if (string.IsNullOrWhiteSpace(Model))
+            throw new CommandException<EditServiceOrderCommand>("O modelo da ordem de serviço não pode estar vazio");
+
+        if (string.IsNullOrWhiteSpace(SerialNumber))
+            throw new CommandException<EditServiceOrderCommand>("O número de série da ordem de serviço não pode estar vazio");
+
+        if (!Enum.IsDefined(Type))
+            throw new CommandException<EditServiceOrderCommand>("Tipo de produto inválido.");
+
+        if (!Enum.IsDefined(Enterprise))
+            throw new CommandException<EditServiceOrderCommand>("Empresa inválida.");
+
+        if (EntryDate is null)
+            throw new CommandException<EditServiceOrderCommand>("A data de entrada é obrigatória.");
+
+        if (PartCost < 0)
+            throw new CommandException<EditServiceOrderCommand>("O custo da peça não pode ser negativo.");
+
+        if (LaborCost < 0)
+            throw new CommandException<EditServiceOrderCommand>("O custo de mão de obra não pode ser negativo.");
+    }
+
     public EditServiceOrderCommand Normalize()
     {
         return this with
         {
-            Name = Name.ToUpper().Trim(),
-            Street = Street.ToUpper().Trim(),
-            Neighborhood = Neighborhood.ToUpper().Trim(),
-            City = City.ToUpper().Trim(),
-            Number = Number.ToUpper().Trim(),
-            ZipCode = ZipCode.ToUpper().Trim(),
-            State = State.ToUpper().Trim(),
-            Phone = Phone.ToUpper().Trim(),
-            Phone2 = Phone2.ToUpper().Trim(),
-            Email = string.IsNullOrWhiteSpace(Email) ? null : Email.ToUpper().Trim(),
-            Cpf = Cpf.ToUpper().Trim(),
-            Brand = Brand.ToUpper().Trim(),
-            Model = Model.ToUpper().Trim(),
-            SerialNumber = SerialNumber.ToUpper().Trim(),
-            Defect = Defect.ToUpper().Trim(),
-            Accessories = Accessories.ToUpper().Trim(),
-            Location = Location.ToUpper().Trim(),
-            Solution = string.IsNullOrWhiteSpace(Solution) ? null : Solution.ToUpper().Trim(),
-            Guarantee = string.IsNullOrWhiteSpace(Guarantee) ? null : Guarantee.ToUpper().Trim(),
-            EstimateMessage = string.IsNullOrWhiteSpace(EstimateMessage) ? null : EstimateMessage.ToUpper().Trim()
+            Brand = Clean(Brand),
+            Model = Clean(Model),
+            SerialNumber = Clean(SerialNumber),
+            Defect = Clean(Defect),
+            Accessories = Clean(Accessories),
+            Location = Clean(Location),
+            Solution = Clean(Solution),
+            Guarantee = Clean(Guarantee)
         };
     }
 
-    public void Validate()
-    {
-        if (Id <= 0)
-            throw new ArgumentException("O ID da ordem de serviço deve ser maior que zero.");
-
-        if (CustomerId <= 0)
-            throw new ArgumentException("O ID do cliente deve ser maior que zero.");
-
-        if (string.IsNullOrWhiteSpace(Name))
-            throw new ArgumentException("O nome do cliente é obrigatório.");
-
-        if (string.IsNullOrWhiteSpace(Phone))
-            throw new ArgumentException("Pelo menos um telefone é obrigatório.");
-
-        if (string.IsNullOrWhiteSpace(Cpf))
-            throw new ArgumentException("O CPF é obrigatório.");
-
-        if (!Enum.IsDefined(typeof(EProduct), Type))
-            throw new ArgumentException("Tipo de produto inválido.");
-
-        if (!Enum.IsDefined(typeof(EEnterprise), Enterprise))
-            throw new ArgumentException("Empresa inválida.");
-
-        if (!Enum.IsDefined(typeof(EServiceOrderStatus), ServiceOrderStatus))
-            throw new ArgumentException("Status da ordem de serviço inválido.");
-
-        if (!Enum.IsDefined(typeof(ERepairStatus), RepairStatus))
-            throw new ArgumentException("Status de reparo inválido.");
-
-        if (RepairResult.HasValue && !Enum.IsDefined(typeof(ERepairResult), RepairResult.Value))
-            throw new ArgumentException("Resultado de reparo inválido.");
-
-        if (PartCost < 0)
-            throw new ArgumentException("O custo da peça não pode ser negativo.");
-
-        if (LaborCost < 0)
-            throw new ArgumentException("O custo de mão de obra não pode ser negativo.");
-    }
+    private static string Clean(string? value) => (value ?? string.Empty).Trim().ToUpper();
 }

@@ -1,0 +1,236 @@
+@use '@angular/material' as mat;
+@use '../../../shared/styles/brand' as *;
+
+$desktop: 64rem;
+$rule: #ead8d3;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: $surface;
+  color: $ink;
+  font-family: $font-body;
+
+  @include mat.form-field-overrides((
+    outlined-outline-color: $rule,
+    outlined-hover-outline-color: $rule,
+    outlined-focus-outline-color: $brand-red,
+    outlined-focus-label-text-color: $brand-red,
+    outlined-label-text-color: $ink-muted,
+    outlined-input-text-color: $ink,
+    outlined-container-shape: 0.25rem,
+  ));
+
+  @include mat.button-overrides((
+    filled-container-color: $brand-red,
+    filled-label-text-color: #fff,
+    filled-container-shape: 0.25rem,
+    filled-container-height: 48px,
+    filled-horizontal-padding: 2.5rem,
+    filled-disabled-container-color: $rule,
+    filled-disabled-label-text-color: $ink-muted,
+    outlined-label-text-color: $brand-red,
+    outlined-outline-color: $brand-red,
+    outlined-container-shape: 0.25rem,
+    outlined-container-height: 48px,
+    text-label-text-color: $ink,
+  ));
+}
+
+// Mesma barra vermelha dos modais da Home.
+.bar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 3.5rem;
+  padding: 0 0.5rem 0 2rem;
+  background-color: $brand-red;
+}
+
+.bar-title.mat-mdc-dialog-title {
+  margin: 0;
+  padding: 0;
+  color: #fff;
+  font-family: $font-display;
+  font-size: 1.25rem;
+  font-weight: 600;
+
+  &::before { display: none; }
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: 0;
+  border-radius: 0.25rem;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+
+  &:hover { background-color: $brand-red-deep; }
+  &:focus-visible { outline: 3px solid $signal; outline-offset: -3px; }
+}
+
+.content.mat-mdc-dialog-content {
+  flex: 1;
+  max-height: none;
+  padding: 2rem 1.25rem;
+  color: $ink;
+}
+
+// Folha branca centralizada, como um formulário.
+.sheet {
+  max-width: 76rem;
+  margin: 0 auto;
+  border: 1px solid $rule;
+  border-radius: 0.5rem;
+  background-color: #fff;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid $rule;
+}
+
+.summary-number {
+  color: $brand-red;
+  font-family: $font-display;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.chip {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background-color: $field;
+  color: $brand-red;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.summary-device {
+  flex: 1;
+  color: $ink-muted;
+}
+
+.summary-total {
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.columns {
+  display: grid;
+  gap: 0 3rem;
+  padding: 1.5rem 2rem 0.5rem;
+
+  @media (min-width: $desktop) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.column,
+section {
+  display: grid;
+}
+
+section + section { margin-top: 1rem; }
+
+// Títulos das seções em destaque: vermelho da marca, maiores e com um traço embaixo.
+.section-title {
+  display: flex;
+  gap: 0.625rem;
+  align-items: center;
+  margin: 0.5rem 0 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid $brand-red;
+  color: $brand-red;
+  font-family: $font-display;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 1rem;
+
+  &.three { grid-template-columns: repeat(3, 1fr); }
+
+  @media (max-width: 40rem) {
+    &, &.three { grid-template-columns: 1fr; }
+  }
+}
+
+// Campos só de leitura: fundo branco, sem cursor de digitação.
+:host ::ng-deep .mat-mdc-text-field-wrapper { background-color: #fff; }
+
+input[readonly],
+textarea[readonly] {
+  cursor: default;
+  resize: none;
+}
+
+.amount { font-variant-numeric: tabular-nums; }
+
+.total input { font-weight: 600; }
+
+.footer {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 1rem 2rem;
+  border-top: 1px solid $rule;
+  background-color: #fff;
+}
+
+.state {
+  display: grid;
+  flex: 1;
+  gap: 1rem;
+  align-content: center;
+  justify-items: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.state-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.footer-actions {
+  display: flex;
+  flex: 1;
+  gap: 0.5rem;
+
+  .material-symbols-outlined { margin-right: 0.375rem; font-size: 1.25rem; vertical-align: middle; }
+}
+
+.footer mat-spinner {
+  display: inline-block;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+.bar-mode {
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+// Em edição: a folha ganha a borda vermelha, para ficar claro que está alterando.
+.sheet.editing { border-color: $brand-red; }
+
+.location-save { color: $brand-red; }

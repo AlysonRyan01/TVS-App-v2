@@ -561,6 +561,367 @@ public class ServiceOrderCommandHandlerTests
         Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
     }
 
+    // ---------- Criação de OS (feature 009) ----------
+
+    private static CreateServiceOrderCommand NewOrder(long customerId = 7, string model = " 42lb5600 ", string serial = "sn123")
+        => new(customerId, " lg ", model, serial, "não liga", "controle", EProduct.Tv, EEnterprise.Particular);
+
+    [TestMethod]
+    [DataRow(0L, "42LB", "SN", "O CustomerId da ordem de serviço não pode ser 0")]
+    [DataRow(7L, "", "SN", "O modelo da ordem de serviço não pode estar vazio")]
+    [DataRow(7L, "42LB", "", "O número de série da ordem de serviço não pode estar vazio")]
+    public async Task CreateServiceOrder_Invalid_Throws(long customerId, string model, string serial, string message)
+    {
+        var ex = await Assert.ThrowsExceptionAsync<TVS_App.Application.Exceptions.CommandException<CreateServiceOrderCommand>>(
+            () => _handler.CreateServiceOrder(NewOrder(customerId, model, serial)));
+
+        Assert.AreEqual(message, ex.Message);
+        Assert.IsNull(_commandRepository.LastCreated);
+    }
+
+    [TestMethod]
+    public async Task CreateServiceOrder_Valid_ReturnsIdAndPdfAndSendsWelcome()
+    {
+        var result = await _handler.CreateServiceOrder(NewOrder());
+
+        Assert.AreEqual(200, result.Code);
+        Assert.AreEqual(1, result.Data!.Id);
+        CollectionAssert.AreEqual(_pdfGenerator.CheckInResponse.Data, result.Data.Pdf);
+
+        var created = _commandRepository.LastCreated!;
+        Assert.AreEqual("42LB5600", created.Product.Model);
+        Assert.AreEqual("LG", created.Product.Brand);
+        Assert.AreEqual("SN123", created.Product.SerialNumber);
+        Assert.AreEqual(EServiceOrderStatus.Entered, created.ServiceOrderStatus);
+        Assert.AreEqual(1, _pdfGenerator.CheckInCalls);
+
+        Assert.AreEqual(1, _whatsAppQueue.Enqueued.Count);
+        var message = _whatsAppQueue.Enqueued[0] as SendWelcomeMessageRequest;
+        Assert.IsNotNull(message);
+        Assert.AreEqual("1", message.ServiceOrder);
+        Assert.AreEqual("JOÃO DA SILVA", message.CustomerName);
+        Assert.AreEqual("41999999999", message.PhoneNumber);
+    }
+
+    [TestMethod]
+    public async Task CreateServiceOrder_CreateFails_Returns500WithoutPdf()
+    {
+        _commandRepository.CreateResponse = new TVS_App.Domain.Shared.BaseResponse<TVS_App.Domain.Entities.ServiceOrder?>(null, 404, "Cliente não encontrado");
+
+        var result = await _handler.CreateServiceOrder(NewOrder());
+
+        Assert.AreEqual(500, result.Code);
+        Assert.AreEqual("Cliente não encontrado", result.Message);
+        Assert.AreEqual(0, _pdfGenerator.CheckInCalls);
+        Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
+    }
+
+    // Igual ao handler antigo: a OS já foi criada quando o PDF falha.
+    [TestMethod]
+    public async Task CreateServiceOrder_PdfFails_Returns500AndKeepsOrder()
+    {
+        _pdfGenerator.CheckInResponse = new TVS_App.Domain.Shared.BaseResponse<byte[]>(null, 500, "Falha no PDF de entrada");
+
+        var result = await _handler.CreateServiceOrder(NewOrder());
+
+        Assert.AreEqual(500, result.Code);
+        Assert.AreEqual("Falha no PDF de entrada", result.Message);
+        Assert.IsNotNull(_commandRepository.LastCreated);
+        Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
+    }
+
+    // ---------- Venda (feature 010), igual a old-handlers/CreateSalesServiceOrderHandler.cs ----------
+
+    private static CreateSalesServiceOrderCommand NewSale(
+        long customerId = 7,
+        string model = " un50au7700 ",
+        string serial = " abc123 ",
+        string guarantee = " 90 dias ",
+        decimal amount = 1499.90m,
+        EProduct type = EProduct.Tv)
+        => new(customerId, " samsung ", model, serial, guarantee, amount, type);
+
+    [TestMethod]
+    [DataRow(0L, "UN50", "SN", "90 DIAS", 100.0, 1, "O CustomerId da ordem de serviço não pode ser 0")]
+    [DataRow(7L, "", "SN", "90 DIAS", 100.0, 1, "O modelo da ordem de serviço não pode estar vazio")]
+    [DataRow(7L, "UN50", "", "90 DIAS", 100.0, 1, "O número de série da ordem de serviço não pode estar vazio")]
+    [DataRow(7L, "UN50", "SN", "", 100.0, 1, "A venda precisa ter uma garantia")]
+    [DataRow(7L, "UN50", "SN", "90 DIAS", 100.0, 999, "O tipo do produto da ordem de serviço não tem um valor válido")]
+    [DataRow(7L, "UN50", "SN", "90 DIAS", 0.0, 1, "O valor da venda não pode ser vazio ou 0")]
+    public async Task CreateSalesServiceOrder_Invalid_Throws(
+        long customerId, string model, string serial, string guarantee, double amount, int type, string message)
+    {
+        var ex = await Assert.ThrowsExceptionAsync<TVS_App.Application.Exceptions.CommandException<CreateServiceOrderCommand>>(
+            () => _handler.CreateSalesServiceOrder(NewSale(customerId, model, serial, guarantee, (decimal)amount, (EProduct)type)));
+
+        Assert.AreEqual(message, ex.Message);
+        Assert.IsNull(_commandRepository.LastCreated);
+        Assert.AreEqual(0, _pdfGenerator.SaleCalls);
+        Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
+    }
+
+    [TestMethod]
+    public async Task CreateSalesServiceOrder_Valid_CreatesDeliveredSaleOrder()
+    {
+        await _handler.CreateSalesServiceOrder(NewSale());
+
+        var created = _commandRepository.LastCreated!;
+        Assert.AreEqual(EEnterprise.Particular, created.Enterprise);
+        Assert.AreEqual("VENDA", created.Product.Defect);
+        Assert.AreEqual("", created.Product.Accessories);
+        Assert.AreEqual("SAMSUNG", created.Product.Brand);
+        Assert.AreEqual("UN50AU7700", created.Product.Model);
+        Assert.AreEqual("ABC123", created.Product.SerialNumber);
+        Assert.AreEqual(EProduct.Tv, created.Product.Type);
+        Assert.AreEqual("90 DIAS", created.Guarantee!.ServiceOrderGuarantee);
+        Assert.AreEqual(1499.90m, created.PartCost.ServiceOrderPartCost);
+        Assert.AreEqual(EServiceOrderStatus.Delivered, created.ServiceOrderStatus);
+        Assert.AreEqual(ERepairResult.Repair, created.RepairResult);
+        Assert.AreEqual(ERepairStatus.Approved, created.RepairStatus);
+        Assert.IsNotNull(created.DeliveryDate);
+    }
+
+    [TestMethod]
+    public async Task CreateSalesServiceOrder_Valid_ReturnsIdAndPdfAndSendsSaleMessage()
+    {
+        var result = await _handler.CreateSalesServiceOrder(NewSale());
+
+        Assert.AreEqual(200, result.Code);
+        Assert.AreEqual(1, result.Data!.Id);
+        CollectionAssert.AreEqual(_pdfGenerator.SaleResponse.Data, result.Data.Pdf);
+        Assert.AreEqual(1, _pdfGenerator.SaleCalls);
+        Assert.AreEqual(0, _pdfGenerator.CheckInCalls);
+
+        var message = _whatsAppQueue.Enqueued.Single() as SendProductSaleMessageRequest;
+        Assert.IsNotNull(message);
+        Assert.AreEqual("JOÃO DA SILVA", message.CustomerName);
+        Assert.AreEqual("41999999999", message.PhoneNumber);
+        Assert.AreEqual(1499.90m, message.Amount);
+        Assert.AreEqual("90 DIAS", message.Guarantee);
+        Assert.AreEqual(EProduct.Tv, message.ProductType);
+    }
+
+    [TestMethod]
+    public async Task CreateSalesServiceOrder_CreateFails_Returns500WithoutPdf()
+    {
+        _commandRepository.CreateResponse = new TVS_App.Domain.Shared.BaseResponse<TVS_App.Domain.Entities.ServiceOrder?>(null, 404, "Cliente não encontrado");
+
+        var result = await _handler.CreateSalesServiceOrder(NewSale());
+
+        Assert.AreEqual(500, result.Code);
+        Assert.AreEqual("Cliente não encontrado", result.Message);
+        Assert.AreEqual(0, _pdfGenerator.SaleCalls);
+        Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
+    }
+
+    // Igual ao handler antigo: a OS de venda já foi criada quando o PDF falha.
+    [TestMethod]
+    public async Task CreateSalesServiceOrder_PdfFails_Returns500AndKeepsOrder()
+    {
+        _pdfGenerator.SaleResponse = new TVS_App.Domain.Shared.BaseResponse<byte[]>(null, 500, "Falha no comprovante");
+
+        var result = await _handler.CreateSalesServiceOrder(NewSale());
+
+        Assert.AreEqual(500, result.Code);
+        Assert.AreEqual("Falha no comprovante", result.Message);
+        Assert.IsNotNull(_commandRepository.LastCreated);
+        Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
+    }
+
+    // ---------- Reimprimir (feature 012), igual a old-handlers/RegenerateAndReturnPdfHandler.cs ----------
+
+    [TestMethod]
+    public async Task RegeneratePdf_NotFound_Returns404WithoutPdf()
+    {
+        _queryRepository.ServiceOrderForUpdate = null;
+
+        var result = await _handler.RegeneratePdf(99);
+
+        Assert.AreEqual(404, result.Code);
+        Assert.AreEqual("Essa ordem de serviço não existe", result.Message);
+        Assert.AreEqual(0, _pdfGenerator.RegenerateCalls);
+    }
+
+    [TestMethod]
+    public async Task RegeneratePdf_GeneratorFails_Returns500()
+    {
+        _queryRepository.ServiceOrderForUpdate = ServiceOrderFactory.Create();
+        _pdfGenerator.RegenerateResponse = new TVS_App.Domain.Shared.BaseResponse<byte[]>(null, 500, "Falha no PDF");
+
+        var result = await _handler.RegeneratePdf(1);
+
+        Assert.AreEqual(500, result.Code);
+        Assert.AreEqual("Falha no PDF", result.Message);
+    }
+
+    [TestMethod]
+    public async Task RegeneratePdf_Success_ReturnsPdf()
+    {
+        _queryRepository.ServiceOrderForUpdate = ServiceOrderFactory.Create();
+
+        var result = await _handler.RegeneratePdf(1);
+
+        Assert.AreEqual(200, result.Code);
+        CollectionAssert.AreEqual(_pdfGenerator.RegenerateResponse.Data, result.Data);
+        Assert.AreEqual(1, _pdfGenerator.RegenerateCalls);
+    }
+
+    // ---------- Alterar OS (feature 012) ----------
+
+    private static EditServiceOrderCommand Edit(
+        string model = " 43un7300 ",
+        string serial = " sn999 ",
+        DateTime? entryDate = null,
+        decimal partCost = 120m,
+        decimal laborCost = 80m,
+        EProduct type = EProduct.Tv,
+        EEnterprise enterprise = EEnterprise.Cocel,
+        string? defect = " sem imagem ",
+        string? accessories = " controle ")
+        => new(" samsung ", model, serial, defect, accessories, type, " b3 ", enterprise,
+            entryDate ?? new DateTime(2026, 10, 1), new DateTime(2026, 10, 2), null, null, null, null,
+            " troca do backlight ", " 90 dias ", partCost, laborCost);
+
+    [TestMethod]
+    [DataRow("", "SN", 0.0, 0.0, 1, 1, false, "O modelo da ordem de serviço não pode estar vazio")]
+    [DataRow("42LB", " ", 0.0, 0.0, 1, 1, false, "O número de série da ordem de serviço não pode estar vazio")]
+    [DataRow("42LB", "SN", 0.0, 0.0, 999, 1, false, "Tipo de produto inválido.")]
+    [DataRow("42LB", "SN", 0.0, 0.0, 1, 999, false, "Empresa inválida.")]
+    [DataRow("42LB", "SN", 0.0, 0.0, 1, 1, true, "A data de entrada é obrigatória.")]
+    [DataRow("42LB", "SN", -1.0, 0.0, 1, 1, false, "O custo da peça não pode ser negativo.")]
+    [DataRow("42LB", "SN", 0.0, -1.0, 1, 1, false, "O custo de mão de obra não pode ser negativo.")]
+    public async Task UpdateServiceOrder_Invalid_Throws(
+        string model, string serial, double part, double labor, int type, int enterprise, bool noEntryDate, string message)
+    {
+        _queryRepository.ServiceOrderForUpdate = ServiceOrderFactory.Create();
+        var command = Edit(model, serial, null, (decimal)part, (decimal)labor, (EProduct)type, (EEnterprise)enterprise);
+        if (noEntryDate)
+            command = command with { EntryDate = null };
+
+        var ex = await Assert.ThrowsExceptionAsync<TVS_App.Application.Exceptions.CommandException<EditServiceOrderCommand>>(
+            () => _handler.UpdateServiceOrder(1, command));
+
+        Assert.AreEqual(message, ex.Message);
+        Assert.IsNull(_commandRepository.LastUpdated);
+    }
+
+    [TestMethod]
+    public async Task UpdateServiceOrder_NotFound_Returns404()
+    {
+        _queryRepository.ServiceOrderForUpdate = null;
+
+        var result = await _handler.UpdateServiceOrder(99, Edit());
+
+        Assert.AreEqual(404, result.Code);
+        Assert.AreEqual("Essa ordem de serviço não existe", result.Message);
+        Assert.IsNull(_commandRepository.LastUpdated);
+    }
+
+    [TestMethod]
+    public async Task UpdateServiceOrder_Valid_AppliesNormalizedFields()
+    {
+        var serviceOrder = ServiceOrderFactory.Create();
+        _queryRepository.ServiceOrderForUpdate = serviceOrder;
+
+        var result = await _handler.UpdateServiceOrder(1, Edit());
+
+        Assert.AreEqual(200, result.Code);
+        Assert.AreEqual("Ordem de serviço alterada com sucesso!", result.Message);
+        Assert.AreSame(serviceOrder, _commandRepository.LastUpdated);
+        Assert.AreEqual("SAMSUNG", serviceOrder.Product.Brand);
+        Assert.AreEqual("43UN7300", serviceOrder.Product.Model);
+        Assert.AreEqual("SN999", serviceOrder.Product.SerialNumber);
+        Assert.AreEqual("SEM IMAGEM", serviceOrder.Product.Defect);
+        Assert.AreEqual("CONTROLE", serviceOrder.Product.Accessories);
+        Assert.AreEqual("B3", serviceOrder.Product.Location);
+        Assert.AreEqual(EEnterprise.Cocel, serviceOrder.Enterprise);
+        Assert.AreEqual(new DateTime(2026, 10, 1), serviceOrder.EntryDate);
+        Assert.AreEqual(new DateTime(2026, 10, 2), serviceOrder.InspectionDate);
+        Assert.AreEqual("TROCA DO BACKLIGHT", serviceOrder.Solution!.ServiceOrderSolution);
+        Assert.AreEqual("90 DIAS", serviceOrder.Guarantee!.ServiceOrderGuarantee);
+        Assert.AreEqual(120m, serviceOrder.PartCost.ServiceOrderPartCost);
+        Assert.AreEqual(80m, serviceOrder.LaborCost.ServiceOrderLaborCost);
+        Assert.AreEqual(200m, result.Data!.TotalAmount);
+    }
+
+    [TestMethod]
+    public async Task UpdateServiceOrder_DoesNotTouchCustomerStatusOrPurchaseCost()
+    {
+        var serviceOrder = ServiceOrderFactory.Create();
+        serviceOrder.EditServiceOrderStatus(EServiceOrderStatus.Evaluated);
+        serviceOrder.EditRepairStatus(ERepairStatus.Waiting);
+        serviceOrder.EditRepairResult(ERepairResult.Repair);
+        serviceOrder.EditPartPurchaseCost(new TVS_App.Domain.ValueObjects.ServiceOrder.PartPurchaseCost(55m));
+        var customer = serviceOrder.Customer;
+        _queryRepository.ServiceOrderForUpdate = serviceOrder;
+
+        await _handler.UpdateServiceOrder(1, Edit());
+
+        Assert.AreSame(customer, serviceOrder.Customer);
+        Assert.AreEqual(7, serviceOrder.CustomerId);
+        Assert.AreEqual(EServiceOrderStatus.Evaluated, serviceOrder.ServiceOrderStatus);
+        Assert.AreEqual(ERepairStatus.Waiting, serviceOrder.RepairStatus);
+        Assert.AreEqual(ERepairResult.Repair, serviceOrder.RepairResult);
+        Assert.AreEqual(55m, serviceOrder.PartPurchaseCost.ServiceOrderPartPurchaseCost);
+    }
+
+    [TestMethod]
+    public async Task UpdateServiceOrder_SaleOrder_KeepsSaleDefectAndNoAccessories()
+    {
+        var sale = ServiceOrderFactory.Create();
+        sale.Product.UpdateProduct("LG", "42LB", "SN", "VENDA", "", EProduct.Tv);
+        _queryRepository.ServiceOrderForUpdate = sale;
+
+        await _handler.UpdateServiceOrder(1, Edit(defect: "não liga", accessories: "cabo"));
+
+        Assert.AreEqual("VENDA", sale.Product.Defect);
+        Assert.AreEqual("", sale.Product.Accessories);
+        Assert.AreEqual("43UN7300", sale.Product.Model);
+    }
+
+    // ---------- Valor da peça (feature 013), igual a old-handlers/UpdatePartPurchaseCostHandler.cs ----------
+
+    [TestMethod]
+    public async Task UpdatePartPurchaseCost_NotFound_Returns404()
+    {
+        _queryRepository.ServiceOrderForUpdate = null;
+
+        var result = await _handler.UpdatePartPurchaseCost(99, 10m);
+
+        Assert.AreEqual(404, result.Code);
+        Assert.AreEqual("Essa ordem de serviço não existe", result.Message);
+        Assert.IsNull(_commandRepository.LastUpdated);
+    }
+
+    [TestMethod]
+    public async Task UpdatePartPurchaseCost_Negative_Throws()
+    {
+        _queryRepository.ServiceOrderForUpdate = ServiceOrderFactory.Create();
+
+        var ex = await Assert.ThrowsExceptionAsync<TVS_App.Domain.Exceptions.ValueObjectException<TVS_App.Domain.ValueObjects.ServiceOrder.PartPurchaseCost>>(
+            () => _handler.UpdatePartPurchaseCost(1, -1m));
+
+        Assert.AreEqual("O valor de compra da peça não pode ser menor que 0", ex.Message);
+        Assert.IsNull(_commandRepository.LastUpdated);
+    }
+
+    [TestMethod]
+    public async Task UpdatePartPurchaseCost_Valid_SavesOnlyThatValue()
+    {
+        var serviceOrder = ServiceOrderFactory.Create();
+        serviceOrder.EditLaborCost(new TVS_App.Domain.ValueObjects.ServiceOrder.LaborCost(300m));
+        _queryRepository.ServiceOrderForUpdate = serviceOrder;
+
+        var result = await _handler.UpdatePartPurchaseCost(1, 120.5m);
+
+        Assert.AreEqual(200, result.Code);
+        Assert.AreEqual("Valor da peça atualizado.", result.Message);
+        Assert.AreSame(serviceOrder, _commandRepository.LastUpdated);
+        Assert.AreEqual(120.5m, serviceOrder.PartPurchaseCost.ServiceOrderPartPurchaseCost);
+        Assert.AreEqual(300m, serviceOrder.LaborCost.ServiceOrderLaborCost);
+        Assert.AreEqual(120.5m, result.Data!.PartPurchaseCost);
+    }
+
     private static void AssertOwnerNotified(object request, ERepairStatus expected)
     {
         var owner = request as NotifyOwnerEstimateDecisionRequest;

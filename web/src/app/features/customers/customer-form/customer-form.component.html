@@ -1,0 +1,62 @@
+<div class="fields" [formGroup]="form">
+  <mat-form-field appearance="outline">
+    <mat-label>Nome</mat-label>
+    <input matInput formControlName="name" autocomplete="off" required />
+  </mat-form-field>
+
+  <div class="row street-row">
+    <mat-form-field appearance="outline">
+      <mat-label>Rua</mat-label>
+      <input matInput formControlName="street" autocomplete="off" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Número</mat-label>
+      <input matInput formControlName="number" autocomplete="off" />
+    </mat-form-field>
+  </div>
+
+  <div class="row zip-row">
+    <mat-form-field appearance="outline">
+      <mat-label>Bairro</mat-label>
+      <input matInput formControlName="neighborhood" autocomplete="off" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>CEP</mat-label>
+      <input matInput formControlName="zipCode" autocomplete="off" inputmode="numeric"
+             (keydown.enter)="$event.preventDefault(); searchZipCode()" />
+    </mat-form-field>
+
+    <button type="button" class="zip-search" aria-label="Buscar endereço pelo CEP"
+            [disabled]="isLoadingAddress()" (click)="searchZipCode()">
+      @if (isLoadingAddress()) {
+        <mat-spinner diameter="20" aria-hidden="true"></mat-spinner>
+      } @else {
+        <span class="material-symbols-outlined" aria-hidden="true">search</span>
+      }
+    </button>
+  </div>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Cidade</mat-label>
+    <input matInput formControlName="city" autocomplete="off" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>CPF/CNPJ</mat-label>
+    <input matInput formControlName="document" appInputMask="document" autocomplete="off" placeholder="000.000.000-00 ou 00.000.000/0000-00 (opcional)" />
+  </mat-form-field>
+
+  <div class="row phone-row">
+    <mat-form-field appearance="outline">
+      <mat-label>Telefone</mat-label>
+      <input matInput type="tel" formControlName="phone" appInputMask="phone" autocomplete="off" required placeholder="(41) 99999-9999" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Telefone 2</mat-label>
+      <input matInput type="tel" formControlName="phone2" appInputMask="phone" autocomplete="off" />
+    </mat-form-field>
+  </div>
+</div>

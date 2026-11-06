@@ -18,5 +18,5 @@ public record CustomerDto
     
     public string? Email { get; init; }
     
-    public string Cpf { get; init; } = string.Empty;
+    public string? Document { get; init; }
 }

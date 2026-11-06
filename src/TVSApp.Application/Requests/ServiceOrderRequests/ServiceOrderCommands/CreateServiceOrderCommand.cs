@@ -1,7 +1,5 @@
-using MediatR;
 using TVS_App.Application.Exceptions;
 using TVS_App.Domain.Enums;
-using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 
@@ -14,7 +12,7 @@ public record CreateServiceOrderCommand(
     string Accessories,
     EProduct ProductType = EProduct.Tv,
     EEnterprise Enterprise = EEnterprise.Particular
-) : IRequest<BaseResponse<byte[]>>
+)
 {
     public void Validate()
     {

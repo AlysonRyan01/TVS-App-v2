@@ -1,4 +1,5 @@
 using TVS_App.Application.DTOs.ServiceOrder;
+using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries;
 using TVS_App.Domain.Repositories;
 using TVS_App.Domain.Shared;
 
@@ -13,4 +14,5 @@ public interface IServiceOrderQueryHandler
     Task<BaseResponse<PaginatedResult<RejectedServiceOrder>>> GetRejectedServiceOrders(int pageNumber, int pageSize);
     Task<BaseResponse<PaginatedResult<AwaitingPartServiceOrder>>> GetAwaitingPartServiceOrders(int pageNumber, int pageSize);
     Task<BaseResponse<PaginatedResult<ReadyForPickupServiceOrder>>> GetReadyForPickupServiceOrders(int pageNumber, int pageSize);
+    Task<BaseResponse<PaginatedResult<ServiceOrderSearchItem>>> Search(ServiceOrderSearchQuery query);
 }

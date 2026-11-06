@@ -1,3 +1,5 @@
+using TVS_App.Domain.Enums;
+
 namespace TVS_App.Domain.Repositories;
 
 public record PendingEstimateServiceOrder(
@@ -50,4 +52,18 @@ public record ReadyForPickupServiceOrder(
     DateTime? RepairedAt,
     string? RepairResult,
     string? RepairStatus
+);
+
+/// <summary>Linha da tela "Buscar OS". IsSale = OS de venda (defeito "VENDA").</summary>
+public record ServiceOrderSearchItem(
+    long Number,
+    string Customer,
+    EProduct ProductType,
+    string Brand,
+    string Model,
+    string SerialNumber,
+    EEnterprise Enterprise,
+    EServiceOrderStatus ServiceOrderStatus,
+    bool IsSale,
+    DateTime EnteredAt
 );

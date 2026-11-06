@@ -1,3 +1,4 @@
+using TVS_App.Application.Handlers.Customers;
 using System.IO.Compression;
 using System.Reflection;
 using System.Text;
@@ -66,6 +67,8 @@ public static class BuilderExtensions
     {
         builder.Services.AddScoped<IServiceOrderQueryHandler, ServiceOrderQueryHandler>();
         builder.Services.AddScoped<IServiceOrderCommandHandler, ServiceOrderCommandHandler>();
+        builder.Services.AddScoped<ICustomerQueryHandler, CustomerQueryHandler>();
+        builder.Services.AddScoped<ICustomerCommandHandler, CustomerCommandHandler>();
         builder.Services.AddSingleton<IWhatsAppQueue, WhatsAppQueue>();
         builder.Services.AddHostedService<WhatsAppNotificationWorker>();
         builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
@@ -79,6 +82,7 @@ public static class BuilderExtensions
         builder.Services.AddTransient<IAddressService, AddressService>();
         builder.Services.AddTransient<IGenerateServiceOrderPdf, GenerateServiceOrderPdfService>();
         builder.Services.AddScoped<IMetricsService, MetricsService>();
+        builder.Services.AddScoped<TVS_App.Application.Handlers.Metrics.IMetricsQueryHandler, TVS_App.Application.Handlers.Metrics.MetricsQueryHandler>();
         builder.Services.AddHttpClient<IWhatsappService, WhatsappService>();
         builder.Services.AddSingleton<IEmailService, EmailService>();
         builder.Services.Configure<EvolutionApiSettings>(builder.Configuration.GetSection("EvolutionApiSettings"));
@@ -177,6 +181,7 @@ public static class BuilderExtensions
                     .WithOrigins(origins!)
                     .AllowAnyMethod()
                     .AllowAnyHeader()
+                    .WithExposedHeaders("X-Service-Order-Id")
                     .AllowCredentials();
             });
         });

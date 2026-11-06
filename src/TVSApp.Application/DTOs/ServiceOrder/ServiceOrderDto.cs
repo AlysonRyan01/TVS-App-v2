@@ -17,7 +17,7 @@ public record ServiceOrderDto
     public string Phone { get; init; } = string.Empty;
     public string Phone2 { get; init; } = string.Empty;
     public string? Email { get; init; }
-    public string Cpf { get; init; } = string.Empty;
+    public string? Document { get; init; }
     
     public string Brand { get; init; } = string.Empty;
     public string Model { get; init; } = string.Empty;

@@ -5,6 +5,7 @@
 // custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
 @use 'app/features/home/modals/shared/service-order-modal';
+@use 'app/shared/styles/two-column-page';
 
 html {
   height: 100%;
