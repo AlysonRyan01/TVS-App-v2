@@ -1,6 +1,9 @@
 {$SITE_ADDRESS::80} {
 	encode zstd gzip
 
+	# Sistema interno: nenhuma resposta (páginas, API, PDFs, Grafana) deve ir para buscadores.
+	header X-Robots-Tag "noindex, nofollow, noarchive"
+
 	# Métricas internas da API (Prometheus): só na rede do Docker, nunca pela internet.
 	handle /api/internal/* {
 		respond 404
@@ -34,6 +37,7 @@
 # Opcional: Grafana num subdomínio próprio (precisa de DNS). Com ele, o Caddy emite o HTTPS sozinho.
 {$GRAFANA_ADDRESS:grafana.localhost} {
 	encode zstd gzip
+	header X-Robots-Tag "noindex, nofollow, noarchive"
 	redir / /grafana/
 	reverse_proxy grafana:3000
 }
