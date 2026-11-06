@@ -117,6 +117,7 @@ avisa as telas pelo SignalR (`"Atualizar"`) e registra um evento de negócio nos
 │   └── TVSApp.IntegrationTests/ # verificação ponta a ponta: API real + SQL Server descartável + WhatsApp falso
 ├── web/                        # sistema em Angular + Caddyfile + Dockerfile (Caddy servindo o build)
 ├── observability/              # configs de Alloy, Loki, Prometheus e Grafana (painéis e alertas)
+├── scripts/                    # utilitários de operação (ex.: teste-whatsapp.sh)
 ├── specs/                      # especificações de cada feature (Spec Kit): spec, plan, tasks...
 ├── old-handlers/               # handlers da versão antiga, mantidos só como referência
 ├── .specify/                   # constituição do projeto e scripts do Spec Kit
@@ -304,9 +305,8 @@ criar venda, entregar, reimprimir e comprovante de pagamento — e `GET /`.
 | `404` | registro não encontrado (o envelope traz a mensagem) |
 | `500` | erro inesperado (a mensagem vem no envelope; detalhes nos logs pelo `X-Correlation-Id`) |
 
-> O campo `code` do envelope normalmente é igual ao status HTTP. Exceções conhecidas: login
-> inválido responde HTTP `400` com `code: 401`, e refresh token inválido responde HTTP `404` com
-> `code: 401`.
+> O campo `code` do envelope normalmente é igual ao status HTTP. Exceção conhecida: login
+> inválido responde HTTP `400` com `code: 401`.
 
 #### Formato das rotas
 
@@ -318,49 +318,70 @@ métricas (ver [Observabilidade](#observabilidade)).
 
 ### Autenticação
 
+A sessão tem duas partes:
+
+| Parte | Validade | Onde fica |
+|-------|----------|-----------|
+| **Token de acesso** (JWT) | 1 hora | corpo do login/refresh; o sistema web guarda **só em memória** e envia em `Authorization: Bearer` |
+| **Sessão longa** (refresh token) | 30 dias | **somente** no cookie `tvs_refresh` — `HttpOnly` (scripts da página não leem), `Secure` (só HTTPS), `SameSite=Strict` (outros sites não usam), `Path=/` |
+
 Fluxo:
 
-1. `POST /auth/login` com e-mail e senha → recebe `accessToken` (JWT) e `refreshToken`.
+1. `POST /auth/login` com e-mail e senha → corpo com `accessToken` + cookie `tvs_refresh`.
 2. Envie `Authorization: Bearer <accessToken>` nas rotas protegidas.
-3. Quando o access token expirar (`401`), chame `POST /auth/refresh` com o `refreshToken` para
-   obter um novo access token.
-4. `POST /auth/logout` revoga o refresh token.
+3. Ao abrir o sistema (ou quando o acesso expira), `POST /auth/refresh` **sem corpo** — o navegador
+   envia o cookie — devolve um novo `accessToken`. Assim, fechar a aba, abrir outra aba ou reiniciar
+   o navegador **não pede login** por até 30 dias.
+4. `POST /auth/logout` revoga a sessão e apaga o cookie; o sistema avisa as outras abas abertas, que
+   voltam para a tela de login.
+
+> **Só funciona com HTTPS** (domínio). Pelo IP sem HTTPS o navegador recusa o cookie `Secure`: o
+> login funciona, mas não é lembrado (nem num F5). Em desenvolvimento, `http://localhost` é aceito.
+> O sistema web chama as rotas `/auth/*` com `withCredentials: true`.
 
 | Método | Rota | Login | Descrição | Evento |
 |--------|------|-------|-----------|--------|
-| `POST` | `/auth/login` | Não | Entra no sistema e recebe os tokens | `auth.login` |
-| `POST` | `/auth/logout` | Sim | Revoga o refresh token | — |
-| `POST` | `/auth/refresh` | Não | Gera um novo access token | — |
+| `POST` | `/auth/login` | Não | Entra no sistema: token de acesso no corpo + cookie de sessão | `auth.login` |
+| `POST` | `/auth/logout` | Não (usa o cookie) | Revoga a sessão e apaga o cookie | — |
+| `POST` | `/auth/refresh` | Não (usa o cookie) | Gera um novo token de acesso | — |
 | `POST` | `/auth/register` | Sim | Cria um novo usuário (só um usuário logado cria outro) | — |
 
 #### `POST /auth/login`
 
 - Corpo: [`LoginRequest`](#loginrequest)
-- `200`: envelope com [`AuthTokensDto`](#authtokensdto), mensagem "Login realizado com sucesso!"
+- `200`: envelope com [`AccessTokenDto`](#accesstokendto), "Login realizado com sucesso!", e
+  `Set-Cookie: tvs_refresh=…; expires=+30 dias; path=/; secure; samesite=strict; httponly`.
+  O corpo **não** traz o refresh token.
 - `400` (`code: 401`): "Email ou senha inválidos"
 
 ```bash
-curl -X POST http://localhost:5001/auth/login \
+curl -c cookies.txt -X POST https://SEU_DOMINIO/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@exemplo.com","password":"Senha@123"}'
 ```
 
 #### `POST /auth/refresh`
 
-- Corpo: [`RefreshTokenRequest`](#refreshtokenrequest)
-- `200`: envelope com `data` = novo access token (string), mensagem "Token renovado com sucesso!"
-- `404` (`code: 401`): "Refresh token inválido ou expirado"
+- Sem corpo; lê o cookie `tvs_refresh`.
+- `200`: envelope com `data` = novo token de acesso, "Token renovado com sucesso!"
+- `401` (`code: 401`): "Sessão expirada. Entre novamente." — sem cookie, sessão vencida ou
+  revogada; a resposta também apaga o cookie.
+
+```bash
+curl -b cookies.txt -X POST https://SEU_DOMINIO/api/auth/refresh
+```
 
 #### `POST /auth/logout`
 
-- Corpo: [`RefreshTokenRequest`](#refreshtokenrequest)
-- `200`: "Logout realizado com sucesso!"
+- Sem corpo e sem login; revoga a sessão do cookie (se houver) e apaga o cookie.
+- `200`: "Logout realizado com sucesso!" (também quando não há sessão).
 
 #### `POST /auth/register`
 
 - Corpo: [`LoginRequest`](#loginrequest) (e-mail e senha do novo usuário; a senha segue as regras
   padrão do Identity)
-- `200`: envelope com [`AuthTokensDto`](#authtokensdto) do novo usuário, "Usuário criado com sucesso!"
+- `200`: "Usuário criado com sucesso!" (`data` nulo — não devolve tokens nem altera a sessão de quem
+  está logado)
 - `400`: "Esse usuário já existe" (`code: 401`) ou lista de erros de senha em `data` (`code: 500`)
 
 ---
@@ -668,10 +689,11 @@ await connection.start();
 #### `POST /internal/whatsapp/test-message`
 
 Envio real de teste, **só sob demanda**, para o número do dono (`WHATSAPP_TEST_PHONE`). Não cria
-cliente nem OS. Rode na VPS:
+cliente nem OS. Rode na VPS, na pasta do projeto:
 
 ```bash
-docker compose exec api curl -s -X POST localhost:8080/internal/whatsapp/test-message
+./scripts/teste-whatsapp.sh
+# ou: docker compose exec api curl -s -X POST localhost:8080/internal/whatsapp/test-message
 ```
 
 | Situação | HTTP | `message` |
@@ -701,12 +723,6 @@ casas decimais, `DateTime` = data/hora ISO 8601, `?` = pode ser nulo/omitido.
 |-------|------|-------------|-----------|
 | `email` | string | sim | e-mail do usuário |
 | `password` | string | sim | senha |
-
-#### `RefreshTokenRequest`
-
-| Campo | Tipo | Obrigatório | Descrição |
-|-------|------|-------------|-----------|
-| `refreshToken` | string | sim | refresh token recebido no login |
 
 #### `CreateCustomerCommand`
 
@@ -846,12 +862,11 @@ Parâmetros de query de `GET /service-orders/search`. Use **só um** dos filtros
 
 ### DTOs de saída
 
-#### `AuthTokensDto`
+#### `AccessTokenDto`
 
 | Campo | Tipo | Descrição |
 |-------|------|-----------|
-| `accessToken` | string | JWT para o cabeçalho `Authorization` |
-| `refreshToken` | string | usado em `/auth/refresh` e `/auth/logout` |
+| `accessToken` | string | JWT (1 h) para o cabeçalho `Authorization`; a sessão de 30 dias vai no cookie `tvs_refresh` |
 
 #### `CustomerDto`
 

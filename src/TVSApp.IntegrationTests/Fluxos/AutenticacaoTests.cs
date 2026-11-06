@@ -13,7 +13,7 @@ public class AutenticacaoTests : VerificationTestBase
 
         Check.Status("Login", HttpStatusCode.OK, result);
         Check.True("Login", !string.IsNullOrWhiteSpace(result.Data?["accessToken"]?.GetValue<string>()), "accessToken", "vazio");
-        Check.True("Login", !string.IsNullOrWhiteSpace(result.Data?["refreshToken"]?.GetValue<string>()), "refreshToken", "vazio");
+        Check.True("Login", result.Data?["refreshToken"] is null, "sem refreshToken no corpo", "refreshToken presente");
     }
 
     [TestMethod("Login com senha errada é recusado")]

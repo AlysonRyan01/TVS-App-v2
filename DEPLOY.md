@@ -86,7 +86,8 @@ docker compose restart api
 docker compose down                  # para tudo (volumes e dados ficam)
 
 # WhatsApp: mensagem REAL de teste para WHATSAPP_TEST_PHONE (sob demanda, não cria dados)
-docker compose exec api curl -s -X POST localhost:8080/internal/whatsapp/test-message
+./scripts/teste-whatsapp.sh
+# (equivale a: docker compose exec api curl -s -X POST localhost:8080/internal/whatsapp/test-message)
 ```
 
 - Antes de publicar uma versão, rode no seu computador a verificação ponta a ponta
@@ -169,6 +170,18 @@ disso sobe. Para trazer para esta VPS:
 - A Evolution não fica exposta na internet: a API do TVS fala com ela pela rede interna.
 - Memória: ~500 MB a mais (limites: Evolution 512 MB, Postgres 256 MB, Redis 128 MB).
 - Logs da Evolution aparecem no Grafana (painel Logs, `{service="evolution-api"}` no Explore).
+
+## Login lembrado (cookie de sessão)
+
+O sistema lembra o login por até 30 dias num cookie seguro (`tvs_refresh`, `HttpOnly` + `Secure`).
+O navegador **só aceita esse cookie em HTTPS**:
+
+- Pelo domínio (`https://gerenciamento.tvseletronica.com`): fechar a aba, abrir outra ou reiniciar o
+  navegador continua logado.
+- Pelo IP sem HTTPS (`http://IP:8080`): o login funciona, mas **não é lembrado** — até um F5 pede
+  login de novo. Por isso, publique esta versão só depois do domínio com HTTPS funcionando.
+- Ao publicar a versão com cookie, todos os usuários entram uma vez (a sessão antiga não é migrada).
+- **Sair** encerra a sessão naquele navegador e nas outras abas abertas.
 
 ## Observações
 

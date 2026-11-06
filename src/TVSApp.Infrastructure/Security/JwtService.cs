@@ -18,7 +18,7 @@ public class JwtService
     private readonly ApplicationDataContext _context;
 
     private static readonly TimeSpan AccessTokenLifetime = TimeSpan.FromHours(1);
-    private static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(30);
+    public static readonly TimeSpan RefreshTokenLifetime = TimeSpan.FromDays(30);
 
     public JwtService(IConfiguration configuration, UserManager<User> userManager, ApplicationDataContext context)
     {

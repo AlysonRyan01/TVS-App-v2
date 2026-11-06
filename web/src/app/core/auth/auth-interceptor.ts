@@ -12,11 +12,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
 
   const isApi = req.url.startsWith(environment.apiUrl); 
-  const isAuthCall = req.url.includes('/auth/login') || req.url.includes('/auth/refresh');
+  // Rotas de sessão: usam só o cookie HttpOnly (withCredentials), nunca o Bearer.
+  const isAuthCall = ['/auth/login', '/auth/refresh', '/auth/logout'].some(path => req.url.includes(path));
 
   const withToken = (r: HttpRequest<unknown>) => {
+    if (isApi && isAuthCall) return r.clone({ withCredentials: true });
     const token = auth.accessToken();
-    return token && isApi && !isAuthCall
+    return token && isApi
       ? r.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
       : r;
   };

@@ -24,6 +24,20 @@ public sealed class ApiFactory : WebApplicationFactory<Program>
 
     public FakeEvolutionHandler Fake { get; } = new();
 
+    public ApiFactory()
+    {
+        // HTTPS: o cookie de sessão é Secure e o CookieContainer só o envia em https.
+        ClientOptions.BaseAddress = new Uri("https://localhost");
+        ClientOptions.HandleCookies = true;
+    }
+
+    /// <summary>Cliente sem gerenciamento automático de cookies (para enviar/inspecionar cookies na mão).</summary>
+    public HttpClient CreateRawClient() => CreateClient(new WebApplicationFactoryClientOptions
+    {
+        BaseAddress = new Uri("https://localhost"),
+        HandleCookies = false
+    });
+
     public static ApiFactory Shared
     {
         get
