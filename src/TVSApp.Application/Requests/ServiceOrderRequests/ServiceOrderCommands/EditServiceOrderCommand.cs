@@ -21,7 +21,8 @@ public record EditServiceOrderCommand(
     string? Solution,
     string? Guarantee,
     decimal PartCost,
-    decimal LaborCost)
+    decimal LaborCost,
+    EditServiceOrderEstimate? Estimate = null)
 {
     public void Validate()
     {
@@ -45,6 +46,18 @@ public record EditServiceOrderCommand(
 
         if (LaborCost < 0)
             throw new CommandException<EditServiceOrderCommand>("O custo de mão de obra não pode ser negativo.");
+
+        if (Estimate is not null)
+        {
+            if (!Enum.IsDefined(Estimate.ServiceOrderStatus))
+                throw new CommandException<EditServiceOrderCommand>("Situação inválida.");
+            if (!Enum.IsDefined(Estimate.RepairStatus))
+                throw new CommandException<EditServiceOrderCommand>("Resposta do orçamento inválida.");
+            if (Estimate.RepairResult is { } result && !Enum.IsDefined(result))
+                throw new CommandException<EditServiceOrderCommand>("Resultado do orçamento inválido.");
+            if (Estimate.PartPurchaseCost < 0)
+                throw new CommandException<EditServiceOrderCommand>("O custo de compra da peça não pode ser negativo.");
+        }
     }
 
     public EditServiceOrderCommand Normalize()
@@ -58,9 +71,25 @@ public record EditServiceOrderCommand(
             Accessories = Clean(Accessories),
             Location = Clean(Location),
             Solution = Clean(Solution),
-            Guarantee = Clean(Guarantee)
+            Guarantee = Clean(Guarantee),
+            Estimate = Estimate is null ? null : Estimate with
+            {
+                EstimateMessage = string.IsNullOrWhiteSpace(Estimate.EstimateMessage) ? null : Estimate.EstimateMessage.Trim()
+            }
         };
     }
 
     private static string Clean(string? value) => (value ?? string.Empty).Trim().ToUpper();
 }
+
+/// <summary>
+/// Dados do orçamento na edição completa da OS. Quando enviado, substitui todos estes campos
+/// (inclusive deixando o resultado e a mensagem vazios); quando omitido, eles ficam como estão.
+/// Correção manual: não dispara WhatsApp nem notificações.
+/// </summary>
+public record EditServiceOrderEstimate(
+    EServiceOrderStatus ServiceOrderStatus,
+    ERepairStatus RepairStatus,
+    ERepairResult? RepairResult,
+    string? EstimateMessage,
+    decimal PartPurchaseCost);

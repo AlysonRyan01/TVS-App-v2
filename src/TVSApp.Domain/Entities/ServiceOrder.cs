@@ -232,7 +232,7 @@ public class ServiceOrder : Entity
     public void EditRepairStatus(ERepairStatus repairStatus)
         => RepairStatus = repairStatus;
 
-    public void EditRepairResult(ERepairResult repairResult)
+    public void EditRepairResult(ERepairResult? repairResult)
         => RepairResult = repairResult;
     
     public void EditEntryDate(DateTime entryDate)
@@ -253,7 +253,7 @@ public class ServiceOrder : Entity
     public void EditDeliveryDate(DateTime? deliveryDate)
         => DeliveryDate = deliveryDate;
     
-    public void EditEstimateMessage(string message)
+    public void EditEstimateMessage(string? message)
         => EstimateMessage = message;
     
     public void EditProduct(Product product)

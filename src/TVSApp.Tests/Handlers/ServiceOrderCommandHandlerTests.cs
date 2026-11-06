@@ -855,6 +855,80 @@ public class ServiceOrderCommandHandlerTests
         Assert.AreEqual("43UN7300", sale.Product.Model);
     }
 
+    private static EditServiceOrderEstimate Estimate(
+        EServiceOrderStatus status = EServiceOrderStatus.Repaired,
+        ERepairStatus repairStatus = ERepairStatus.Approved,
+        ERepairResult? result = ERepairResult.Repair,
+        string? message = "Orçamento revisado",
+        decimal partPurchaseCost = 75m)
+        => new(status, repairStatus, result, message, partPurchaseCost);
+
+    [TestMethod]
+    public async Task UpdateServiceOrder_WithEstimate_AppliesStatusResultMessageAndPurchaseCost()
+    {
+        var serviceOrder = ServiceOrderFactory.Create();
+        _queryRepository.ServiceOrderForUpdate = serviceOrder;
+
+        var result = await _handler.UpdateServiceOrder(1, Edit() with { Estimate = Estimate() });
+
+        Assert.AreEqual(200, result.Code);
+        Assert.AreEqual(EServiceOrderStatus.Repaired, serviceOrder.ServiceOrderStatus);
+        Assert.AreEqual(ERepairStatus.Approved, serviceOrder.RepairStatus);
+        Assert.AreEqual(ERepairResult.Repair, serviceOrder.RepairResult);
+        Assert.AreEqual("Orçamento revisado", serviceOrder.EstimateMessage);
+        Assert.AreEqual(75m, serviceOrder.PartPurchaseCost.ServiceOrderPartPurchaseCost);
+        Assert.AreEqual(EServiceOrderStatus.Repaired, result.Data!.ServiceOrderStatus);
+    }
+
+    [TestMethod]
+    public async Task UpdateServiceOrder_WithEstimate_CanClearResultAndMessage()
+    {
+        var serviceOrder = ServiceOrderFactory.Create();
+        serviceOrder.EditRepairResult(ERepairResult.Unrepaired);
+        serviceOrder.EditEstimateMessage("antiga");
+        _queryRepository.ServiceOrderForUpdate = serviceOrder;
+
+        await _handler.UpdateServiceOrder(1, Edit() with
+        {
+            Estimate = Estimate(EServiceOrderStatus.Entered, ERepairStatus.Entered, result: null, message: "  ")
+        });
+
+        Assert.AreEqual(EServiceOrderStatus.Entered, serviceOrder.ServiceOrderStatus);
+        Assert.AreEqual(ERepairStatus.Entered, serviceOrder.RepairStatus);
+        Assert.IsNull(serviceOrder.RepairResult);
+        Assert.IsNull(serviceOrder.EstimateMessage);
+    }
+
+    [TestMethod]
+    [DataRow(999, 1, 1, 0.0, "Situação inválida.")]
+    [DataRow(1, 999, 1, 0.0, "Resposta do orçamento inválida.")]
+    [DataRow(1, 1, 999, 0.0, "Resultado do orçamento inválido.")]
+    [DataRow(1, 1, 1, -1.0, "O custo de compra da peça não pode ser negativo.")]
+    public async Task UpdateServiceOrder_WithInvalidEstimate_Throws(int status, int repairStatus, int result, double purchase, string message)
+    {
+        _queryRepository.ServiceOrderForUpdate = ServiceOrderFactory.Create();
+        var command = Edit() with
+        {
+            Estimate = Estimate((EServiceOrderStatus)status, (ERepairStatus)repairStatus, (ERepairResult)result, partPurchaseCost: (decimal)purchase)
+        };
+
+        var ex = await Assert.ThrowsExceptionAsync<TVS_App.Application.Exceptions.CommandException<EditServiceOrderCommand>>(
+            () => _handler.UpdateServiceOrder(1, command));
+
+        Assert.AreEqual(message, ex.Message);
+        Assert.IsNull(_commandRepository.LastUpdated);
+    }
+
+    [TestMethod]
+    public async Task UpdateServiceOrder_WithEstimate_DoesNotSendWhatsApp()
+    {
+        _queryRepository.ServiceOrderForUpdate = ServiceOrderFactory.Create();
+
+        await _handler.UpdateServiceOrder(1, Edit() with { Estimate = Estimate() });
+
+        Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
+    }
+
     [TestMethod]
     public async Task UpdatePartPurchaseCost_NotFound_Returns404()
     {

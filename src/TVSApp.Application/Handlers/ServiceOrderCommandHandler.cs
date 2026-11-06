@@ -342,6 +342,15 @@ public class ServiceOrderCommandHandler : IServiceOrderCommandHandler
         serviceOrder.EditPartCost(new PartCost(normalized.PartCost));
         serviceOrder.EditLaborCost(new LaborCost(normalized.LaborCost));
 
+        if (normalized.Estimate is { } estimate)
+        {
+            serviceOrder.EditServiceOrderStatus(estimate.ServiceOrderStatus);
+            serviceOrder.EditRepairStatus(estimate.RepairStatus);
+            serviceOrder.EditRepairResult(estimate.RepairResult);
+            serviceOrder.EditEstimateMessage(estimate.EstimateMessage);
+            serviceOrder.EditPartPurchaseCost(new PartPurchaseCost(estimate.PartPurchaseCost));
+        }
+
         var update = await _commandRepository.UpdateAsync(serviceOrder);
         if (!update.IsSuccess)
             return new BaseResponse<ServiceOrderDto?>(null, 500, update.Message);
