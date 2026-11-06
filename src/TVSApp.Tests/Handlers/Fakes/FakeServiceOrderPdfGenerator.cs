@@ -48,4 +48,17 @@ public class FakeServiceOrderPdfGenerator : IGenerateServiceOrderPdf
         RegenerateCalls++;
         return Task.FromResult(RegenerateResponse);
     }
+
+    public BaseResponse<byte[]> ReceiptResponse { get; set; } =
+        new(new byte[] { 0x25, 0x50, 0x44, 0x46, 0x43 }, 200, "Comprovante gerado");
+
+    public int ReceiptCalls { get; private set; }
+    public long? LastReceiptPaymentId { get; private set; }
+
+    public Task<BaseResponse<byte[]>> GeneratePaymentReceiptAsync(ServiceOrder serviceOrder, Payment payment)
+    {
+        ReceiptCalls++;
+        LastReceiptPaymentId = payment.Id;
+        return Task.FromResult(ReceiptResponse);
+    }
 }

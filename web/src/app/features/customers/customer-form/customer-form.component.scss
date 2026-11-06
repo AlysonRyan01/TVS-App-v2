@@ -10,12 +10,10 @@
   align-items: start;
 }
 
-// Rua larga e número estreito.
 .street-row {
   grid-template-columns: minmax(0, 1fr) minmax(7rem, 0.8fr);
 }
 
-// Bairro, CEP e o botão de buscar o endereço.
 .zip-row {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
 }
@@ -70,7 +68,6 @@
   }
 }
 
-// Campos brancos, destacados do fundo claro da coluna do cliente.
 :host ::ng-deep .mat-mdc-text-field-wrapper {
   border-radius: 0.25rem;
   background-color: #fff;

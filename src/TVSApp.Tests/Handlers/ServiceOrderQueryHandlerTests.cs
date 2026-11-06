@@ -189,3 +189,82 @@ public class ServiceOrderSearchTests
         Assert.AreEqual(99999, _repository.LastSearchFilter!.Number);
     }
 }
+
+[TestClass]
+public class ServiceOrderPublicAndPaymentQueryTests
+{
+    private FakeServiceOrderQueryRepository _repository = null!;
+    private ServiceOrderQueryHandler _handler = null!;
+
+    [TestInitialize]
+    public void Setup()
+    {
+        _repository = new FakeServiceOrderQueryRepository();
+        _handler = new ServiceOrderQueryHandler(_repository);
+    }
+
+    [TestMethod]
+    public async Task GetForCustomer_RightCode_ReturnsEstimate()
+    {
+        var serviceOrder = ServiceOrderFactory.Create();
+        _repository.ServiceOrderForUpdate = serviceOrder;
+
+        var result = await _handler.GetForCustomer(1, " " + serviceOrder.SecurityCode.ToLower() + " ");
+
+        Assert.AreEqual(200, result.Code);
+        Assert.AreEqual(1, result.Data!.Id);
+        Assert.AreEqual("JOÃO DA SILVA", result.Data.CustomerName);
+        Assert.AreEqual("42LB5600", result.Data.ProductModel);
+        Assert.AreEqual("NÃO LIGA", result.Data.ProductDefect);
+    }
+
+    [TestMethod]
+    [DataRow("ZZZZ")]
+    [DataRow("")]
+    public async Task GetForCustomer_WrongCode_Returns404(string code)
+    {
+        _repository.ServiceOrderForUpdate = ServiceOrderFactory.Create();
+
+        var result = await _handler.GetForCustomer(1, code);
+
+        Assert.AreEqual(404, result.Code);
+        Assert.AreEqual("Essa ordem de serviço não existe", result.Message);
+        Assert.IsNull(result.Data);
+    }
+
+    [TestMethod]
+    public async Task GetForCustomer_UnknownOrder_Returns404()
+    {
+        _repository.ServiceOrderForUpdate = null;
+
+        var result = await _handler.GetForCustomer(99, "A1B2");
+
+        Assert.AreEqual(404, result.Code);
+        Assert.AreEqual("Essa ordem de serviço não existe", result.Message);
+    }
+
+    [TestMethod]
+    public async Task GetPayments_ReturnsSimpleList()
+    {
+        var serviceOrder = ServiceOrderFactory.Create();
+        serviceOrder.AddPayment(new TVS_App.Domain.Entities.Payment(120m, new DateTime(2026, 11, 2), 1) { Id = 3 });
+        _repository.ServiceOrderForUpdate = serviceOrder;
+
+        var result = await _handler.GetPayments(1);
+
+        Assert.AreEqual(200, result.Code);
+        Assert.AreEqual(1, result.Data!.Count);
+        Assert.AreEqual(new TVS_App.Application.DTOs.ServiceOrder.PaymentDto(3, 120m, new DateTime(2026, 11, 2)), result.Data[0]);
+    }
+
+    [TestMethod]
+    public async Task GetPayments_UnknownOrder_Returns404()
+    {
+        _repository.ServiceOrderForUpdate = null;
+
+        var result = await _handler.GetPayments(99);
+
+        Assert.AreEqual(404, result.Code);
+        Assert.AreEqual("Essa ordem de serviço não existe", result.Message);
+    }
+}

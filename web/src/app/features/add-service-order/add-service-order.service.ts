@@ -8,7 +8,6 @@ import { CreateServiceOrder } from "./models/create-service-order.model";
 export class AddServiceOrderService {
     private _http = inject(HttpClient);
 
-    /** Sucesso: o termo de entrada em PDF, com o número da OS no cabeçalho X-Service-Order-Id. */
     createServiceOrder(command: CreateServiceOrder): Observable<HttpResponse<Blob>> {
         return this._http.post(`${environment.apiUrl}/service-orders`, command, {
             observe: 'response',

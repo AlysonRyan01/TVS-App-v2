@@ -16,7 +16,7 @@ export class AuthService {
     isLoggedIn = computed(() => !!this._accessToken())
 
     login(email: string, password: string): Observable<BaseResponse<AuthTokens>> {
-        return this._http.post<BaseResponse<AuthTokens>>(`${environment.apiUrl}/login`, { email, password })
+        return this._http.post<BaseResponse<AuthTokens>>(`${environment.apiUrl}/auth/login`, { email, password })
         .pipe(tap( res => {
             this._accessToken.set(res.data!.accessToken);
             this._refreshToken.set(res.data!.refreshToken);
@@ -34,7 +34,7 @@ export class AuthService {
         }
 
         return this._http
-            .post<BaseResponse<string>>(`${environment.apiUrl}/refresh-token`, { refreshToken })
+            .post<BaseResponse<string>>(`${environment.apiUrl}/auth/refresh`, { refreshToken })
             .pipe(
             map(res => {
                 if (res.code < 200 || res.code > 299 || !res.data) {
@@ -53,7 +53,7 @@ export class AuthService {
 
     logout() {
         const token = this._refreshToken();
-        if (token) this._http.post(`${environment.apiUrl}/logout`, { refreshToken: token }).subscribe();
+        if (token) this._http.post(`${environment.apiUrl}/auth/logout`, { refreshToken: token }).subscribe();
         this.limparSessao();
     }
 

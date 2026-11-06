@@ -15,7 +15,6 @@
 } @else if (order(); as o) {
   <mat-dialog-content class="content">
     <form class="sheet" [formGroup]="form" [class.editing]="editing()" (ngSubmit)="save()">
-      <!-- Resumo: o que se procura primeiro ao abrir a OS. -->
       <div class="summary">
         <span class="summary-number">OS {{ data.id }}</span>
         <span class="chip">{{ isSale(o) ? 'Venda' : (o.serviceOrderStatus | enumLabel: 'serviceOrderStatus') }}</span>
@@ -25,7 +24,6 @@
 
       <div class="columns">
         <div class="column">
-          <!-- Cliente: sempre só leitura (editado em Clientes). -->
           <section>
             <h2 class="section-title">Cliente</h2>
             <mat-form-field appearance="outline">
@@ -87,7 +85,6 @@
                 <mat-label>Número de Série</mat-label>
                 <input matInput formControlName="serialNumber" [readonly]="!editing()" autocomplete="off" required />
               </mat-form-field>
-              <!-- Prateleira: editável também em leitura, com salvar rápido. -->
               <mat-form-field appearance="outline" class="location">
                 <mat-label>Localização</mat-label>
                 <input matInput formControlName="location" autocomplete="off" placeholder="Ex.: B3"
@@ -187,6 +184,8 @@
               </mat-form-field>
             </div>
           </section>
+
+          <app-payments-panel [serviceOrderId]="data.id" [totalAmount]="total()" />
         </div>
       </div>
     </form>

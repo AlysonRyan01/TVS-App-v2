@@ -1,6 +1,5 @@
 <app-base-layout title="Buscar OS">
   <div class="page">
-    <!-- Um filtro por vez: preencher um campo limpa os outros (De e Até contam como um). -->
     <form class="filters" [formGroup]="filters" (ngSubmit)="search()" aria-label="Filtros da busca">
       <mat-form-field appearance="outline" class="f-number">
         <mat-label>Nº OS</mat-label>

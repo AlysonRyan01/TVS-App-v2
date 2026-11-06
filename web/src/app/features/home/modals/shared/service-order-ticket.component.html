@@ -37,7 +37,6 @@
     }
   </dl>
 
-  <!-- Onde o aparelho está guardado: mostra a atual e permite gravar uma nova. -->
   <div class="ticket-location">
     <p class="ticket-location-current">
       <span class="ticket-location-label">Localização</span>
@@ -77,4 +76,6 @@
     <figcaption>Defeito relatado pelo cliente</figcaption>
     <blockquote>{{ os.defect || 'Não informado na entrada.' }}</blockquote>
   </figure>
+
+  <app-payments-panel [serviceOrderId]="serviceOrderId()" [totalAmount]="os.totalAmount" />
 </aside>

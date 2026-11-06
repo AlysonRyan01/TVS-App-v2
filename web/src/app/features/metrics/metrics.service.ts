@@ -20,7 +20,6 @@ export class MetricsService {
         return this._http.get<BaseResponse<DashboardMetrics>>(`${environment.apiUrl}/metrics`, { params });
     }
 
-    /** Valor pago na peça de um produto entregue. */
     updatePartPurchaseCost(id: number, partPurchaseCost: number): Observable<BaseResponse<ServiceOrder>> {
         return this._http.put<BaseResponse<ServiceOrder>>(
             `${environment.apiUrl}/service-orders/${id}/part/purchase-cost`, { partPurchaseCost });

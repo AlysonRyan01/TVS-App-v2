@@ -29,7 +29,6 @@ public class AddressService : IAddressService
             if (response == null)
                 return new BaseResponse<AddressDto>(null, 500, "Erro ao buscar localidade por CEP");
 
-            // O ViaCEP responde {"erro": true} para CEP inexistente.
             if (response.Erro == true)
                 return new BaseResponse<AddressDto>(null, 404, "CEP não encontrado.");
 

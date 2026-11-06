@@ -67,13 +67,11 @@ export class AddServiceOrderEstimateModalComponent {
         return totalCost - partPurchaseCost;
     });
 
-    /** A casca carregou a OS: guarda e preenche o formulário com o orçamento salvo, se houver. */
     protected onLoaded(order: ServiceOrder) {
         this.serviceOrder.set(order);
         this.prefill(order);
     }
 
-    /** Se a OS já tiver um orçamento salvo, ele aparece para ser corrigido. */
     private prefill(order: ServiceOrder) {
         this.form.patchValue({
             ...(typeof order.repairResult === 'number' ? { repairResult: order.repairResult } : {}),
@@ -113,14 +111,14 @@ export class AddServiceOrderEstimateModalComponent {
         )
         .subscribe({
             next: () => {
-                this._snackbar.open("Orçamento enviado.");
+                this._snackbar.success("Orçamento enviado.");
                 this._dialogRef.close(true);
             },
             error: (error: HttpErrorResponse) => {
                 const message = error.error?.message ??
                     (typeof error.error === 'string' ? error.error : 'Não foi possível enviar o orçamento. Tente de novo.');
 
-                this._snackbar.open(message);
+                this._snackbar.error(message);
             }
         })
     }

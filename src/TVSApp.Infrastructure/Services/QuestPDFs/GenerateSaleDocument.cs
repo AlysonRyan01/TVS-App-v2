@@ -136,12 +136,10 @@ public class GenerateSaleDocument : QuestPdf
                     {
                         container.Border(1).BorderColor(Colors.Grey.Lighten1).Background(Colors.Grey.Lighten4).Padding(10).Row(row =>
                         {
-                            // Coluna de Informações Técnicas
                             row.RelativeItem().Column(col =>
                             {
                                 col.Spacing(8);
                                 
-                                // Solução
                                 col.Item().Row(r => 
                                 {
                                     r.ConstantItem(80).Text("VENDA DE: ").FontSize(11).SemiBold().FontColor(Colors.Grey.Darken2);
@@ -149,7 +147,6 @@ public class GenerateSaleDocument : QuestPdf
                                         .FontSize(11).Bold().FontColor(Colors.Black);
                                 });
                                 
-                                // Garantia
                                 col.Item().Row(r => 
                                 {
                                     r.ConstantItem(80).Text("GARANTIA: ").FontSize(11).SemiBold().FontColor(Colors.Grey.Darken2);
@@ -157,7 +154,6 @@ public class GenerateSaleDocument : QuestPdf
                                         .FontSize(11).Bold().FontColor(Colors.Black);
                                 });
                                 
-                                // Técnico
                                 col.Item().Row(r => 
                                 {
                                     r.ConstantItem(80).Text("TÉCNICO: ").FontSize(11).SemiBold().FontColor(Colors.Grey.Darken2);
@@ -165,7 +161,6 @@ public class GenerateSaleDocument : QuestPdf
                                         .FontSize(11).Bold().FontColor(Colors.Black);
                                 });
                                 
-                                // Data de Entrega
                                 col.Item().Row(r => 
                                 {
                                     r.ConstantItem(80).Text("DATA:").FontSize(11).SemiBold().FontColor(Colors.Grey.Darken2);
@@ -174,7 +169,6 @@ public class GenerateSaleDocument : QuestPdf
                                 });
                             });
 
-                            // Coluna do Valor (destaque)
                             row.ConstantItem(200).Column(col => 
                             {
                                 col.Item().AlignCenter().Background(Colors.Red.Lighten5).Padding(10).Column(valueCol => 

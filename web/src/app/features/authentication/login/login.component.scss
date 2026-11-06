@@ -38,7 +38,7 @@
   height: auto;
 
   @media (min-width: 56rem) {
-    width: min(100%, 23.4375rem); // 375px, a largura real do PNG
+    width: min(100%, 23.4375rem);
   }
 }
 
@@ -102,7 +102,6 @@ input {
   border-radius: 0.25rem;
   background-color: $field;
   color: $ink;
-  // 1rem evita o zoom automático do iOS ao focar o campo.
   font: 400 1rem / 1.4 Roboto, Arial, sans-serif;
 
   &:focus-visible {
@@ -110,7 +109,6 @@ input {
     outline-offset: 2px;
   }
 
-  // Classes aplicadas pelo Reactive Forms: campo inválido e já tocado fica com a borda de alerta.
   &.ng-invalid.ng-touched {
     border-color: $signal;
   }

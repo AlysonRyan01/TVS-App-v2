@@ -9,14 +9,6 @@ import { SnackbarService } from "../../../../shared/snackbar/snackbar.service";
 import { ServiceOrderLookupService } from "./service-order-lookup.service";
 import { ServiceOrderTicketComponent } from "./service-order-ticket.component";
 
-/**
- * Moldura comum dos modais da Home: barra superior, carga da OS (com erro e "Tentar de novo"),
- * etiqueta lateral e rodapé. Cada modal projeta o conteúdo em [modalBody], [modalFooterInfo] e [modalActions].
- *
- * Os estilos ficam em `_service-order-modal.scss`, incluído no `styles.scss` global: precisam alcançar
- * o conteúdo projetado e são carregados uma vez só. Todos os seletores ficam dentro de
- * `app-service-order-modal`, então não vazam para o resto do app.
- */
 @Component({
     selector: 'app-service-order-modal',
     templateUrl: './service-order-modal.component.html',
@@ -51,7 +43,7 @@ export class ServiceOrderModalComponent implements OnInit {
         ).subscribe({
             next: result => {
                 if (!result.data) {
-                    this._snackbar.open(result.message ?? 'Ordem de serviço não encontrada.');
+                    this._snackbar.error(result.message ?? 'Ordem de serviço não encontrada.');
                     return;
                 }
 
@@ -62,7 +54,7 @@ export class ServiceOrderModalComponent implements OnInit {
                 const message = error.error?.message ??
                     (typeof error.error === 'string' ? error.error : 'Erro ao carregar a ordem de serviço.');
 
-                this._snackbar.open(message);
+                this._snackbar.error(message);
             }
         });
     }

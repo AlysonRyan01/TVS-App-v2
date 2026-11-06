@@ -97,7 +97,6 @@ public class GenerateCheckInDocument : QuestPdf
                                     .FontFamily("Arial")
                                     .FontColor(Colors.Red.Darken2);
 
-                                // Separador
                                 col.Item().PaddingTop(10).Text("DADOS DO CLIENTE")
                                     .FontSize(10)
                                     .ExtraBold()
@@ -131,7 +130,6 @@ public class GenerateCheckInDocument : QuestPdf
                                     .FontFamily("Arial")
                                     .FontColor(Colors.Red.Darken2);
 
-                                // Separador
                                 col.Item().PaddingTop(10).Text("DADOS DO PRODUTO")
                                     .FontSize(10)
                                     .ExtraBold()

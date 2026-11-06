@@ -1,3 +1,4 @@
+using TVS_App.Application.DTOs;
 using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Mappers;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries;
@@ -29,8 +30,6 @@ public class ServiceOrderQueryHandler : IServiceOrderQueryHandler
         return new BaseResponse<ServiceOrderDto>(dto);
     }
 
-    // Tela "Buscar OS": nenhum filtro (últimas OS) ou um filtro por vez (número, cliente, modelo, série ou
-    // período de entrada). Substitui também o antigo get-all-service-orders.
     public async Task<BaseResponse<PaginatedResult<ServiceOrderSearchItem>>> Search(ServiceOrderSearchQuery query)
     {
         var customer = Clean(query.Customer);
@@ -40,7 +39,6 @@ public class ServiceOrderQueryHandler : IServiceOrderQueryHandler
 
         var filled = new[] { query.Number.HasValue, customer != null, model != null, serialNumber != null, hasPeriod }
             .Count(x => x);
-        // Sem filtro: as últimas OS (todas, paginadas). Mais de um: recusado.
         if (filled > 1)
             return BadSearch("Preencha um filtro por vez.");
 
@@ -73,6 +71,48 @@ public class ServiceOrderQueryHandler : IServiceOrderQueryHandler
 
     private static BaseResponse<PaginatedResult<ServiceOrderSearchItem>> BadSearch(string message)
         => new(null, 400, message);
+
+    public async Task<BaseResponse<EstimateServiceOrder>> GetForCustomer(long id, string code)
+    {
+        var result = await _repository.GetByIdAsync(id);
+        var serviceOrder = result.Data;
+        if (serviceOrder == null || !SecurityCodeMatches(serviceOrder.SecurityCode, code))
+            return new BaseResponse<EstimateServiceOrder>(null, 404, "Essa ordem de serviço não existe");
+
+        var dto = new EstimateServiceOrder(
+            serviceOrder.Id,
+            serviceOrder.Customer.Name.CustomerName,
+            serviceOrder.Product.Type,
+            serviceOrder.Product.Brand,
+            serviceOrder.Product.Model,
+            serviceOrder.Product.Defect ?? "",
+            serviceOrder.Guarantee?.ServiceOrderGuarantee,
+            serviceOrder.TotalAmount,
+            serviceOrder.EstimateMessage,
+            serviceOrder.ServiceOrderStatus,
+            serviceOrder.RepairResult,
+            serviceOrder.RepairStatus,
+            serviceOrder.Enterprise);
+
+        return new BaseResponse<EstimateServiceOrder>(dto, 200, "Ordem de serviço obtida com sucesso!");
+    }
+
+    public async Task<BaseResponse<List<PaymentDto>>> GetPayments(long serviceOrderId)
+    {
+        var result = await _repository.GetByIdAsync(serviceOrderId);
+        if (result.Data == null)
+            return new BaseResponse<List<PaymentDto>>(null, 404, "Essa ordem de serviço não existe");
+
+        var payments = result.Data.Payments
+            .Select(p => new PaymentDto(p.Id, p.Amount, p.PaidAt))
+            .ToList();
+
+        return new BaseResponse<List<PaymentDto>>(payments);
+    }
+
+    public static bool SecurityCodeMatches(string securityCode, string? informed)
+        => !string.IsNullOrWhiteSpace(informed)
+           && string.Equals(securityCode, informed.Trim().ToUpper(), StringComparison.Ordinal);
 
     public Task<BaseResponse<PaginatedResult<PendingEstimateServiceOrder>>> GetPendingEstimateServiceOrders(int pageNumber, int pageSize)
         => GetPagedAsync(pageNumber, pageSize, _repository.GetPendingEstimateAsync);

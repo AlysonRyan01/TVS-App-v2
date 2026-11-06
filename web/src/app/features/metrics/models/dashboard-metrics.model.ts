@@ -1,4 +1,3 @@
-/** GET /metrics (DashboardMetricsDto). */
 export interface DashboardMetrics {
     totalOrders: number;
     activeOrders: number;
@@ -25,7 +24,6 @@ export interface DeliveredProduct {
     model: string;
     productLabel: string;
     typeLabel: string;
-    /** "Reparo" ou "Venda". */
     statusLabel: string;
     enterpriseLabel: string;
     deliveryDate: string;
@@ -33,7 +31,6 @@ export interface DeliveredProduct {
     partPurchaseCost: number;
 }
 
-/** Mês/Ano ou De/Até (yyyy-MM-dd). */
 export interface MetricsPeriod {
     month?: number;
     year?: number;

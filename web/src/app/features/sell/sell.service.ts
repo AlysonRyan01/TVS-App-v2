@@ -8,7 +8,6 @@ import { CreateSale } from "./models/create-sale.model";
 export class SellService {
     private _http = inject(HttpClient);
 
-    /** Sucesso: o comprovante de venda em PDF, com o número da OS de venda no cabeçalho X-Service-Order-Id. */
     createSale(command: CreateSale): Observable<HttpResponse<Blob>> {
         return this._http.post(`${environment.apiUrl}/service-orders/sales`, command, {
             observe: 'response',

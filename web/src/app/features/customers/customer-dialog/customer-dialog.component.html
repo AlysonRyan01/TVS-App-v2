@@ -5,7 +5,6 @@
   </button>
 </header>
 
-<!-- Sem [formGroup] aqui (fica no app-customer-form): por isso (submit) com preventDefault, não (ngSubmit). -->
 <form class="dialog-body" (submit)="$event.preventDefault(); save()">
   <p class="dialog-intro">{{ isEdit ? 'Altere os dados e salve.' : 'Confira os dados com o cliente. Se algo mudou, corrija antes de confirmar.' }}</p>
 
@@ -13,7 +12,6 @@
 
   <footer class="dialog-actions">
     <button matButton type="button" mat-dialog-close [disabled]="isSaving()">Cancelar</button>
-    <!-- Um botão só: sem alterações, usa o cliente como está; com alterações, salva e usa. -->
     <button matButton="filled" type="submit" [disabled]="isSaving() || customerForm().form.invalid">
       @if (isSaving()) {
         <mat-spinner diameter="18" aria-hidden="true"></mat-spinner>

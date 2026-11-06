@@ -38,7 +38,6 @@ $rule: #ead8d3;
   ));
 }
 
-// Mesma barra vermelha dos modais da Home.
 .bar {
   display: flex;
   flex-shrink: 0;
@@ -76,15 +75,19 @@ $rule: #ead8d3;
 }
 
 .content.mat-mdc-dialog-content {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   max-height: none;
-  padding: 2rem 1.25rem;
+  padding: 1.5rem 1rem;
   color: $ink;
 }
 
-// Folha branca centralizada, como um formulário.
 .sheet {
-  max-width: 76rem;
+  flex: 1 0 auto;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 92rem;
   margin: 0 auto;
   border: 1px solid $rule;
   border-radius: 0.5rem;
@@ -130,7 +133,7 @@ $rule: #ead8d3;
 .columns {
   display: grid;
   gap: 0 3rem;
-  padding: 1.5rem 2rem 0.5rem;
+  padding: 1.75rem 2.5rem 1rem;
 
   @media (min-width: $desktop) {
     grid-template-columns: 1fr 1fr;
@@ -144,7 +147,6 @@ section {
 
 section + section { margin-top: 1rem; }
 
-// Títulos das seções em destaque: vermelho da marca, maiores e com um traço embaixo.
 .section-title {
   display: flex;
   gap: 0.625rem;
@@ -172,7 +174,6 @@ section + section { margin-top: 1rem; }
   }
 }
 
-// Campos só de leitura: fundo branco, sem cursor de digitação.
 :host ::ng-deep .mat-mdc-text-field-wrapper { background-color: #fff; }
 
 input[readonly],
@@ -230,7 +231,6 @@ textarea[readonly] {
   opacity: 0.85;
 }
 
-// Em edição: a folha ganha a borda vermelha, para ficar claro que está alterando.
 .sheet.editing { border-color: $brand-red; }
 
 .location-save { color: $brand-red; }

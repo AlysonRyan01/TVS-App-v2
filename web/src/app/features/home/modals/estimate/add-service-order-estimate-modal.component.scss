@@ -2,14 +2,9 @@
 @use '../../../../shared/styles/brand' as *;
 
 $desktop: 56rem;
-// Mesmos neutros puxados para o vermelho da tela inicial.
 $rule: #ead8d3;
 $rule-soft: #f3e6e2;
 
-// A barra, a etiqueta, os estados e o rodapé vêm da casca (modals/shared/_service-order-modal.scss).
-// Aqui ficam só os estilos do formulário de orçamento.
-
-// O <form> envolve a casca sem virar uma caixa no layout; os overrides valem para os campos dentro dele.
 .modal-form {
   display: contents;
 
@@ -162,8 +157,6 @@ $rule-soft: #f3e6e2;
     outline-offset: 2px;
   }
 }
-
-// Rodapé: o preço que vai para o cliente e a ação que o envia.
 
 .total {
   display: grid;

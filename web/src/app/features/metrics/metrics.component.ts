@@ -18,16 +18,11 @@ import { RankedBarsComponent } from "./ranked-bars/ranked-bars.component";
 const MONTHS = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto',
     'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
-/** "2026-11-01" → "01/11/2026". */
 function brDate(value: string): string {
     const [y, m, d] = value.split('-');
     return `${d}/${m}/${y}`;
 }
 
-/**
- * Tela "Métricas" (dashboard do sistema antigo): período por Mês/Ano ou De/Até, 11 indicadores,
- * gráficos de situação e resultado e os produtos entregues, com o valor da peça editável.
- */
 @Component({
     selector: 'app-metrics',
     templateUrl: './metrics.component.html',
@@ -55,7 +50,6 @@ export class MetricsComponent {
     protected readonly years = Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i);
     protected readonly columns = ['id', 'customer', 'product', 'type', 'status', 'enterprise', 'deliveredAt', 'total', 'partCost'];
 
-    // Filtros do período: Mês/Ano ou De/Até (um limpa o outro).
     protected month = signal(new Date().getMonth() + 1);
     protected year = signal(new Date().getFullYear());
     protected from = signal('');
@@ -64,10 +58,8 @@ export class MetricsComponent {
     protected metrics = signal<DashboardMetrics | null>(null);
     protected isLoading = signal(false);
     protected subtitle = signal('');
-    /** Linhas com o valor da peça sendo gravado (bloqueia o campo). */
     protected savingIds = signal<ReadonlySet<number>>(new Set());
 
-    /** Só uma das datas, ou Até antes de De: período inválido. */
     protected rangeError = computed(() => {
         const from = this.from();
         const to = this.to();
@@ -81,7 +73,6 @@ export class MetricsComponent {
         this.consult();
     }
 
-    /** Trocar Mês ou Ano consulta na hora (e descarta o intervalo De/Até). */
     protected onMonthOrYearChange() {
         this.from.set('');
         this.to.set('');
@@ -109,13 +100,11 @@ export class MetricsComponent {
                     this.metrics.set(response.data ?? null);
                     this.subtitle.set(subtitle);
                 },
-                // Os filtros continuam como estão para a pessoa corrigir.
                 error: (error: HttpErrorResponse) =>
-                    this._snackbar.open(error.error?.message ?? 'Não foi possível carregar as métricas. Tente de novo.'),
+                    this._snackbar.error(error.error?.message ?? 'Não foi possível carregar as métricas. Tente de novo.'),
             });
     }
 
-    /** Grava o valor da peça (blur/Enter) se mudou e é válido; atualiza Gasto com peças e Total líquido. */
     protected savePartCost(product: DeliveredProduct, input: HTMLInputElement) {
         const raw = input.value.trim();
         const value = raw === '' ? 0 : Number(raw);
@@ -147,11 +136,11 @@ export class MetricsComponent {
                                 p.id === product.id ? { ...p, partPurchaseCost: value } : p),
                         };
                     });
-                    this._snackbar.open('Valor da peça salvo.');
+                    this._snackbar.success('Valor da peça salvo.');
                 },
                 error: (error: HttpErrorResponse) => {
                     input.value = String(product.partPurchaseCost);
-                    this._snackbar.open(error.error?.message ?? 'Não foi possível salvar o valor da peça.');
+                    this._snackbar.error(error.error?.message ?? 'Não foi possível salvar o valor da peça.');
                 },
             });
     }

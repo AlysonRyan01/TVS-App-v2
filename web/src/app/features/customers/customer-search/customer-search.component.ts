@@ -8,7 +8,6 @@ import { CustomersService } from "../customers.service";
 import { Customer } from "../models/customer.model";
 import { maskPhone } from "../../../shared/masks/masks";
 
-/** Mostrados na lista; o 21º resultado só indica que existem mais. */
 const VISIBLE_RESULTS = 20;
 const MIN_LETTERS = 3;
 
@@ -23,11 +22,8 @@ export class CustomerSearchComponent implements OnInit {
     private _destroyRef = inject(DestroyRef);
     private _terms = new Subject<string>();
 
-    /** Cliente escolhido na lista (a página abre o modal de confirmação). */
     selected = output<Customer>();
-    /** Nenhum resultado: leva o texto digitado como nome para o cadastro abaixo da busca. */
     createNew = output<string>();
-    /** Sem resultado, oferecer o cadastro (telas Adicionar OS/Vender). Na tela Clientes, não. */
     allowCreate = input(true);
 
     protected term = signal('');
@@ -79,7 +75,6 @@ export class CustomerSearchComponent implements OnInit {
         this._terms.next(value);
     }
 
-    /** Volta ao estado inicial (usado pela página depois de criar a OS). */
     clear() {
         this.term.set('');
         this.results.set([]);

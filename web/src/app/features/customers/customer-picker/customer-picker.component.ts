@@ -15,10 +15,6 @@ import { formatDocument } from "../models/document";
 
 const DIALOG_OPTIONS = { width: '44rem', maxWidth: '95vw', autoFocus: 'first-tabbable' as const };
 
-/**
- * Coluna "Cliente" das telas Adicionar OS e Vender: mostra o cliente escolhido ou a busca com o
- * formulário "Criar cliente" embaixo. O cliente escolhido sai pelo `[(customer)]`.
- */
 @Component({
     selector: 'app-customer-picker',
     templateUrl: './customer-picker.component.html',
@@ -39,13 +35,11 @@ export class CustomerPickerComponent {
     protected readonly formatDocument = formatDocument;
     protected readonly maskPhone = maskPhone;
 
-    /** Volta ao início: sem cliente e com a busca vazia. */
     reset() {
         this.customer.set(null);
         this._search()?.clear();
     }
 
-    /** Cliente achado na busca: confirmar ou atualizar no modal antes de usar. */
     protected openExisting(customer: Customer) {
         this._dialog.open(CustomerDialogComponent, { ...DIALOG_OPTIONS, data: { customer } })
             .afterClosed()
@@ -56,12 +50,10 @@ export class CustomerPickerComponent {
             });
     }
 
-    /** Busca sem resultado: o texto digitado vira o nome no cadastro. */
     protected useSearchTermAsName(name: string) {
         this._customerForm()?.setName(name);
     }
 
-    /** Cadastra o cliente do formulário e já o usa. */
     protected createCustomer() {
         const customerForm = this._customerForm();
         if (!customerForm || this.isSavingCustomer()) {
@@ -81,17 +73,16 @@ export class CustomerPickerComponent {
                     if (result.data) {
                         this.customer.set(result.data);
                     }
-                    this._snackbar.open('Cliente cadastrado.');
+                    this._snackbar.success('Cliente cadastrado.');
                 },
                 error: (error: HttpErrorResponse) => {
                     const message = error.error?.message ??
                         (typeof error.error === 'string' ? error.error : 'Não foi possível cadastrar o cliente. Tente de novo.');
-                    this._snackbar.open(message);
+                    this._snackbar.error(message);
                 },
             });
     }
 
-    /** Desfaz só a escolha do cliente; o formulário ao lado continua preenchido. */
     protected changeCustomer() {
         this.customer.set(null);
     }

@@ -50,14 +50,14 @@ export class PartPurchaseModalComponent {
         )
         .subscribe({
             next: () => {
-                this._snackbar.open("Compra da peça registrada.");
+                this._snackbar.success("Compra da peça registrada.");
                 this._dialogRef.close(true);
             },
             error: (error: HttpErrorResponse) => {
                 const message = error.error?.message ??
                     (typeof error.error === 'string' ? error.error : 'Não foi possível registrar a compra. Tente de novo.');
 
-                this._snackbar.open(message);
+                this._snackbar.error(message);
             }
         });
     }

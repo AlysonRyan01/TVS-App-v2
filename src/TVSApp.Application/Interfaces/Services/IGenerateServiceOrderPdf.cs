@@ -9,4 +9,5 @@ public interface IGenerateServiceOrderPdf
     Task<BaseResponse<byte[]>> GenerateCheckOutDocumentAsync(ServiceOrder serviceOrder);
     Task<BaseResponse<byte[]>> GenerateSaleDocumentAsync(ServiceOrder serviceOrder);
     Task<BaseResponse<byte[]>> RegeneratePdfAsync(ServiceOrder serviceOrder);
+    Task<BaseResponse<byte[]>> GeneratePaymentReceiptAsync(ServiceOrder serviceOrder, Payment payment);
 }

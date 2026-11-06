@@ -7,7 +7,6 @@ namespace TVS_App.Application.Handlers.Customers;
 
 public class CustomerQueryHandler : ICustomerQueryHandler
 {
-    /// <summary>A tela mostra 20; o 21º só indica que há mais resultados ("Refine a busca").</summary>
     public const int SearchLimit = 21;
 
     private readonly ICustomerQueryRepository _customerQueryRepository;

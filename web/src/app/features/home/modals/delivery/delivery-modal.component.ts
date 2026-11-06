@@ -38,7 +38,6 @@ export class DeliveryModalComponent {
     protected serviceOrder = signal<ServiceOrder | null>(null);
     id = inject<number>(MAT_DIALOG_DATA);
 
-    /** Mesma regra do backend: só OS consertada gera o termo de entrega em PDF. */
     protected isRepaired = computed(() => {
         const order = this.serviceOrder();
         return !!order
@@ -46,13 +45,11 @@ export class DeliveryModalComponent {
             && order.repairResult === ERepairResult.Repair;
     });
 
-
     protected registerDelivery() {
         if (this.isSending()) {
             return;
         }
 
-        // A aba precisa ser aberta no próprio clique; depois da requisição o navegador a bloquearia.
         const pdfWindow = this.isRepaired() ? openPdfWindow() : null;
 
         this.isSending.set(true);
@@ -73,12 +70,12 @@ export class DeliveryModalComponent {
                     pdfWindow?.close();
                 }
 
-                this._snackbar.open("Ordem de serviço entregue.");
+                this._snackbar.success("Ordem de serviço entregue.");
                 this._dialogRef.close(true);
             },
             error: async (error: HttpErrorResponse) => {
                 pdfWindow?.close();
-                this._snackbar.open(await readBlobErrorMessage(error, DEFAULT_ERROR));
+                this._snackbar.error(await readBlobErrorMessage(error, DEFAULT_ERROR));
             }
         });
     }

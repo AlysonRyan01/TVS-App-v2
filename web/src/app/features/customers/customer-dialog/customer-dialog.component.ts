@@ -9,11 +9,6 @@ import { CustomersService } from "../customers.service";
 import { Customer } from "../models/customer.model";
 import { CustomerFormComponent } from "../customer-form/customer-form.component";
 
-/**
- * Cliente achado na busca.
- * - `confirm` (padrão, telas Adicionar OS/Vender): confirmar como está ou salvar alterações e usar.
- * - `edit` (tela Clientes): só editar; fechar sem alterações não devolve cliente.
- */
 export interface CustomerDialogData {
     customer: Customer;
     mode?: 'confirm' | 'edit';
@@ -35,12 +30,10 @@ export class CustomerDialogComponent {
     protected customerForm = viewChild.required(CustomerFormComponent);
     protected readonly isEdit = this.data.mode === 'edit';
 
-    /** Usa o cliente como está, sem salvar. */
     private confirm() {
         this._dialogRef.close(this.isEdit ? undefined : this.data.customer);
     }
 
-    /** Botão Confirmar: sem alterações, só usa o cliente; com alterações, salva e usa o cliente atualizado. */
     protected save() {
         const form = this.customerForm().form;
         if (form.invalid || this.isSaving()) {
@@ -48,7 +41,6 @@ export class CustomerDialogComponent {
             return;
         }
 
-        // Sem alterações: usa o cliente como está, sem chamar a API.
         if (!form.dirty) {
             this.confirm();
             return;
@@ -64,13 +56,13 @@ export class CustomerDialogComponent {
             }))
             .subscribe({
                 next: result => {
-                    this._snackbar.open('Cliente atualizado.');
+                    this._snackbar.success('Cliente atualizado.');
                     this._dialogRef.close(result.data ?? undefined);
                 },
                 error: (error: HttpErrorResponse) => {
                     const message = error.error?.message ??
                         (typeof error.error === 'string' ? error.error : 'Não foi possível salvar o cliente. Tente de novo.');
-                    this._snackbar.open(message);
+                    this._snackbar.error(message);
                 },
             });
     }

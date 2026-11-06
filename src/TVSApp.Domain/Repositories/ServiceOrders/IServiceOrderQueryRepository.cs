@@ -8,7 +8,6 @@ public interface IServiceOrderQueryRepository
 {
     Task<BaseResponse<ServiceOrder?>> GetByIdAsync(long id);
     Task<BaseResponse<ServiceOrder?>> GetByIdForUpdateAsync(long id);
-    Task<BaseResponse<List<ServiceOrder>>> GetByEnterpriseAsync(EEnterprise enterprise);
     Task<BaseResponse<PaginatedResult<ServiceOrderSearchItem>>> SearchAsync(ServiceOrderSearchFilter filter, int pageNumber, int pageSize);
     Task<BaseResponse<PaginatedResult<PendingEstimateServiceOrder>>> GetPendingEstimateAsync(int pageNumber, int pageSize);
     Task<BaseResponse<PaginatedResult<AwaitingResponseServiceOrder>>> GetAwaitingResponseAsync(int pageNumber, int pageSize);

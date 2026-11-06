@@ -28,7 +28,6 @@ $rule: #ead8d3;
   list-style: none;
 }
 
-// Nome | barra | figura: a barra ocupa o meio e cresce a partir da mesma base.
 .row {
   display: grid;
   grid-template-columns: minmax(7rem, 10rem) 1fr auto;
@@ -47,7 +46,6 @@ $rule: #ead8d3;
   background-color: $field;
 }
 
-// Ponta arredondada só no fim do dado; começo reto, preso à base.
 .bar {
   display: block;
   height: 100%;

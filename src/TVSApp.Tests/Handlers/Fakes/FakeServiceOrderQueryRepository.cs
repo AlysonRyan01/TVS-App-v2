@@ -49,13 +49,14 @@ public class FakeServiceOrderQueryRepository : IServiceOrderQueryRepository
         return Task.FromResult(new BaseResponse<PaginatedResult<T>>(result));
     }
 
-    public Task<BaseResponse<ServiceOrder?>> GetByIdAsync(long id) => throw new NotImplementedException();
-    public Task<BaseResponse<List<ServiceOrder>>> GetByEnterpriseAsync(EEnterprise enterprise) => throw new NotImplementedException();
+    public Task<BaseResponse<ServiceOrder?>> GetByIdAsync(long id)
+        => Task.FromResult(ServiceOrderForUpdate is null
+            ? new BaseResponse<ServiceOrder?>(null, 404, $"A ordem de serviço com ID:{id} não existe")
+            : new BaseResponse<ServiceOrder?>(ServiceOrderForUpdate));
 
     public ServiceOrderSearchFilter? LastSearchFilter { get; private set; }
     public int SearchCalls { get; private set; }
 
-    /// <summary>Resposta forçada do SearchAsync. Nulo = página vazia com 200.</summary>
     public BaseResponse<PaginatedResult<ServiceOrderSearchItem>>? SearchResponse { get; set; }
 
     public Task<BaseResponse<PaginatedResult<ServiceOrderSearchItem>>> SearchAsync(ServiceOrderSearchFilter filter, int pageNumber, int pageSize)

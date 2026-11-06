@@ -78,7 +78,6 @@ $rule: #ead8d3;
   background-color: $rule;
 }
 
-// 4 colunas no computador, 2 no tablet, 1 no celular.
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));

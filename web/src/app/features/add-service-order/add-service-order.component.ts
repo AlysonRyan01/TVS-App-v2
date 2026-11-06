@@ -15,10 +15,6 @@ import { AddServiceOrderService } from "./add-service-order.service";
 import { CustomerPickerComponent } from "../customers/customer-picker/customer-picker.component";
 import { Customer } from "../customers/models/customer.model";
 
-/**
- * Tela "Adicionar OS", em duas colunas iguais: cliente (app-customer-picker) e ordem de serviço.
- * Estilos comuns em shared/styles/_two-column-page.scss.
- */
 @Component({
     selector: 'app-add-service-order',
     templateUrl: './add-service-order.component.html',
@@ -64,7 +60,6 @@ export class AddServiceOrderComponent {
             return;
         }
 
-        // A aba do termo precisa ser aberta no próprio clique (senão o navegador bloqueia).
         const pdfWindow = openPdfWindow();
         this.isSending.set(true);
 
@@ -90,17 +85,16 @@ export class AddServiceOrderComponent {
                     pdfWindow?.close();
                 }
 
-                this._snackbar.open(id ? `OS ${id} criada.` : 'OS criada.');
+                this._snackbar.success(id ? `OS ${id} criada.` : 'OS criada.');
                 this.reset();
             },
             error: async (error: HttpErrorResponse) => {
                 pdfWindow?.close();
-                this._snackbar.open(await readBlobErrorMessage(error, 'Não foi possível criar a OS. Tente de novo.'));
+                this._snackbar.error(await readBlobErrorMessage(error, 'Não foi possível criar a OS. Tente de novo.'));
             },
         });
     }
 
-    /** Depois de criar a OS: sem cliente, busca vazia e OS com os padrões. */
     private reset() {
         this._picker()?.reset();
         this.device.reset();

@@ -5,10 +5,6 @@ import { CustomerSearchComponent } from "../customer-search/customer-search.comp
 import { CustomerDialogComponent, CustomerDialogData } from "../customer-dialog/customer-dialog.component";
 import { Customer } from "../models/customer.model";
 
-/**
- * Tela "Clientes" (substitui o cartão "Editar Cliente" da antiga tela Geral): busca por nome e
- * edita no mesmo modal de cliente das telas Adicionar OS e Vender. O modal já avisa "Cliente atualizado.".
- */
 @Component({
     selector: 'app-customers-page',
     templateUrl: './customers-page.component.html',

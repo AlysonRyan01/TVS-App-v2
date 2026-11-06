@@ -1,6 +1,3 @@
-// Telas em duas colunas (Adicionar OS e Vender): ① Cliente | ② formulário.
-// Global (não no componente) porque as duas telas e o app-customer-picker usam as mesmas classes,
-// e assim nenhum componente passa do orçamento de 4 kB. Ative com host: { class: 'two-column-page' }.
 @use '@angular/material' as mat;
 @use 'brand' as *;
 
@@ -37,7 +34,6 @@ $rule: #ead8d3;
     ));
   }
 
-  // Duas colunas iguais (50% / 50%); cada uma rola sozinha no computador.
   .page {
     min-height: calc(100dvh - 3.5rem);
     background-color: #fff;
@@ -60,7 +56,6 @@ $rule: #ead8d3;
     }
   }
 
-  // O cliente fica no painel claro, como a etiqueta dos modais.
   .customer-column {
     border-bottom: 1px solid $rule;
     background-color: $surface;
@@ -160,7 +155,6 @@ $rule: #ead8d3;
     }
   }
 
-  // Botões de criar (cliente e ordem) ocupam a largura toda do formulário.
   .device-actions,
   .form-actions {
     display: grid;
@@ -177,7 +171,6 @@ $rule: #ead8d3;
     }
   }
 
-  // Sem cliente escolhido: a ordem de serviço fica desfocada, com o aviso por cima.
   .device-area {
     position: relative;
 

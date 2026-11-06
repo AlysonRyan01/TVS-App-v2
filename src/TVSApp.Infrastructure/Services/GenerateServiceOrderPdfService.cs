@@ -72,6 +72,17 @@ public class GenerateServiceOrderPdfService : IGenerateServiceOrderPdf
             return Task.FromResult(new BaseResponse<byte[]>(null, 500, $"Ocorreu um erro ao gerar o PDF na classe GenerateServiceOrderPdfService: {ex.Message}"));
         }
     }
+
+    public Task<BaseResponse<byte[]>> GeneratePaymentReceiptAsync(ServiceOrder serviceOrder, Payment payment)
+    {
+        try
+        {
+            var document = new GeneratePaymentReceiptDocument(serviceOrder, payment);
+            return Task.FromResult(new BaseResponse<byte[]>(document.GeneratePdf(), 200, "Comprovante gerado com sucesso!"));
+        }
+        catch (Exception ex)
+        {
+            return Task.FromResult(new BaseResponse<byte[]>(null, 500, $"Ocorreu um erro ao gerar o comprovante de pagamento: {ex.Message}"));
+        }
+    }
 }
-        
-    

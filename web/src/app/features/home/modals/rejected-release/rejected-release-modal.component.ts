@@ -50,14 +50,14 @@ export class RejectedReleaseModalComponent {
         )
         .subscribe({
             next: () => {
-                this._snackbar.open("Ordem de serviço liberada para retirada.");
+                this._snackbar.success("Ordem de serviço liberada para retirada.");
                 this._dialogRef.close(true);
             },
             error: (error: HttpErrorResponse) => {
                 const message = error.error?.message ??
                     (typeof error.error === 'string' ? error.error : 'Não foi possível liberar a ordem de serviço. Tente de novo.');
 
-                this._snackbar.open(message);
+                this._snackbar.error(message);
             }
         });
     }

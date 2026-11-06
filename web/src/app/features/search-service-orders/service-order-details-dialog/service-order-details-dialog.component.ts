@@ -18,13 +18,12 @@ import { SnackbarService } from "../../../shared/snackbar/snackbar.service";
 import { isPdfResponse, openPdfWindow, readBlobErrorMessage, showPdf } from "../../../shared/pdf/pdf-print";
 import { formatDocument } from "../../customers/models/document";
 import { SearchServiceOrdersService } from "../search-service-orders.service";
+import { PaymentsPanelComponent } from "../../../shared/payments/payments-panel.component";
 
-/** "2026-10-01T13:10:00" → "2026-10-01" (o que o input type="date" usa). */
 function toDateInput(value: string | null | undefined): string {
     return value ? value.slice(0, 10) : '';
 }
 
-/** Mantém a hora original quando o dia não mudou; senão manda só a data. */
 function toApiDate(original: string | null | undefined, edited: string): string | null {
     if (!edited) {
         return null;
@@ -32,12 +31,6 @@ function toApiDate(original: string | null | undefined, edited: string): string 
     return original && original.slice(0, 10) === edited ? original : edited;
 }
 
-/**
- * Painel da OS achada na busca, em tela cheia. Em leitura: dados em campos só de leitura, com
- * Reimprimir, Alterar e a prateleira editável. Em edição: os campos da OS viram editáveis
- * (o cliente, não: ele é editado em /clientes) e o rodapé vira Cancelar · Salvar.
- * Ao fechar, devolve a OS se ela foi alterada, para a tabela atualizar a linha.
- */
 @Component({
     selector: 'app-service-order-details-dialog',
     templateUrl: './service-order-details-dialog.component.html',
@@ -52,6 +45,7 @@ function toApiDate(original: string | null | undefined, edited: string): string 
         MatSelectModule,
         CurrencyPipe,
         EnumLabelPipe,
+        PaymentsPanelComponent,
     ],
 })
 export class ServiceOrderDetailsDialogComponent implements OnInit {
@@ -68,7 +62,6 @@ export class ServiceOrderDetailsDialogComponent implements OnInit {
     protected isSaving = signal(false);
     protected isPrinting = signal(false);
     protected isSavingLocation = signal(false);
-    /** A OS foi alterada (edição ou prateleira): devolvida ao fechar. */
     private _changed = false;
 
     protected readonly productOptions = enumOptions('product');
@@ -99,14 +92,12 @@ export class ServiceOrderDetailsDialogComponent implements OnInit {
 
     private _values = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
     protected total = computed(() => (Number(this._values().partCost) || 0) + (Number(this._values().laborCost) || 0));
-    /** Prateleira mudou em modo leitura: mostra o botão de salvar. */
     protected locationChanged = computed(() =>
         !this.editing() && (this._values().location ?? '').trim() !== (this.order()?.location ?? '').trim());
 
     ngOnInit() {
         this.syncSelects();
         this.load();
-        // Esc/clique fora são tratados aqui (onEscape), para poder cancelar a edição em vez de fechar.
         this._dialogRef.disableClose = true;
         this._dialogRef.keydownEvents().subscribe(event => {
             if (event.key === 'Escape') {
@@ -143,14 +134,11 @@ export class ServiceOrderDetailsDialogComponent implements OnInit {
         this._dialogRef.close(this._changed ? this.order() ?? undefined : undefined);
     }
 
-    // ---------- Reimprimir ----------
-
     protected reprint() {
         if (this.isPrinting()) {
             return;
         }
 
-        // A aba precisa ser aberta no próprio clique (senão o navegador bloqueia).
         const pdfWindow = openPdfWindow();
         this.isPrinting.set(true);
         this._service.regeneratePdf(this.data.id)
@@ -165,12 +153,10 @@ export class ServiceOrderDetailsDialogComponent implements OnInit {
                 },
                 error: async (error: HttpErrorResponse) => {
                     pdfWindow?.close();
-                    this._snackbar.open(await readBlobErrorMessage(error, 'Não foi possível reimprimir. Tente de novo.'));
+                    this._snackbar.error(await readBlobErrorMessage(error, 'Não foi possível reimprimir. Tente de novo.'));
                 },
             });
     }
-
-    // ---------- Prateleira (modo leitura) ----------
 
     protected saveLocation() {
         const location = this.form.controls.location.value.trim();
@@ -186,14 +172,12 @@ export class ServiceOrderDetailsDialogComponent implements OnInit {
                     const order = this.order()!;
                     this.setOrder({ ...order, location: location.toUpperCase() });
                     this._changed = true;
-                    this._snackbar.open('Localização salva.');
+                    this._snackbar.success('Localização salva.');
                 },
                 error: (error: HttpErrorResponse) =>
-                    this._snackbar.open(error.error?.message ?? 'Não foi possível salvar a localização.'),
+                    this._snackbar.error(error.error?.message ?? 'Não foi possível salvar a localização.'),
             });
     }
-
-    // ---------- Alterar ----------
 
     protected startEditing() {
         this.setOrder(this.order());
@@ -207,7 +191,6 @@ export class ServiceOrderDetailsDialogComponent implements OnInit {
         this.syncSelects();
     }
 
-    /** Selects de tipo e empresa só ficam habilitados em edição (form reativo: via controle). */
     private syncSelects() {
         for (const control of [this.form.controls.type, this.form.controls.enterprise]) {
             if (this.editing()) {
@@ -254,15 +237,13 @@ export class ServiceOrderDetailsDialogComponent implements OnInit {
                 this._changed = true;
                 this.editing.set(false);
                 this.syncSelects();
-                this._snackbar.open(`OS ${this.data.id} alterada.`);
+                this._snackbar.success(`OS ${this.data.id} alterada.`);
             },
-            // Continua editando: a pessoa corrige e tenta de novo.
             error: (error: HttpErrorResponse) =>
-                this._snackbar.open(error.error?.message ?? 'Não foi possível alterar a OS. Tente de novo.'),
+                this._snackbar.error(error.error?.message ?? 'Não foi possível alterar a OS. Tente de novo.'),
         });
     }
 
-    /** Esc: em edição cancela a edição; em leitura fecha (devolvendo a OS se mudou). */
     protected onEscape(event: Event) {
         event.preventDefault();
         if (this.editing()) {

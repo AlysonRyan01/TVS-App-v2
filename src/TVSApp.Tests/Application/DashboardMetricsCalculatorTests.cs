@@ -12,7 +12,6 @@ public class DashboardMetricsCalculatorTests
     private static readonly DateTime Entry = new(2026, 11, 2, 10, 0, 0);
     private static long _nextId = 100;
 
-    /// <summary>OS de reparo com orçamento, valor e (opcionalmente) entrega.</summary>
     private static ServiceOrder Repair(
         ERepairStatus repairStatus = ERepairStatus.Approved,
         ERepairResult result = ERepairResult.Repair,
@@ -35,7 +34,6 @@ public class DashboardMetricsCalculatorTests
         return order;
     }
 
-    /// <summary>OS de venda (defeito "VENDA"), entregue no ato, como o handler de venda.</summary>
     private static ServiceOrder Sale(decimal amount = 500m, EProduct type = EProduct.Tv)
     {
         var order = ServiceOrderFactory.Create();
@@ -71,10 +69,10 @@ public class DashboardMetricsCalculatorTests
     public void RepairRevenue_OnlyDeliveredApprovedWithRepair()
     {
         var metrics = Build([
-            Repair(labor: 300m, delivery: Entry.AddDays(1)),                                       // conta
-            Repair(labor: 999m),                                                                    // não entregue
-            Repair(labor: 50m, result: ERepairResult.Unrepaired, delivery: Entry.AddDays(1)),       // sem conserto
-            Sale(amount: 700m),                                                                     // venda
+            Repair(labor: 300m, delivery: Entry.AddDays(1)),
+            Repair(labor: 999m),
+            Repair(labor: 50m, result: ERepairResult.Unrepaired, delivery: Entry.AddDays(1)),
+            Sale(amount: 700m),
         ]);
 
         Assert.AreEqual(300m, metrics.TotalRevenue);
@@ -103,7 +101,7 @@ public class DashboardMetricsCalculatorTests
         var metrics = Build([
             Repair(delivery: Entry.AddDays(2)),
             Repair(delivery: Entry.AddDays(4)),
-            Repair(delivery: Entry.AddDays(-3)), // entrada alterada depois da entrega: fora da média
+            Repair(delivery: Entry.AddDays(-3)),
         ]);
 
         Assert.AreEqual(3.0, metrics.AverageCycleDays);

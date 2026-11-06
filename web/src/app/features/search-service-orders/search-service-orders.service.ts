@@ -11,7 +11,6 @@ import { EditServiceOrder, ServiceOrderSearchItem, ServiceOrderSearchParams } fr
 export class SearchServiceOrdersService {
     private _http = inject(HttpClient);
 
-    /** Só os filtros preenchidos vão na query string. */
     search(params: ServiceOrderSearchParams): Observable<BaseResponse<PaginatedResult<ServiceOrderSearchItem[]>>> {
         let query = new HttpParams();
         for (const [key, value] of Object.entries(params)) {
@@ -27,12 +26,10 @@ export class SearchServiceOrdersService {
         return this._http.get<BaseResponse<ServiceOrder>>(`${environment.apiUrl}/service-orders/${id}`);
     }
 
-    /** Alterar OS: só os dados da OS (sem cliente nem situação). */
     update(id: number, body: EditServiceOrder): Observable<BaseResponse<ServiceOrder>> {
         return this._http.put<BaseResponse<ServiceOrder>>(`${environment.apiUrl}/service-orders/${id}`, body);
     }
 
-    /** Reimprimir: o documento certo para a situação da OS. */
     regeneratePdf(id: number): Observable<HttpResponse<Blob>> {
         return this._http.get(`${environment.apiUrl}/service-orders/${id}/pdf`, {
             observe: 'response',
@@ -40,7 +37,6 @@ export class SearchServiceOrdersService {
         });
     }
 
-    /** Prateleira (mesma rota dos modais da Home). */
     updateLocation(id: number, location: string): Observable<BaseResponse<string>> {
         return this._http.put<BaseResponse<string>>(`${environment.apiUrl}/service-orders/${id}/product/location`, { location });
     }

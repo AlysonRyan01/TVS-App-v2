@@ -54,49 +54,4 @@ public class MetricsService : IMetricsService
         return DashboardMetricsCalculator.Build(orders, deliveredOrders);
     }
 
-    public async Task<AbandonedOrdersDto> GetAbandonedOrdersAsync()
-    {
-        var cutoff = new DateTime(2025, 1, 1);
-
-        var orders = await _context.ServiceOrders
-            .Include(x => x.Customer)
-            .AsNoTracking()
-            .Where(x => x.EntryDate >= cutoff
-                        && x.Product.Defect != "VENDA"
-                        && x.ServiceOrderStatus != EServiceOrderStatus.Delivered
-                        && (x.RepairResult == ERepairResult.Repair || x.RepairResult == ERepairResult.Unrepaired))
-            .ToListAsync();
-
-        var repairedNotPickedUp = orders
-            .Where(x => x.RepairResult == ERepairResult.Repair && x.RepairDate.HasValue)
-            .OrderBy(x => x.RepairDate)
-            .Select(x => new AbandonedOrderDto
-            {
-                Id = x.Id,
-                CustomerName = x.Customer.Name.CustomerName,
-                Phone = x.Customer.Phone.CustomerPhone,
-                Model = x.Product.Model,
-                Date = x.RepairDate
-            })
-            .ToList();
-
-        var unrepairedNotPickedUp = orders
-            .Where(x => x.RepairResult == ERepairResult.Unrepaired && x.InspectionDate.HasValue)
-            .OrderBy(x => x.InspectionDate)
-            .Select(x => new AbandonedOrderDto
-            {
-                Id = x.Id,
-                CustomerName = x.Customer.Name.CustomerName,
-                Phone = x.Customer.Phone.CustomerPhone,
-                Model = x.Product.Model,
-                Date = x.InspectionDate
-            })
-            .ToList();
-
-        return new AbandonedOrdersDto
-        {
-            RepairedNotPickedUp = repairedNotPickedUp,
-            UnrepairedNotPickedUp = unrepairedNotPickedUp
-        };
-    }
 }

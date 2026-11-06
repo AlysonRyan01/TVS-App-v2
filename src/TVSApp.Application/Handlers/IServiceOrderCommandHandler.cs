@@ -19,4 +19,10 @@ public interface IServiceOrderCommandHandler
     Task<BaseResponse<byte[]>> RegeneratePdf(long id);
     Task<BaseResponse<ServiceOrderDto?>> UpdatePartPurchaseCost(long id, decimal partPurchaseCost);
     Task<BaseResponse<ServiceOrderDto?>> UpdateServiceOrder(long id, EditServiceOrderCommand command);
+    Task<BaseResponse<ServiceOrderDto?>> ApproveEstimateByCustomer(long id, string code);
+    Task<BaseResponse<ServiceOrderDto?>> RejectEstimateByCustomer(long id, string code);
+    Task<BaseResponse<string?>> AddPayment(long serviceOrderId, AddPaymentCommand command);
+    Task<BaseResponse<string?>> UpdatePayment(long serviceOrderId, long paymentId, UpdatePaymentCommand command);
+    Task<BaseResponse<string?>> RemovePayment(long serviceOrderId, long paymentId);
+    Task<BaseResponse<byte[]>> GetPaymentReceipt(long serviceOrderId, long paymentId);
 }

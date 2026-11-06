@@ -17,13 +17,8 @@ const ENUMS = {
 
 export type EnumKind = keyof typeof ENUMS;
 
-/** Valor como a API pode mandar: número (2), número em texto ("2") ou nome ("Unrepaired"). */
 export type EnumValue = number | string | null | undefined;
 
-/**
- * Traduz um valor de enum do backend para o texto exibido.
- * Valores desconhecidos voltam como vieram, para nada sumir da tela.
- */
 export function translateEnum(kind: EnumKind, value: EnumValue): string {
     if (value === null || value === undefined || value === '') {
         return '';
@@ -40,7 +35,6 @@ export function translateEnum(kind: EnumKind, value: EnumValue): string {
     return (typeof numeric === 'number' ? labelMap[numeric] : undefined) ?? String(value);
 }
 
-/** Lista { value, label } na ordem do enum, para selects e filtros. */
 export function enumOptions(kind: EnumKind): { value: number; label: string }[] {
     const labels = ENUMS[kind].labels as Record<number, string>;
     return Object.entries(labels).map(([value, label]) => ({ value: Number(value), label }));

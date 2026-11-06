@@ -1,6 +1,5 @@
 import { EEnterprise, EProduct } from "../../../shared/enums";
 
-/** Corpo de POST /service-orders. */
 export interface CreateServiceOrder {
     customerId: number;
     productBrand: string;

@@ -1,3 +1,4 @@
+using TVS_App.Application.DTOs;
 using TVS_App.Application.DTOs.ServiceOrder;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrdersQueries;
 using TVS_App.Domain.Repositories;
@@ -15,4 +16,6 @@ public interface IServiceOrderQueryHandler
     Task<BaseResponse<PaginatedResult<AwaitingPartServiceOrder>>> GetAwaitingPartServiceOrders(int pageNumber, int pageSize);
     Task<BaseResponse<PaginatedResult<ReadyForPickupServiceOrder>>> GetReadyForPickupServiceOrders(int pageNumber, int pageSize);
     Task<BaseResponse<PaginatedResult<ServiceOrderSearchItem>>> Search(ServiceOrderSearchQuery query);
+    Task<BaseResponse<EstimateServiceOrder>> GetForCustomer(long id, string code);
+    Task<BaseResponse<List<PaymentDto>>> GetPayments(long serviceOrderId);
 }

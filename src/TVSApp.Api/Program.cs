@@ -19,6 +19,7 @@ app.AddExceptionMiddleware();
 app.UseCors(builder.Configuration["Cors:PolicyName"]!);
 app.AddSwagger();
 app.AddMigrations();
+await app.AddAdminUserAsync();
 app.AddSignalR();
 app.AddAuthorization();
 app.AddEndpoints();

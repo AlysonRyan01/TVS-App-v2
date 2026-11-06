@@ -74,7 +74,6 @@ export class HomeComponent implements OnInit {
     private _hub = inject(ServiceOrderHubService);
     private _destroyRef = inject(DestroyRef);
 
-    /** Aba aberta agora: é a que recarrega quando outra tela muda uma OS. */
     private _selectedTab = 0;
 
     ngOnInit(): void {
@@ -82,10 +81,6 @@ export class HomeComponent implements OnInit {
         this.listenToServiceOrderUpdates();
     }
 
-    /**
-     * Outra tela (ou outro computador) mudou uma OS: recarrega a aba aberta, mantendo a página.
-     * O debounce junta avisos em sequência num recarregamento só.
-     */
     private listenToServiceOrderUpdates() {
         this._hub.start();
         this._hub.updates
@@ -103,7 +98,6 @@ export class HomeComponent implements OnInit {
             panelClass: 'fullscreen-dialog',
             autoFocus: 'dialog',
         }).afterClosed().subscribe(sent => {
-            // A OS sai da fila de orçamentos pendentes assim que o orçamento é enviado.
             if (sent) {
                 this.loadPendingEstimateServiceOrders();
             }
@@ -120,7 +114,6 @@ export class HomeComponent implements OnInit {
             panelClass: 'fullscreen-dialog',
             autoFocus: 'dialog',
         }).afterClosed().subscribe(responded => {
-            // A OS sai da fila assim que a resposta é registrada (ou se já tinha sido respondida em outra tela).
             if (responded) {
                 this.loadAwaitingResponseServiceOrders();
             }
@@ -137,7 +130,6 @@ export class HomeComponent implements OnInit {
             panelClass: 'fullscreen-dialog',
             autoFocus: 'dialog',
         }).afterClosed().subscribe(purchased => {
-            // A OS sai de "Aprovados" e vai para "Aguardando peça" assim que a compra é registrada.
             if (purchased) {
                 this.loadApprovedServiceOrders();
             }
@@ -154,7 +146,6 @@ export class HomeComponent implements OnInit {
             panelClass: 'fullscreen-dialog',
             autoFocus: 'dialog',
         }).afterClosed().subscribe(released => {
-            // A OS sai de "Reprovados" e vai para "Prontos" assim que é liberada.
             if (released) {
                 this.loadRejectedServiceOrders();
             }
@@ -171,7 +162,6 @@ export class HomeComponent implements OnInit {
             panelClass: 'fullscreen-dialog',
             autoFocus: 'dialog',
         }).afterClosed().subscribe(repaired => {
-            // A OS sai de "Aguardando peça" e vai para "Prontos" assim que o conserto é registrado.
             if (repaired) {
                 this.loadAwaitingPartServiceOrders();
             }
@@ -188,7 +178,6 @@ export class HomeComponent implements OnInit {
             panelClass: 'fullscreen-dialog',
             autoFocus: 'dialog',
         }).afterClosed().subscribe(delivered => {
-            // A OS sai de "Prontos" assim que a entrega é registrada.
             if (delivered) {
                 this.loadReadyForPickupServiceOrders();
             }
@@ -215,7 +204,7 @@ export class HomeComponent implements OnInit {
                 const message = error.error?.message ??
                     (typeof error.error === 'string' ? error.error : 'Erro ao carregar ordens de serviço.');
 
-                this._snack.open(message);
+                this._snack.error(message);
             }
         })
     }
@@ -239,7 +228,7 @@ export class HomeComponent implements OnInit {
                 const message = error.error?.message ??
                     (typeof error.error === 'string' ? error.error : 'Erro ao carregar ordens de serviço.');
 
-                this._snack.open(message);
+                this._snack.error(message);
             }
         })
     }
@@ -263,7 +252,7 @@ export class HomeComponent implements OnInit {
                 const message = error.error?.message ??
                     (typeof error.error === 'string' ? error.error : 'Erro ao carregar ordens de serviço.');
 
-                this._snack.open(message);
+                this._snack.error(message);
             }
         })
     }
@@ -287,7 +276,7 @@ export class HomeComponent implements OnInit {
                 const message = error.error?.message ??
                     (typeof error.error === 'string' ? error.error : 'Erro ao carregar ordens de serviço.');
 
-                this._snack.open(message);
+                this._snack.error(message);
             }
         })
     }
@@ -311,7 +300,7 @@ export class HomeComponent implements OnInit {
                 const message = error.error?.message ??
                     (typeof error.error === 'string' ? error.error : 'Erro ao carregar ordens de serviço.');
 
-                this._snack.open(message);
+                this._snack.error(message);
             }
         })
     }
@@ -335,7 +324,7 @@ export class HomeComponent implements OnInit {
                 const message = error.error?.message ??
                     (typeof error.error === 'string' ? error.error : 'Erro ao carregar ordens de serviço.');
 
-                this._snack.open(message);
+                this._snack.error(message);
             }
         })
     }

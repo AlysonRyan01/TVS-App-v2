@@ -35,10 +35,8 @@ export class EstimateResponseModalComponent {
 
     protected serviceOrder = signal<ServiceOrder | null>(null);
     protected sendingAction = signal<EstimateResponseAction | null>(null);
-    /** A OS foi respondida em outra tela: a lista precisa recarregar quando o modal fechar. */
     protected answeredElsewhere = signal<boolean>(false);
     id = inject<number>(MAT_DIALOG_DATA);
-
 
     protected isSending(): boolean {
         return this.sendingAction() !== null;
@@ -72,7 +70,7 @@ export class EstimateResponseModalComponent {
         )
         .subscribe({
             next: () => {
-                this._snackbar.open(successMessage);
+                this._snackbar.success(successMessage);
                 this._dialogRef.close(true);
             },
             error: (error: HttpErrorResponse) => {
@@ -83,7 +81,7 @@ export class EstimateResponseModalComponent {
                 const message = error.error?.message ??
                     (typeof error.error === 'string' ? error.error : 'Não foi possível registrar a resposta. Tente de novo.');
 
-                this._snackbar.open(message);
+                this._snackbar.error(message);
             }
         });
     }

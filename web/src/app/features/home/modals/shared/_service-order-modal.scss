@@ -2,19 +2,15 @@
 @use '../../../../shared/styles/brand' as *;
 
 $desktop: 56rem;
-// Mesmos neutros puxados para o vermelho da tela inicial.
 $rule: #ead8d3;
 $rule-soft: #f3e6e2;
 
-// O componente de cada modal (dentro do dialog) só precisa ocupar a altura toda.
 .service-order-modal-host {
   display: block;
   height: 100%;
 }
 
-// Todos os estilos ficam sob a casca: ViewEncapsulation.None sem vazar para o resto do app.
 app-service-order-modal {
-  // A própria casca.
   & {
     display: flex;
     flex-direction: column;
@@ -48,7 +44,6 @@ app-service-order-modal {
     ));
   }
 
-  // Barra superior: o mesmo vermelho das abas que abriram o modal.
   .bar {
     display: flex;
     flex-shrink: 0;
@@ -64,7 +59,6 @@ app-service-order-modal {
     }
   }
 
-  // mat-dialog-title traz margem e padding próprios; zera aqui.
   .bar-title.mat-mdc-dialog-title {
     margin: 0;
     padding: 0;
@@ -102,7 +96,6 @@ app-service-order-modal {
     }
   }
 
-  // Carregando e erro: centralizados no espaço que o formulário ocuparia.
   .state {
     display: flex;
     flex: 1;
@@ -128,7 +121,6 @@ app-service-order-modal {
     min-height: 0;
   }
 
-  // Só o meio rola; barra e rodapé ficam no lugar.
   .columns {
     flex: 1;
     min-height: 0;
@@ -141,13 +133,10 @@ app-service-order-modal {
     }
   }
 
-  // O componente da etiqueta não gera caixa: o <aside class="ticket"> é o item do grid
-  // e estica até o fim da coluna no layout de computador.
   app-service-order-ticket {
     display: contents;
   }
 
-  // A etiqueta da OS: leitura, não edição.
   .ticket {
     display: flex;
     flex-direction: column;
@@ -168,7 +157,6 @@ app-service-order-modal {
     }
   }
 
-  // O número escrito na etiqueta colada no aparelho.
   .ticket-number {
     color: $brand-red;
     font-family: $font-display;
@@ -242,8 +230,6 @@ app-service-order-modal {
     letter-spacing: 0.02em;
   }
 
-  // O que o cliente disse na entrada: a referência para a avaliação.
-  // Localização do produto: a atual (um pouco mais forte que os outros dados) e o campo para gravar uma nova.
   .ticket-location {
     display: grid;
     gap: 0.5rem;
@@ -340,8 +326,6 @@ app-service-order-modal {
     }
   }
 
-
-  // Resumo do orçamento enviado: só para consulta antes de registrar a resposta.
   .estimate {
     display: flex;
     flex-direction: column;
@@ -403,8 +387,6 @@ app-service-order-modal {
     font-size: 0.9375rem;
   }
 
-
-  // Rodapé: o preço que vai para o cliente e a ação que o envia.
   .summary {
     display: flex;
     flex-shrink: 0;
@@ -420,7 +402,6 @@ app-service-order-modal {
       padding: 1rem 2rem;
     }
   }
-
 
   .actions {
     display: flex;

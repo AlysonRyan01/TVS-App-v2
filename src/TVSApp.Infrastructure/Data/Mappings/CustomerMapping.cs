@@ -23,7 +23,6 @@ public class CustomerMapping : IEntityTypeConfiguration<Customer>
                 .IsRequired();
         });
         
-        // CPF ou CNPJ, opcional. O tipo é deduzido pelo tamanho e não é gravado.
         builder.OwnsOne(c => c.Document, document =>
         {
             document.Property(d => d.Number)

@@ -6,7 +6,6 @@ public class DeliveredProductDto
     public string CustomerName { get; set; } = string.Empty;
     public string Brand { get; set; } = string.Empty;
     public string Model { get; set; } = string.Empty;
-    /// "MARCA MODELO" + " - ACESSÓRIOS" quando houver.
     public string ProductLabel { get; set; } = string.Empty;
     public string TypeLabel { get; set; } = string.Empty;
     public string StatusLabel { get; set; } = string.Empty;

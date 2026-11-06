@@ -49,14 +49,14 @@ export class RepairModalComponent {
         )
         .subscribe({
             next: () => {
-                this._snackbar.open("Conserto registrado.");
+                this._snackbar.success("Conserto registrado.");
                 this._dialogRef.close(true);
             },
             error: (error: HttpErrorResponse) => {
                 const message = error.error?.message ??
                     (typeof error.error === 'string' ? error.error : 'Não foi possível registrar o conserto. Tente de novo.');
 
-                this._snackbar.open(message);
+                this._snackbar.error(message);
             }
         });
     }

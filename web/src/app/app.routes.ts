@@ -1,13 +1,15 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './features/authentication/login/login.component';
 import { guestGuard } from './core/auth/guest-guard';
-import { HomeComponent } from './features/home/home.component';
 import { authGuard } from './core/auth/auth-guard';
 
 export const routes: Routes = [
     { path: 'login', component: LoginComponent, canActivate: [guestGuard] },
-    { path: '', component: HomeComponent, canActivate: [authGuard] },
-    // Telas de cadastro carregadas sob demanda: o pacote inicial estava no limite de 1 MB.
+    {
+        path: '',
+        loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent),
+        canActivate: [authGuard],
+    },
     {
         path: 'adicionar',
         loadComponent: () => import('./features/add-service-order/add-service-order.component').then(m => m.AddServiceOrderComponent),

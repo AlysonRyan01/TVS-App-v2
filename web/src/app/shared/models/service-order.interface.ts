@@ -14,7 +14,6 @@ export interface ServiceOrder {
     phone: string;
     phone2: string;
     email?: string | null;
-    /** CPF ou CNPJ, sem pontuação; vazio quando o cliente não informou. */
     document: string | null;
  
     brand: string;

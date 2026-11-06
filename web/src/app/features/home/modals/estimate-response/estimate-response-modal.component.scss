@@ -1,7 +1,6 @@
 @use '@angular/material' as mat;
 @use '../../../../shared/styles/brand' as *;
 
-// Reprovar encerra o conserto: fica em vermelho de alerta, mas sem competir com o Aprovado.
 .reject {
   @include mat.button-overrides((
     outlined-label-text-color: $brand-red-bright,

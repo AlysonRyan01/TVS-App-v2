@@ -4,15 +4,9 @@ interface BarRow {
     label: string;
     value: number;
     share: number;
-    /** Largura relativa ao maior valor (0–100). */
     width: number;
 }
 
-/**
- * Partes de um todo comparadas entre si (ex.: ordens por situação): barras horizontais ordenadas,
- * maior primeiro, numa cor só (guia de dataviz: barras na mesma base comparam melhor que fatias de
- * rosca). Cada linha traz nome, quantidade e %, então a lista já é a "tabela" do gráfico.
- */
 @Component({
     selector: 'app-ranked-bars',
     templateUrl: './ranked-bars.component.html',

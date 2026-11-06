@@ -1,3 +1,4 @@
+using TVS_App.Domain.Entities;
 using TVS_App.Application.Handlers;
 using TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 using TVS_App.Application.Requests.WhatsAppQueueRequests;
@@ -123,14 +124,11 @@ public class ServiceOrderCommandHandlerTests
         Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
     }
 
-    // ---------- Resposta do orçamento (feature 002) ----------
-
     private static TVS_App.Domain.Entities.ServiceOrder AwaitingResponse(EEnterprise enterprise = EEnterprise.Particular)
     {
         var serviceOrder = ServiceOrderFactory.Create(enterprise);
         serviceOrder.AddEstimate("TROCA DA PLACA", "90 DIAS", 350m, ERepairResult.Repair, "msg");
 
-        // Na PhilcoBritania o AddEstimate já aprova; força o estado "aguardando resposta" para testar a regra do WhatsApp.
         serviceOrder.EditServiceOrderStatus(EServiceOrderStatus.Evaluated);
         serviceOrder.EditRepairStatus(ERepairStatus.Waiting);
         return serviceOrder;
@@ -249,8 +247,6 @@ public class ServiceOrderCommandHandlerTests
         AssertOwnerNotified(_whatsAppQueue.Enqueued[1], ERepairStatus.Disapproved);
     }
 
-    // ---------- Compra da peça (feature 003) ----------
-
     [TestMethod]
     public async Task RegisterPartPurchase_ServiceOrderNotFound_Returns404()
     {
@@ -281,8 +277,6 @@ public class ServiceOrderCommandHandlerTests
         Assert.AreEqual(0, _notificationRepository.Created.Count);
         Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
     }
-
-    // ---------- Liberação de OS reprovada (feature 004) ----------
 
     private static TVS_App.Domain.Entities.ServiceOrder Rejected(EEnterprise enterprise = EEnterprise.Particular)
     {
@@ -363,8 +357,6 @@ public class ServiceOrderCommandHandlerTests
         Assert.AreEqual("41999999999", message.PhoneNumber);
     }
 
-    // ---------- Conserto (feature 005) ----------
-
     private static TVS_App.Domain.Entities.ServiceOrder AwaitingPart(EEnterprise enterprise = EEnterprise.Particular)
     {
         var serviceOrder = AwaitingResponse(enterprise);
@@ -423,7 +415,6 @@ public class ServiceOrderCommandHandlerTests
         Assert.AreEqual("41999999999", message.PhoneNumber);
     }
 
-    // O handler antigo não checa o resultado do salvamento: responde 200 e envia o WhatsApp mesmo assim.
     [TestMethod]
     public async Task RegisterRepair_UpdateFails_StillReturns200AndSendsWhatsApp()
     {
@@ -435,8 +426,6 @@ public class ServiceOrderCommandHandlerTests
         Assert.AreEqual(200, result.Code);
         Assert.AreEqual(1, _whatsAppQueue.Enqueued.Count);
     }
-
-    // ---------- Entrega (feature 006) ----------
 
     private static TVS_App.Domain.Entities.ServiceOrder RepairedOs(EEnterprise enterprise = EEnterprise.Particular)
     {
@@ -484,7 +473,6 @@ public class ServiceOrderCommandHandlerTests
         Assert.AreEqual("41999999999", message.PhoneNumber);
     }
 
-    // O handler antigo salva a entrega antes de gerar o PDF: se o PDF falhar, a entrega continua registrada.
     [TestMethod]
     public async Task RegisterDelivery_Repaired_PdfFails_Returns500AndKeepsDelivery()
     {
@@ -517,8 +505,6 @@ public class ServiceOrderCommandHandlerTests
         Assert.AreEqual(0, _pdfGenerator.CheckOutCalls);
         Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
     }
-
-    // ---------- Localização do produto ----------
 
     [TestMethod]
     public async Task AddProductLocation_NotFound_Returns404()
@@ -560,8 +546,6 @@ public class ServiceOrderCommandHandlerTests
         Assert.AreSame(serviceOrder, _commandRepository.LastUpdated);
         Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
     }
-
-    // ---------- Criação de OS (feature 009) ----------
 
     private static CreateServiceOrderCommand NewOrder(long customerId = 7, string model = " 42lb5600 ", string serial = "sn123")
         => new(customerId, " lg ", model, serial, "não liga", "controle", EProduct.Tv, EEnterprise.Particular);
@@ -616,7 +600,6 @@ public class ServiceOrderCommandHandlerTests
         Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
     }
 
-    // Igual ao handler antigo: a OS já foi criada quando o PDF falha.
     [TestMethod]
     public async Task CreateServiceOrder_PdfFails_Returns500AndKeepsOrder()
     {
@@ -629,8 +612,6 @@ public class ServiceOrderCommandHandlerTests
         Assert.IsNotNull(_commandRepository.LastCreated);
         Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
     }
-
-    // ---------- Venda (feature 010), igual a old-handlers/CreateSalesServiceOrderHandler.cs ----------
 
     private static CreateSalesServiceOrderCommand NewSale(
         long customerId = 7,
@@ -714,7 +695,6 @@ public class ServiceOrderCommandHandlerTests
         Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
     }
 
-    // Igual ao handler antigo: a OS de venda já foi criada quando o PDF falha.
     [TestMethod]
     public async Task CreateSalesServiceOrder_PdfFails_Returns500AndKeepsOrder()
     {
@@ -727,8 +707,6 @@ public class ServiceOrderCommandHandlerTests
         Assert.IsNotNull(_commandRepository.LastCreated);
         Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
     }
-
-    // ---------- Reimprimir (feature 012), igual a old-handlers/RegenerateAndReturnPdfHandler.cs ----------
 
     [TestMethod]
     public async Task RegeneratePdf_NotFound_Returns404WithoutPdf()
@@ -765,8 +743,6 @@ public class ServiceOrderCommandHandlerTests
         CollectionAssert.AreEqual(_pdfGenerator.RegenerateResponse.Data, result.Data);
         Assert.AreEqual(1, _pdfGenerator.RegenerateCalls);
     }
-
-    // ---------- Alterar OS (feature 012) ----------
 
     private static EditServiceOrderCommand Edit(
         string model = " 43un7300 ",
@@ -879,8 +855,6 @@ public class ServiceOrderCommandHandlerTests
         Assert.AreEqual("43UN7300", sale.Product.Model);
     }
 
-    // ---------- Valor da peça (feature 013), igual a old-handlers/UpdatePartPurchaseCostHandler.cs ----------
-
     [TestMethod]
     public async Task UpdatePartPurchaseCost_NotFound_Returns404()
     {
@@ -920,6 +894,245 @@ public class ServiceOrderCommandHandlerTests
         Assert.AreEqual(120.5m, serviceOrder.PartPurchaseCost.ServiceOrderPartPurchaseCost);
         Assert.AreEqual(300m, serviceOrder.LaborCost.ServiceOrderLaborCost);
         Assert.AreEqual(120.5m, result.Data!.PartPurchaseCost);
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task EstimateByCustomer_RightCode_SameEffectAsHome(bool approve)
+    {
+        var serviceOrder = AwaitingResponse();
+        _queryRepository.ServiceOrderForUpdate = serviceOrder;
+        var code = " " + serviceOrder.SecurityCode.ToLower() + " ";
+
+        var result = approve
+            ? await _handler.ApproveEstimateByCustomer(1, code)
+            : await _handler.RejectEstimateByCustomer(1, code);
+
+        Assert.AreEqual(200, result.Code);
+        Assert.AreEqual(approve ? ERepairStatus.Approved : ERepairStatus.Disapproved, serviceOrder.RepairStatus);
+        Assert.AreSame(serviceOrder, _commandRepository.LastUpdated);
+        Assert.AreEqual(1, _notificationRepository.Created.Count);
+        Assert.AreEqual(2, _whatsAppQueue.Enqueued.Count);
+    }
+
+    [TestMethod]
+    [DataRow(true, "XXXX")]
+    [DataRow(false, "XXXX")]
+    [DataRow(true, "")]
+    public async Task EstimateByCustomer_WrongCode_Returns404WithoutChanges(bool approve, string code)
+    {
+        var serviceOrder = AwaitingResponse();
+        _queryRepository.ServiceOrderForUpdate = serviceOrder;
+
+        var result = approve
+            ? await _handler.ApproveEstimateByCustomer(1, code)
+            : await _handler.RejectEstimateByCustomer(1, code);
+
+        Assert.AreEqual(404, result.Code);
+        Assert.AreEqual("Essa ordem de serviço não existe", result.Message);
+        Assert.AreEqual(ERepairStatus.Waiting, serviceOrder.RepairStatus);
+        Assert.IsNull(_commandRepository.LastUpdated);
+        Assert.AreEqual(0, _whatsAppQueue.Enqueued.Count);
+        Assert.AreEqual(0, _notificationRepository.Created.Count);
+    }
+
+    [TestMethod]
+    public async Task EstimateByCustomer_UnknownOrder_Returns404()
+    {
+        _queryRepository.ServiceOrderForUpdate = null;
+
+        var result = await _handler.ApproveEstimateByCustomer(99, "A1B2");
+
+        Assert.AreEqual(404, result.Code);
+        Assert.AreEqual("Essa ordem de serviço não existe", result.Message);
+    }
+
+    [TestMethod]
+    public async Task EstimateByCustomer_AlreadyAnswered_Returns409()
+    {
+        var serviceOrder = AwaitingResponse();
+        serviceOrder.ApproveEstimate();
+        _queryRepository.ServiceOrderForUpdate = serviceOrder;
+
+        var result = await _handler.RejectEstimateByCustomer(1, serviceOrder.SecurityCode);
+
+        Assert.AreEqual(409, result.Code);
+        Assert.AreEqual("Esse orçamento já foi respondido.", result.Message);
+    }
+
+    [TestMethod]
+    public async Task AddPayment_UnknownOrder_Returns404()
+    {
+        _queryRepository.ServiceOrderForUpdate = null;
+
+        var result = await _handler.AddPayment(99, new AddPaymentCommand(100m, new DateTime(2026, 11, 5)));
+
+        Assert.AreEqual(404, result.Code);
+        Assert.AreEqual("Essa ordem de serviço não existe", result.Message);
+        Assert.IsNull(_commandRepository.LastUpdated);
+    }
+
+    [TestMethod]
+    public async Task AddPayment_Valid_AddsAndSaves()
+    {
+        var serviceOrder = ServiceOrderFactory.Create();
+        _queryRepository.ServiceOrderForUpdate = serviceOrder;
+
+        var result = await _handler.AddPayment(1, new AddPaymentCommand(150m, new DateTime(2026, 11, 5)));
+
+        Assert.AreEqual(200, result.Code);
+        Assert.AreEqual("Pagamento adicionado.", result.Message);
+        Assert.AreEqual(1, serviceOrder.Payments.Count);
+        Assert.AreEqual(150m, serviceOrder.Payments[0].Amount);
+        Assert.AreEqual(1, serviceOrder.Payments[0].ServiceOrderId);
+        Assert.AreSame(serviceOrder, _commandRepository.LastUpdated);
+    }
+
+    private static ServiceOrder WithPayment(long paymentId, decimal amount = 100m)
+    {
+        var serviceOrder = ServiceOrderFactory.Create();
+        serviceOrder.AddPayment(new TVS_App.Domain.Entities.Payment(amount, new DateTime(2026, 11, 1), 1) { Id = paymentId });
+        return serviceOrder;
+    }
+
+    [TestMethod]
+    public async Task UpdatePayment_Valid_UpdatesAndSaves()
+    {
+        var serviceOrder = WithPayment(5);
+        _queryRepository.ServiceOrderForUpdate = serviceOrder;
+
+        var result = await _handler.UpdatePayment(1, 5, new UpdatePaymentCommand(80m, new DateTime(2026, 11, 3)));
+
+        Assert.AreEqual(200, result.Code);
+        Assert.AreEqual("Pagamento atualizado.", result.Message);
+        Assert.AreEqual(80m, serviceOrder.Payments[0].Amount);
+        Assert.AreEqual(new DateTime(2026, 11, 3), serviceOrder.Payments[0].PaidAt);
+    }
+
+    [TestMethod]
+    public async Task UpdatePayment_UnknownPayment_Returns404()
+    {
+        _queryRepository.ServiceOrderForUpdate = WithPayment(5);
+
+        var result = await _handler.UpdatePayment(1, 6, new UpdatePaymentCommand(80m, DateTime.Today));
+
+        Assert.AreEqual(404, result.Code);
+        Assert.AreEqual("Pagamento não encontrado", result.Message);
+        Assert.IsNull(_commandRepository.LastUpdated);
+    }
+
+    [TestMethod]
+    public async Task RemovePayment_Valid_RemovesAndSaves()
+    {
+        var serviceOrder = WithPayment(5);
+        _queryRepository.ServiceOrderForUpdate = serviceOrder;
+
+        var result = await _handler.RemovePayment(1, 5);
+
+        Assert.AreEqual(200, result.Code);
+        Assert.AreEqual("Pagamento removido.", result.Message);
+        Assert.AreEqual(0, serviceOrder.Payments.Count);
+    }
+
+    [TestMethod]
+    public async Task RemovePayment_UnknownPayment_Returns404()
+    {
+        _queryRepository.ServiceOrderForUpdate = WithPayment(5);
+
+        var result = await _handler.RemovePayment(1, 6);
+
+        Assert.AreEqual(404, result.Code);
+        Assert.AreEqual("Pagamento não encontrado", result.Message);
+    }
+
+    [TestMethod]
+    [DataRow(0.0, "O valor deve ser maior que zero")]
+    [DataRow(-5.0, "O valor deve ser maior que zero")]
+    public async Task AddPayment_InvalidAmount_Throws(double amount, string message)
+    {
+        _queryRepository.ServiceOrderForUpdate = ServiceOrderFactory.Create();
+
+        var ex = await Assert.ThrowsExceptionAsync<TVS_App.Application.Exceptions.CommandException<AddPaymentCommand>>(
+            () => _handler.AddPayment(1, new AddPaymentCommand((decimal)amount, DateTime.Today)));
+
+        Assert.AreEqual(message, ex.Message);
+        Assert.IsNull(_commandRepository.LastUpdated);
+    }
+
+    [TestMethod]
+    public async Task AddPayment_NoDate_Throws()
+    {
+        _queryRepository.ServiceOrderForUpdate = ServiceOrderFactory.Create();
+
+        var ex = await Assert.ThrowsExceptionAsync<TVS_App.Application.Exceptions.CommandException<AddPaymentCommand>>(
+            () => _handler.AddPayment(1, new AddPaymentCommand(10m, default)));
+
+        Assert.AreEqual("Informe a data do pagamento.", ex.Message);
+    }
+
+    [TestMethod]
+    public async Task UpdatePayment_InvalidValues_Throw()
+    {
+        _queryRepository.ServiceOrderForUpdate = WithPayment(5);
+
+        var zero = await Assert.ThrowsExceptionAsync<TVS_App.Application.Exceptions.CommandException<UpdatePaymentCommand>>(
+            () => _handler.UpdatePayment(1, 5, new UpdatePaymentCommand(0m, DateTime.Today)));
+        var noDate = await Assert.ThrowsExceptionAsync<TVS_App.Application.Exceptions.CommandException<UpdatePaymentCommand>>(
+            () => _handler.UpdatePayment(1, 5, new UpdatePaymentCommand(10m, default)));
+
+        Assert.AreEqual("O valor deve ser maior que zero", zero.Message);
+        Assert.AreEqual("Informe a data do pagamento.", noDate.Message);
+        Assert.IsNull(_commandRepository.LastUpdated);
+    }
+
+    [TestMethod]
+    public async Task GetPaymentReceipt_UnknownOrder_Returns404()
+    {
+        _queryRepository.ServiceOrderForUpdate = null;
+
+        var result = await _handler.GetPaymentReceipt(99, 1);
+
+        Assert.AreEqual(404, result.Code);
+        Assert.AreEqual("Essa ordem de serviço não existe", result.Message);
+        Assert.AreEqual(0, _pdfGenerator.ReceiptCalls);
+    }
+
+    [TestMethod]
+    public async Task GetPaymentReceipt_UnknownPayment_Returns404()
+    {
+        _queryRepository.ServiceOrderForUpdate = WithPayment(5);
+
+        var result = await _handler.GetPaymentReceipt(1, 6);
+
+        Assert.AreEqual(404, result.Code);
+        Assert.AreEqual("Pagamento não encontrado", result.Message);
+        Assert.AreEqual(0, _pdfGenerator.ReceiptCalls);
+    }
+
+    [TestMethod]
+    public async Task GetPaymentReceipt_GeneratorFails_Returns500()
+    {
+        _queryRepository.ServiceOrderForUpdate = WithPayment(5);
+        _pdfGenerator.ReceiptResponse = new TVS_App.Domain.Shared.BaseResponse<byte[]>(null, 500, "Falha no comprovante");
+
+        var result = await _handler.GetPaymentReceipt(1, 5);
+
+        Assert.AreEqual(500, result.Code);
+        Assert.AreEqual("Falha no comprovante", result.Message);
+    }
+
+    [TestMethod]
+    public async Task GetPaymentReceipt_Success_ReturnsPdf()
+    {
+        _queryRepository.ServiceOrderForUpdate = WithPayment(5);
+
+        var result = await _handler.GetPaymentReceipt(1, 5);
+
+        Assert.AreEqual(200, result.Code);
+        CollectionAssert.AreEqual(_pdfGenerator.ReceiptResponse.Data, result.Data);
+        Assert.AreEqual(1, _pdfGenerator.ReceiptCalls);
+        Assert.AreEqual(5, _pdfGenerator.LastReceiptPaymentId);
     }
 
     private static void AssertOwnerNotified(object request, ERepairStatus expected)

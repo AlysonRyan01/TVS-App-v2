@@ -2,13 +2,10 @@
 @use '../../shared/styles/brand' as *;
 
 $desktop: 56rem;
-// Linhas e bordas: neutro puxado para o vermelho, nunca cinza.
 $rule: #ead8d3;
 $rule-soft: #f3e6e2;
 
 :host {
-  // Tudo o que fica acima e abaixo da folha, para ela ocupar o resto da tela.
-  // Celular: cabeçalho 3.5rem + abas 3.5rem. Desktop: abas 3.5rem.
   --sheet-offset: 7rem;
 
   display: block;
@@ -17,8 +14,6 @@ $rule-soft: #f3e6e2;
     --sheet-offset: 3.5rem;
   }
 
-  // Re-tema do Material para a família vermelha (ver "Desvio conhecido" no DESIGN.md).
-  // Barra de abas no mesmo vermelho da barra lateral.
   @include mat.tabs-overrides((
     background-color: $brand-red,
     foreground-color: $on-red,
@@ -54,7 +49,7 @@ $rule-soft: #f3e6e2;
     header-headline-size: 1.0625rem,
     header-headline-weight: 600,
     header-headline-tracking: 0,
-    row-item-container-height: 52px,
+    row-item-container-height: 64px,
     row-item-label-text-color: $ink,
     row-item-label-text-font: $font-body,
     row-item-label-text-size: 0.9375rem,
@@ -77,7 +72,6 @@ $rule-soft: #f3e6e2;
     active-indicator-color: $brand-red,
   ));
 
-  // Mesmo botão vermelho do modal de orçamento.
   @include mat.button-overrides((
     filled-container-color: $brand-red,
     filled-label-text-color: #fff,
@@ -88,7 +82,6 @@ $rule-soft: #f3e6e2;
   ));
 }
 
-// Hover e foco do botão da tabela; o âmbar segue o foco do resto do sistema.
 td .mat-mdc-unelevated-button {
   &:hover {
     background-color: $brand-red-deep;
@@ -100,7 +93,6 @@ td .mat-mdc-unelevated-button {
   }
 }
 
-// Abas: alinhadas à esquerda, coladas na folha.
 .queues {
   ::ng-deep .mat-mdc-tab-header {
     background-color: $brand-red;
@@ -120,7 +112,6 @@ td .mat-mdc-unelevated-button {
   }
 }
 
-// A folha: um único papel branco sobre o fundo rosado, sem sombra.
 .sheet {
   display: flex;
   flex-direction: column;
@@ -130,7 +121,6 @@ td .mat-mdc-unelevated-button {
   background-color: #fff;
 }
 
-// Só a tabela rola; o cabeçalho (sticky) e o paginador ficam no lugar.
 .scroll {
   flex: 1;
   min-height: 0;
@@ -169,8 +159,6 @@ tr.mat-mdc-row:last-child .mat-mdc-cell {
   border-bottom: 0;
 }
 
-// Colunas: cada tipo com largura e alinhamento próprios, para nada ficar colado.
-// O número da OS é o que está escrito na etiqueta do aparelho: é por ele que se procura.
 .cell-number {
   width: 6rem;
   white-space: nowrap;
@@ -210,7 +198,6 @@ td.cell-long {
   color: $ink-muted;
 }
 
-// Números e datas alinhados à direita, com largura fixa para as colunas não se encostarem.
 .cell-date,
 .cell-amount {
   width: 8rem;
@@ -223,7 +210,6 @@ td.cell-amount {
   font-weight: 500;
 }
 
-// Botão da linha: sempre na última coluna, centralizado e sem quebrar.
 .cell-action {
   width: 9rem;
   text-align: center;

@@ -16,10 +16,6 @@ function documentValidator(control: AbstractControl): ValidationErrors | null {
     return isValidDocument(control.value) ? null : { document: true };
 }
 
-/**
- * Campos do cliente (nome, CPF/CNPJ, telefones, e-mail e endereço com busca por CEP).
- * Usado no cadastro da página e no modal de confirmação; quem usa decide os botões.
- */
 @Component({
     selector: 'app-customer-form',
     templateUrl: './customer-form.component.html',
@@ -31,7 +27,6 @@ export class CustomerFormComponent implements OnInit {
     private _snackbar = inject(SnackbarService);
     private _fb = inject(FormBuilder);
 
-    /** Cliente existente para editar; vazio = cadastro novo. */
     customer = input<Customer | null>(null);
 
     protected isLoadingAddress = signal(false);
@@ -47,7 +42,6 @@ export class CustomerFormComponent implements OnInit {
         number: [''],
         neighborhood: [''],
         city: ['Campo Largo'],
-        // Não aparecem na tela: a UF vem do CEP (padrão PR) e o e-mail do cliente existente é mantido.
         state: ['PR', Validators.maxLength(2)],
     });
 
@@ -70,7 +64,6 @@ export class CustomerFormComponent implements OnInit {
         }
     }
 
-    /** Valor pronto para a API: documento e telefones sem máscara (documento vazio vira null). */
     value(): CustomerForm {
         const raw = this.form.getRawValue();
         return {
@@ -81,7 +74,6 @@ export class CustomerFormComponent implements OnInit {
         };
     }
 
-    /** Preenche o nome (ex.: com o texto digitado na busca). */
     setName(name: string) {
         this.form.controls.name.setValue(name);
         this.form.controls.name.markAsDirty();
@@ -91,18 +83,16 @@ export class CustomerFormComponent implements OnInit {
         this.form.reset();
     }
 
-    /** Botão de lupa (ou Enter no CEP): busca rua, bairro, cidade e UF. */
     protected searchZipCode() {
         const cep = this.form.controls.zipCode.value.replace(/\D/g, '');
         if (cep.length !== 8) {
-            this._snackbar.open('Informe um CEP com 8 dígitos.');
+            this._snackbar.error('Informe um CEP com 8 dígitos.');
             return;
         }
 
         this.loadAddress(cep);
     }
 
-    /** Preenche o endereço pelo CEP; a pessoa ainda pode corrigir. */
     private loadAddress(cep: string) {
         this.isLoadingAddress.set(true);
         this._service.getAddress(cep)
@@ -123,7 +113,7 @@ export class CustomerFormComponent implements OnInit {
                     this.form.markAsDirty();
                 },
                 error: (error: HttpErrorResponse) =>
-                    this._snackbar.open(error.status === 404 ? 'CEP não encontrado.' : 'Não foi possível buscar o CEP.'),
+                    this._snackbar.error(error.status === 404 ? 'CEP não encontrado.' : 'Não foi possível buscar o CEP.'),
             });
     }
 }

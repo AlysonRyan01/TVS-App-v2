@@ -1,6 +1,5 @@
 <app-base-layout title="Vender">
   <div class="page">
-    <!-- Cliente: buscar um existente ou cadastrar um novo. -->
     <section class="column customer-column" aria-labelledby="customer-title">
       <h2 class="column-title" id="customer-title">
         <span class="step">1</span>
@@ -10,7 +9,6 @@
       <app-customer-picker [(customer)]="selectedCustomer" />
     </section>
 
-    <!-- Venda para o cliente escolhido ao lado. -->
     <section class="column device-column" aria-labelledby="sale-title">
       <h2 class="column-title" id="sale-title">
         <span class="step">2</span>
@@ -18,7 +16,6 @@
       </h2>
 
       <div class="device-area" [class.locked]="!selectedCustomer()">
-        <!-- Sem cliente escolhido: o formulário fica desfocado e bloqueado (inert). -->
         @if (!selectedCustomer()) {
           <div class="device-lock" role="status">
             <span class="material-symbols-outlined" aria-hidden="true">person_search</span>

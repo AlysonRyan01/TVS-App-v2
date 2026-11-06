@@ -34,7 +34,7 @@ export class LoginComponent {
                 const message = error.error?.message ??
                     (typeof error.error === 'string' ? error.error : 'Erro no servidor.');
                 
-                this._snack.open(message);
+                this._snack.error(message);
         }
     })
     }

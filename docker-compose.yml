@@ -1,39 +1,44 @@
 services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    platform: linux/amd64
+  api:
+    build:
+      context: ./src
+      dockerfile: TVSApp.Api/Dockerfile
+    restart: unless-stopped
     environment:
-      SA_PASSWORD: "SenhaForte123!"
-      ACCEPT_EULA: "Y"
-    ports:
-      - "1433:1433"
-    volumes:
-      - sqlserverdata:/var/opt/mssql
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ConnectionStrings__DefaultConnection: ${DB_CONNECTION_STRING:?defina DB_CONNECTION_STRING no .env}
+      Jwt__SecretKey: ${JWT_SECRET_KEY:?defina JWT_SECRET_KEY no .env}
+      Jwt__Issuer: ${JWT_ISSUER:-tvs-app}
+      Jwt__Audience: ${JWT_AUDIENCE:-tvs-app}
+      Cors__Origins: ${CORS_ORIGINS:-}
+      EvolutionApiSettings__BaseUrl: ${EVOLUTION_BASE_URL:-}
+      EvolutionApiSettings__ApiKey: ${EVOLUTION_API_KEY:-}
+      EvolutionApiSettings__Instance: ${EVOLUTION_INSTANCE:-}
+      Admin__Email: ${ADMIN_EMAIL:-}
+      Admin__Password: ${ADMIN_PASSWORD:-}
     networks:
       - appnetwork
 
-  api:
+  web:
     build:
-      context: ./src/TVSApp.Api
-      dockerfile: Dockerfile.dev
+      context: ./web
+    restart: unless-stopped
     environment:
-      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=MinhaDb;User=sa;Password=SenhaForte123!;TrustServerCertificate=True;"
-      ASPNETCORE_ENVIRONMENT: "Development"
-    depends_on:
-      - sqlserver
-    volumes:
-      - ./src:/src
-      - /src/TVSApp.Api/bin
-      - /src/TVSApp.Api/obj
-    working_dir: /src/TVSApp.Api
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
     ports:
-      - "5001:80"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
     networks:
       - appnetwork
 
 networks:
   appnetwork:
-    driver: bridge
 
 volumes:
-  sqlserverdata:
+  caddy_data:
+  caddy_config:

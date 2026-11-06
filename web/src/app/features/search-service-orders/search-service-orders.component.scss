@@ -50,8 +50,6 @@ $rule-soft: #f3e6e2;
   ));
 }
 
-// Página na altura da tela (como a Home): só a tabela rola; filtros em cima e paginação no rodapé
-// ficam fixos. Celular: desconta a barra do topo (3.5rem).
 .page {
   display: flex;
   flex-direction: column;
@@ -63,7 +61,6 @@ $rule-soft: #f3e6e2;
   }
 }
 
-// Barra de filtros: uma linha no computador, quebra em mais linhas em telas estreitas.
 .filters {
   flex-shrink: 0;
   display: flex;

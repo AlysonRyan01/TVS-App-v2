@@ -15,11 +15,6 @@ import { CustomerPickerComponent } from "../customers/customer-picker/customer-p
 import { Customer } from "../customers/models/customer.model";
 import { SellService } from "./sell.service";
 
-/**
- * Tela "Vender": mesmo layout da Adicionar OS (cliente | venda). Registra a venda como OS de venda
- * (defeito "VENDA", como o handler antigo), abre o comprovante e o cliente recebe o WhatsApp da venda.
- * Estilos comuns em shared/styles/_two-column-page.scss.
- */
 @Component({
     selector: 'app-sell',
     templateUrl: './sell.component.html',
@@ -63,7 +58,6 @@ export class SellComponent {
             return;
         }
 
-        // A aba do comprovante precisa ser aberta no próprio clique (senão o navegador bloqueia).
         const pdfWindow = openPdfWindow();
         this.isSending.set(true);
 
@@ -88,18 +82,16 @@ export class SellComponent {
                     pdfWindow?.close();
                 }
 
-                this._snackbar.open(id ? `Venda registrada (OS ${id}).` : 'Venda registrada.');
+                this._snackbar.success(id ? `Venda registrada (OS ${id}).` : 'Venda registrada.');
                 this.reset();
             },
-            // Em caso de erro nada é limpo: a pessoa corrige e tenta de novo.
             error: async (error: HttpErrorResponse) => {
                 pdfWindow?.close();
-                this._snackbar.open(await readBlobErrorMessage(error, 'Não foi possível registrar a venda. Tente de novo.'));
+                this._snackbar.error(await readBlobErrorMessage(error, 'Não foi possível registrar a venda. Tente de novo.'));
             },
         });
     }
 
-    /** Depois de registrar: sem cliente, busca vazia e venda com os padrões. */
     private reset() {
         this._picker()?.reset();
         this.sale.reset();

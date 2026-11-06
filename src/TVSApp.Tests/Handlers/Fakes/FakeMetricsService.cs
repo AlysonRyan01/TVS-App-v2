@@ -20,5 +20,4 @@ public class FakeMetricsService : IMetricsService
         return Task.FromResult(new DashboardMetricsDto());
     }
 
-    public Task<AbandonedOrdersDto> GetAbandonedOrdersAsync() => throw new NotImplementedException();
 }

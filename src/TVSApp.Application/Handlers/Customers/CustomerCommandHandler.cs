@@ -8,7 +8,6 @@ using TVS_App.Domain.ValueObjects.Customer;
 
 namespace TVS_App.Application.Handlers.Customers;
 
-/// <summary>Cadastro e atualização de clientes (mesma lógica dos antigos CreateCustomerHandler e UpdateCustomerHandler).</summary>
 public class CustomerCommandHandler : ICustomerCommandHandler
 {
     private readonly ICustomerCommandRepository _customerCommandRepository;
@@ -51,7 +50,6 @@ public class CustomerCommandHandler : ICustomerCommandHandler
 
     public async Task<BaseResponse<CustomerDto?>> Update(long id, UpdateCustomerCommand command)
     {
-        // O número do cliente vem da rota (PUT /customers/{id}).
         var normalized = (command with { Id = id }).Normalize();
         normalized.Validate();
 

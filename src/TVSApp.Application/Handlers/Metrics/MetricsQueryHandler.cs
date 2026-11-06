@@ -4,7 +4,6 @@ using TVS_App.Domain.Shared;
 
 namespace TVS_App.Application.Handlers.Metrics;
 
-/// <summary>Tela "Métricas" (substitui os handlers MediatR GetDashboardMetrics e GetDashboardMetricsByRange).</summary>
 public class MetricsQueryHandler : IMetricsQueryHandler
 {
     private readonly IMetricsService _metricsService;

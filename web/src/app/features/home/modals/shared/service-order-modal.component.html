@@ -12,7 +12,6 @@
 } @else if (serviceOrder(); as order) {
   <div class="body">
     <div class="columns">
-      <!-- Etiqueta: o que já se sabe da OS, só para consulta. -->
       <app-service-order-ticket [order]="order" [serviceOrderId]="serviceOrderId()" />
 
       <ng-content select="[modalBody]" />

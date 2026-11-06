@@ -48,22 +48,6 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
         return new BaseResponse<ServiceOrder?>(serviceOrder, 200, "Ordem de serviço recuperada com sucesso!");
     }
 
-    public async Task<BaseResponse<List<ServiceOrder>>> GetByEnterpriseAsync(EEnterprise enterprise)
-    {
-        var serviceOrders = await _context.ServiceOrders
-            .Include(so => so.Customer)
-            .AsNoTracking()
-            .Where(so => so.Enterprise == enterprise)
-            .OrderByDescending(so => so.Id)
-            .ToListAsync();
-            
-        if (!serviceOrders.Any())
-            return new BaseResponse<List<ServiceOrder>>(serviceOrders, 401, "Nenhuma ordem de serviço foi encontrada.");
-            
-        return new BaseResponse<List<ServiceOrder>>(serviceOrders, 200, $"{serviceOrders.Count} ordens obtidas com sucesso!");
-    }
-
-    // Tela "Buscar OS": o filtro chega validado pelo handler, com um campo só preenchido.
     public async Task<BaseResponse<PaginatedResult<ServiceOrderSearchItem>>> SearchAsync(
         ServiceOrderSearchFilter filter, int pageNumber, int pageSize)
     {
@@ -86,7 +70,7 @@ public class ServiceOrderQueryRepository : IServiceOrderQueryRepository
 
         if (filter.To.HasValue)
         {
-            var endExclusive = filter.To.Value.AddDays(1); // o dia final entra inteiro
+            var endExclusive = filter.To.Value.AddDays(1);
             query = query.Where(x => x.EntryDate < endExclusive);
         }
 

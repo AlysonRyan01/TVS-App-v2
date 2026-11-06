@@ -21,25 +21,18 @@ import { ServiceOrderDetailsDialogComponent } from "./service-order-details-dial
 
 const PAGE_SIZE = 20;
 
-/** Cliente: vazio ou pelo menos 3 letras. */
 function minLettersOrEmpty(control: AbstractControl<string>): ValidationErrors | null {
     const value = (control.value ?? '').trim();
     return value.length > 0 && value.length < 3 ? { minLetters: true } : null;
 }
 
-/** Até: não pode ser antes de De (datas yyyy-MM-dd comparam como texto). */
 function notBeforeFrom(control: AbstractControl<string>): ValidationErrors | null {
     const from = control.parent?.get('from')?.value as string | undefined;
     return from && control.value && control.value < from ? { beforeFrom: true } : null;
 }
 
-/** Grupos de filtro: a busca usa um por vez; De e Até formam o grupo "período". */
 const FILTER_GROUPS = [['number'], ['customer'], ['model'], ['serialNumber'], ['from', 'to']] as const;
 
-/**
- * Tela "Buscar OS": abre com as últimas OS (paginadas); filtros no topo (um por vez) refinam a lista.
- * Ao clicar numa linha, abre o painel da OS.
- */
 @Component({
     selector: 'app-search-service-orders',
     templateUrl: './search-service-orders.component.html',
@@ -78,22 +71,17 @@ export class SearchServiceOrdersComponent {
     protected totalCount = signal(0);
     protected pageIndex = signal(0);
     protected isLoading = signal(false);
-    /** Já houve busca: diferencia "nenhum resultado" de "ainda carregando". */
     protected hasSearched = signal(false);
-    /** A lista atual veio de um filtro (senão são as últimas OS). */
     protected isFiltered = signal(false);
 
-    /** Filtros da última busca, para a troca de página repetir a mesma busca. */
     private _lastParams: Omit<ServiceOrderSearchParams, 'pageNumber' | 'pageSize'> | null = null;
 
     constructor() {
         const destroyRef = inject(DestroyRef);
 
-        // Ao abrir a tela: as últimas OS, sem filtro.
         this._lastParams = {};
         this.load(0);
 
-        // Um filtro por vez: preencher um campo limpa os outros grupos.
         for (const group of FILTER_GROUPS) {
             for (const name of group) {
                 this.filters.get(name)!.valueChanges
@@ -115,7 +103,6 @@ export class SearchServiceOrdersComponent {
         return v.number !== null || [v.customer, v.model, v.serialNumber, v.from, v.to].some(x => x.trim() !== '');
     }
 
-    /** Com filtro: busca por ele. Sem filtro: volta para as últimas OS. */
     protected search() {
         if (this.filters.invalid || this.isLoading()) {
             this.filters.markAllAsTouched();
@@ -146,7 +133,6 @@ export class SearchServiceOrdersComponent {
 
     protected clear() {
         this.filters.reset({ number: null, customer: '', model: '', serialNumber: '', from: '', to: '' }, { emitEvent: false });
-        // Limpar volta para as últimas OS.
         this._lastParams = {};
         this.load(0);
     }
@@ -154,7 +140,6 @@ export class SearchServiceOrdersComponent {
     protected openDetails(item: ServiceOrderSearchItem) {
         this._dialog.open(ServiceOrderDetailsDialogComponent, {
             data: { id: item.number },
-            // Tela cheia, como os modais da Home.
             width: '100vw',
             height: '100vh',
             maxWidth: '100vw',
@@ -162,7 +147,6 @@ export class SearchServiceOrdersComponent {
             panelClass: 'fullscreen-dialog',
             autoFocus: 'dialog',
         }).afterClosed().subscribe((changed?: ServiceOrder) => {
-            // OS alterada no painel: a linha da tabela mostra os dados novos.
             if (changed) {
                 this.results.update(rows => rows.map(row => row.number !== item.number ? row : {
                     ...row,
@@ -195,9 +179,8 @@ export class SearchServiceOrdersComponent {
                     this.hasSearched.set(true);
                     this.isFiltered.set(filtered);
                 },
-                // Os filtros ficam como estão para a pessoa corrigir e tentar de novo.
                 error: (error: HttpErrorResponse) => {
-                    this._snackbar.open(error.error?.message ?? 'Não foi possível buscar. Tente de novo.');
+                    this._snackbar.error(error.error?.message ?? 'Não foi possível buscar. Tente de novo.');
                 },
             });
     }

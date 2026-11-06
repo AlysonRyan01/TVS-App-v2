@@ -7,16 +7,13 @@ import { ServiceOrder } from "../../../../shared/models/service-order.interface"
 import { SnackbarService } from "../../../../shared/snackbar/snackbar.service";
 import { EnumLabelPipe } from "../../../../shared/enums";
 import { ServiceOrderLookupService } from "./service-order-lookup.service";
+import { PaymentsPanelComponent } from "../../../../shared/payments/payments-panel.component";
 
-/**
- * Etiqueta lateral com o que já se sabe da OS, mais o campo para gravar a localização do produto.
- * Os estilos ficam na casca (_service-order-modal.scss).
- */
 @Component({
     selector: 'app-service-order-ticket',
     templateUrl: './service-order-ticket.component.html',
     encapsulation: ViewEncapsulation.None,
-    imports: [EnumLabelPipe, MatButtonModule, MatProgressSpinnerModule],
+    imports: [EnumLabelPipe, MatButtonModule, MatProgressSpinnerModule, PaymentsPanelComponent],
 })
 export class ServiceOrderTicketComponent {
     private _lookup = inject(ServiceOrderLookupService);
@@ -25,7 +22,6 @@ export class ServiceOrderTicketComponent {
     order = input.required<ServiceOrder>();
     serviceOrderId = input.required<number>();
 
-    /** Localização exibida: começa com a da OS e é trocada pela gravada. */
     protected location = signal<string>('');
     protected newLocation = signal<string>('');
     protected isSavingLocation = signal<boolean>(false);
@@ -50,13 +46,13 @@ export class ServiceOrderTicketComponent {
             next: result => {
                 this.location.set(result.data ?? value.toUpperCase());
                 this.newLocation.set('');
-                this._snackbar.open('Localização salva.');
+                this._snackbar.success('Localização salva.');
             },
             error: (error: HttpErrorResponse) => {
                 const message = error.error?.message ??
                     (typeof error.error === 'string' ? error.error : 'Não foi possível salvar a localização. Tente de novo.');
 
-                this._snackbar.open(message);
+                this._snackbar.error(message);
             }
         });
     }

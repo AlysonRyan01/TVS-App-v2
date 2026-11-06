@@ -1,4 +1,3 @@
-// Espelho dos enums do backend (TVSApp.Domain/Enums). Mantenha os mesmos nomes e valores.
 
 export enum EEnterprise {
     Particular = 1,

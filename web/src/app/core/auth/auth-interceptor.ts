@@ -12,7 +12,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
 
   const isApi = req.url.startsWith(environment.apiUrl); 
-  const isAuthCall = req.url.includes('/login') || req.url.includes('/refresh-token');
+  const isAuthCall = req.url.includes('/auth/login') || req.url.includes('/auth/refresh');
 
   const withToken = (r: HttpRequest<unknown>) => {
     const token = auth.accessToken();

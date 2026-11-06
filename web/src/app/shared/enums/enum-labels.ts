@@ -1,7 +1,5 @@
 import { EEnterprise, EProduct, ERepairResult, ERepairStatus, EServiceOrderStatus } from './enums';
 
-// Textos iguais aos [Display(Name = ...)] do backend.
-
 export const ENTERPRISE_LABELS: Record<EEnterprise, string> = {
     [EEnterprise.Particular]: 'Particular',
     [EEnterprise.Cocel]: 'Cocel',

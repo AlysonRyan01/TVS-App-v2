@@ -3,10 +3,6 @@ using TVS_App.Domain.Enums;
 
 namespace TVS_App.Application.Requests.ServiceOrderRequests.ServiceOrderCommands;
 
-/// <summary>
-/// "Alterar OS" no painel da Buscar OS. Só os dados da OS: o cliente é editado em /clientes, e a
-/// situação/orçamento mudam pelos fluxos da Home (diferenças em relação a old-handlers/EditServiceOrderHandler.cs).
-/// </summary>
 public record EditServiceOrderCommand(
     string? Brand,
     string Model,

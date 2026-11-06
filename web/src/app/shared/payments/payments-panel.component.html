@@ -1,0 +1,89 @@
+<section class="payments" aria-labelledby="payments-title">
+  <header class="head">
+    <h2 class="title" id="payments-title">Pagamentos</h2>
+    @if (editingId() !== 'new') {
+      <button matButton type="button" class="add" (click)="startAdd()" [disabled]="isLoading()">
+        <span class="material-symbols-outlined" aria-hidden="true">add</span>
+        Adicionar
+      </button>
+    }
+  </header>
+
+  <ng-template #paymentForm>
+    <form class="form" [formGroup]="form" (ngSubmit)="save()">
+      <label class="field" [class.invalid]="form.controls.amount.invalid && form.controls.amount.touched">
+        <span>Valor (R$)</span>
+        <input type="number" min="0.01" step="0.01" inputmode="decimal" formControlName="amount" autocomplete="off" />
+      </label>
+      <label class="field" [class.invalid]="form.controls.paymentDate.invalid && form.controls.paymentDate.touched">
+        <span>Data</span>
+        <input type="date" formControlName="paymentDate" />
+      </label>
+      <div class="form-actions">
+        <button matButton type="button" (click)="cancelEdit()" [disabled]="isSaving()">Cancelar</button>
+        <button matButton="filled" type="submit" [disabled]="form.invalid || isSaving()">
+          {{ isSaving() ? 'Salvando…' : 'Salvar' }}
+        </button>
+      </div>
+    </form>
+  </ng-template>
+
+  @if (editingId() === 'new') {
+    <ng-container [ngTemplateOutlet]="paymentForm" />
+  }
+
+  @if (isLoading()) {
+    <div class="state"><mat-spinner diameter="24" aria-label="Carregando pagamentos"></mat-spinner></div>
+  } @else if (sorted().length === 0 && editingId() !== 'new') {
+    <p class="empty">Nenhum pagamento registrado.</p>
+  } @else {
+    <ul class="list">
+      @for (payment of sorted(); track payment.id) {
+        <li class="item">
+          @if (editingId() === payment.id) {
+            <ng-container [ngTemplateOutlet]="paymentForm" />
+          } @else if (confirmingRemoveId() === payment.id) {
+            <div class="confirm">
+              <span>Remover este pagamento?</span>
+              <button matButton type="button" (click)="confirmingRemoveId.set(null)" [disabled]="isSaving()">Não</button>
+              <button matButton="filled" type="button" class="danger" (click)="remove(payment)" [disabled]="isSaving()">Sim</button>
+            </div>
+          } @else {
+            <span class="amount">{{ payment.amount | currency: 'BRL' : 'symbol' : '1.2-2' }}</span>
+            <span class="date">{{ payment.paidAt | date: 'dd/MM/yyyy' }}</span>
+            <span class="actions">
+              <button type="button" class="icon" (click)="printReceipt(payment)" [disabled]="printingId() !== null"
+                      [attr.aria-label]="'Imprimir comprovante do pagamento ' + payment.id" title="Imprimir comprovante">
+                @if (printingId() === payment.id) {
+                  <mat-spinner diameter="16" aria-hidden="true"></mat-spinner>
+                } @else {
+                  <span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>
+                }
+              </button>
+              <button type="button" class="icon" (click)="startEdit(payment)" aria-label="Editar pagamento" title="Editar">
+                <span class="material-symbols-outlined" aria-hidden="true">edit</span>
+              </button>
+              <button type="button" class="icon" (click)="askRemove(payment)" aria-label="Remover pagamento" title="Remover">
+                <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+              </button>
+            </span>
+          }
+        </li>
+      }
+    </ul>
+  }
+
+  <dl class="totals">
+    <div><dt>Total pago</dt><dd>{{ totalPaid() | currency: 'BRL' : 'symbol' : '1.2-2' }}</dd></div>
+    <div><dt>Valor da OS</dt><dd>{{ totalAmount() | currency: 'BRL' : 'symbol' : '1.2-2' }}</dd></div>
+    <div class="balance">
+      @if (balance() > 0) {
+        <dt>Falta</dt><dd>{{ balance() | currency: 'BRL' : 'symbol' : '1.2-2' }}</dd>
+      } @else if (balance() < 0) {
+        <dt>Crédito</dt><dd>Crédito de {{ -balance() | currency: 'BRL' : 'symbol' : '1.2-2' }}</dd>
+      } @else {
+        <dt>Situação</dt><dd>Quitado</dd>
+      }
+    </div>
+  </dl>
+</section>

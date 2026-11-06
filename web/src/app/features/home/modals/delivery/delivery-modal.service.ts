@@ -9,7 +9,6 @@ import { environment } from "../../../../../environments/environment";
 export class DeliveryModalService {
     private _http = inject(HttpClient);
 
-    /** OS consertada: a resposta é o termo de entrega em PDF. Senão, um JSON com a mensagem. */
     registerDelivery(id: number): Observable<HttpResponse<Blob>> {
         return this._http.put(`${environment.apiUrl}/service-orders/${id}/delivery`, {}, {
             observe: 'response',

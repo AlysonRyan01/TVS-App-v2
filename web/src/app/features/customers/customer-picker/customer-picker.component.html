@@ -16,7 +16,6 @@
 } @else {
   <app-customer-search (selected)="openExisting($event)" (createNew)="useSearchTermAsName($event)" />
 
-  <!-- Sem [formGroup] aqui (fica no app-customer-form): por isso (submit) com preventDefault, não (ngSubmit). -->
   <form class="new-customer" (submit)="$event.preventDefault(); createCustomer()">
     <h3 class="section-title">Criar cliente</h3>
     <app-customer-form />

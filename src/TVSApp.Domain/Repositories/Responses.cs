@@ -54,7 +54,6 @@ public record ReadyForPickupServiceOrder(
     string? RepairStatus
 );
 
-/// <summary>Linha da tela "Buscar OS". IsSale = OS de venda (defeito "VENDA").</summary>
 public record ServiceOrderSearchItem(
     long Number,
     string Customer,

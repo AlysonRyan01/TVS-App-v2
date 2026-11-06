@@ -11,6 +11,6 @@ export class AddServiceOrderEstimateModalService {
     private _http = inject(HttpClient);
 
     addServiceOrderEstimate(command: AddServiceOrderEstimate): Observable<BaseResponse<ServiceOrder>> {
-        return this._http.put<BaseResponse<ServiceOrder>>(`${environment.apiUrl}/add-service-order-estimate`, command);
+        return this._http.put<BaseResponse<ServiceOrder>>(`${environment.apiUrl}/service-orders/${command.serviceOrderId}/estimate`, command);
     }
 }

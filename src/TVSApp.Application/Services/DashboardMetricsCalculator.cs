@@ -4,10 +4,6 @@ using TVS_App.Domain.Enums;
 
 namespace TVS_App.Application.Services;
 
-/// <summary>
-/// Cálculo do dashboard de métricas (antes dentro do MetricsService da Infrastructure), sem banco,
-/// para ser testado. Vendas = OS com defeito "VENDA"; contam só nos indicadores de venda.
-/// </summary>
 public static class DashboardMetricsCalculator
 {
     private const string SaleDefect = "VENDA";
@@ -21,7 +17,6 @@ public static class DashboardMetricsCalculator
         var deliveredRepairs = deliveredOrders.Where(x => x.Product.Defect != SaleDefect).ToList();
         var deliveredSales = deliveredOrders.Where(x => x.Product.Defect == SaleDefect).ToList();
 
-        // ── KPIs gerais ────────────────────────────────────────────────────────
         var totalRevenue = deliveredRepairs
             .Where(x => x.RepairStatus == ERepairStatus.Approved && x.RepairResult == ERepairResult.Repair)
             .Sum(x => x.TotalAmount);
@@ -32,13 +27,11 @@ public static class DashboardMetricsCalculator
             ? Math.Round(approved * 100.0 / (approved + disapproved), 1)
             : 0.0;
 
-        // Só OS com entrega depois da entrada (entrada alterada à mão pode ficar depois da entrega).
         var repairsWithDelivery = repairs.Where(x => x.DeliveryDate.HasValue && x.DeliveryDate.Value >= x.EntryDate).ToList();
         var avgCycleDays = repairsWithDelivery.Count > 0
             ? Math.Round(repairsWithDelivery.Average(x => (x.DeliveryDate!.Value - x.EntryDate).TotalDays), 1)
             : 0.0;
 
-        // ── KPIs de vendas ─────────────────────────────────────────────────────
         var totalSalesRevenue = deliveredSales.Sum(x => x.TotalAmount);
 
         var pendingDeliveryRevenue = repairs
@@ -47,7 +40,6 @@ public static class DashboardMetricsCalculator
                         && x.ServiceOrderStatus != EServiceOrderStatus.Delivered)
             .Sum(x => x.TotalAmount);
 
-        // ── Gráfico: ordens por status (só reparos; vendas ficam fora) ─────────
         var statusLabels = new List<string>();
         var statusValues = new List<double>();
         foreach (var g in repairs.GroupBy(x => x.ServiceOrderStatus).OrderBy(g => (int)g.Key))
@@ -56,7 +48,6 @@ public static class DashboardMetricsCalculator
             statusValues.Add(g.Count());
         }
 
-        // ── Gráfico: reparos por tipo de produto ───────────────────────────────
         var repairsByProductLabels = new List<string>();
         var repairsByProductValues = new List<double>();
         foreach (var g in repairs.GroupBy(x => x.Product.Type).OrderByDescending(g => g.Count()))
@@ -65,7 +56,6 @@ public static class DashboardMetricsCalculator
             repairsByProductValues.Add(g.Count());
         }
 
-        // ── Gráfico: vendas por tipo de produto ────────────────────────────────
         var salesByProductLabels = new List<string>();
         var salesByProductValues = new List<double>();
         foreach (var g in sales.GroupBy(x => x.Product.Type).OrderByDescending(g => g.Count()))
@@ -74,7 +64,6 @@ public static class DashboardMetricsCalculator
             salesByProductValues.Add(g.Count());
         }
 
-        // ── Gráfico: reparos por empresa ───────────────────────────────────────
         var repairsByEnterpriseLabels = new List<string>();
         var repairsByEnterpriseValues = new List<double>();
         foreach (var g in repairs.GroupBy(x => x.Enterprise).OrderByDescending(g => g.Count()))
@@ -83,7 +72,6 @@ public static class DashboardMetricsCalculator
             repairsByEnterpriseValues.Add(g.Count());
         }
 
-        // ── Gráfico: vendas por empresa ────────────────────────────────────────
         var salesByEnterpriseLabels = new List<string>();
         var salesByEnterpriseValues = new List<double>();
         foreach (var g in sales.GroupBy(x => x.Enterprise).OrderByDescending(g => g.Count()))
@@ -92,7 +80,6 @@ public static class DashboardMetricsCalculator
             salesByEnterpriseValues.Add(g.Count());
         }
 
-        // ── Produtos entregues no período (reparos + vendas) ────────────────────
         var totalPartsSpend = deliveredOrders.Sum(x => x.PartPurchaseCost.ServiceOrderPartPurchaseCost);
 
         var deliveredProducts = deliveredOrders
@@ -113,7 +100,6 @@ public static class DashboardMetricsCalculator
             })
             .ToList();
 
-        // ── Gráfico: resultado dos reparos ─────────────────────────────────────
         var repairResultLabels = new List<string>();
         var repairResultValues = new List<double>();
         foreach (var g in repairs

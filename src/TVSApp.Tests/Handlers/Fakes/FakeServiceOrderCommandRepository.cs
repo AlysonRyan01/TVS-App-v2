@@ -8,7 +8,6 @@ public class FakeServiceOrderCommandRepository : IServiceOrderCommandRepository
 {
     public ServiceOrder? LastUpdated { get; private set; }
 
-    /// <summary>Resposta forçada do UpdateAsync (ex.: falha ao salvar). Nulo = sucesso.</summary>
     public BaseResponse<ServiceOrder?>? UpdateResponse { get; set; }
 
     public Task<BaseResponse<ServiceOrder?>> UpdateAsync(ServiceOrder serviceOrder)
@@ -19,7 +18,6 @@ public class FakeServiceOrderCommandRepository : IServiceOrderCommandRepository
 
     public ServiceOrder? LastCreated { get; private set; }
 
-    /// <summary>Resposta forçada do CreateAsync. Nulo = sucesso (OS com Id 1 e o cliente de teste, como o repositório real).</summary>
     public BaseResponse<ServiceOrder?>? CreateResponse { get; set; }
 
     public Task<BaseResponse<ServiceOrder?>> CreateAsync(ServiceOrder serviceOrder)

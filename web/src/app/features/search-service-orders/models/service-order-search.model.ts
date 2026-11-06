@@ -1,6 +1,5 @@
 import { EEnterprise, EProduct, EServiceOrderStatus } from "../../../shared/enums";
 
-/** Linha da tabela de GET /service-orders/search. */
 export interface ServiceOrderSearchItem {
     number: number;
     customer: string;
@@ -10,12 +9,10 @@ export interface ServiceOrderSearchItem {
     serialNumber: string;
     enterprise: EEnterprise;
     serviceOrderStatus: EServiceOrderStatus;
-    /** OS de venda (defeito "VENDA"): a tela mostra "Venda" no lugar da situação. */
     isSale: boolean;
     enteredAt: string;
 }
 
-/** Um filtro por vez; o período (from/to, yyyy-MM-dd) conta como um. */
 export interface ServiceOrderSearchParams {
     number?: number | null;
     customer?: string | null;
@@ -27,7 +24,6 @@ export interface ServiceOrderSearchParams {
     pageSize: number;
 }
 
-/** Corpo de PUT /service-orders/{id} (Alterar OS). Datas: ISO; enums numéricos. */
 export interface EditServiceOrder {
     brand: string;
     model: string;

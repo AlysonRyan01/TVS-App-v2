@@ -5,6 +5,5 @@ namespace TVS_App.Application.Handlers.Metrics;
 
 public interface IMetricsQueryHandler
 {
-    /// <summary>De+Até → intervalo; senão Mês/Ano (padrão: mês atual).</summary>
     Task<BaseResponse<DashboardMetricsDto>> GetDashboard(int? month, int? year, DateTime? from, DateTime? to);
 }

@@ -25,5 +25,4 @@ public class FakeCustomerQueryRepository : ICustomerQueryRepository
         return Task.FromResult(new BaseResponse<List<Customer>>(found, 200, "Clientes obtidos com sucesso!"));
     }
 
-    public Task<BaseResponse<PaginatedResult<Customer?>>> GetAllAsync(int pageNumber, int pageSize) => throw new NotImplementedException();
 }
