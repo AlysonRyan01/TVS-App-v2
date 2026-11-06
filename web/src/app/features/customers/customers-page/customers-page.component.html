@@ -1,9 +1,110 @@
 <app-base-layout title="Clientes">
   <div class="page">
-    <section class="card" aria-labelledby="customers-title">
-      <h2 class="card-title" id="customers-title">Editar cliente</h2>
-      <p class="card-intro">Busque o cliente pelo nome e clique nele para alterar os dados.</p>
-      <app-customer-search [allowCreate]="false" (selected)="edit($event)" />
+    <form class="filters" [formGroup]="filters" (ngSubmit)="search()" aria-label="Filtros da busca de clientes">
+      <mat-form-field appearance="outline" class="f-wide">
+        <mat-label>Nome</mat-label>
+        <input matInput formControlName="name" autocomplete="off" placeholder="Mínimo 3 letras" />
+        @if (filters.controls.name.hasError('minLength')) {
+          <mat-error>Digite pelo menos 3 letras.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="f-phone">
+        <mat-label>Telefone</mat-label>
+        <input matInput formControlName="phone" inputmode="tel" autocomplete="off" />
+        @if (filters.controls.phone.hasError('minLength')) {
+          <mat-error>Digite pelo menos 4 números.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="f-document">
+        <mat-label>CPF/CNPJ</mat-label>
+        <input matInput formControlName="document" autocomplete="off" />
+        @if (filters.controls.document.hasError('minLength')) {
+          <mat-error>Digite pelo menos 3 caracteres.</mat-error>
+        }
+      </mat-form-field>
+
+      <div class="filter-actions">
+        <button matButton="outlined" type="button" (click)="clear()">Limpar</button>
+        <button matButton="filled" type="submit" [disabled]="filters.invalid || isLoading()">
+          @if (isLoading()) {
+            <mat-spinner diameter="18" aria-hidden="true"></mat-spinner>
+          }
+          Buscar
+        </button>
+      </div>
+    </form>
+
+    <section class="sheet" aria-label="Clientes">
+      <div class="scroll">
+        <table mat-table [dataSource]="results()">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef class="cell-name">Nome</th>
+            <td mat-cell *matCellDef="let row" class="cell-name">{{ row.name }}</td>
+          </ng-container>
+          <ng-container matColumnDef="phone">
+            <th mat-header-cell *matHeaderCellDef class="cell-phone">Telefone</th>
+            <td mat-cell *matCellDef="let row" class="cell-phone">
+              <span class="phone">{{ row.phone }}</span>
+              @if (row.phone2) {
+                <span class="phone2">{{ row.phone2 }}</span>
+              }
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="document">
+            <th mat-header-cell *matHeaderCellDef class="cell-nowrap">CPF/CNPJ</th>
+            <td mat-cell *matCellDef="let row" class="cell-nowrap muted">{{ row.document ? formatDocument(row.document) : '—' }}</td>
+          </ng-container>
+          <ng-container matColumnDef="city">
+            <th mat-header-cell *matHeaderCellDef>Cidade/UF</th>
+            <td mat-cell *matCellDef="let row">
+              @if (row.city) {
+                {{ row.city }}@if (row.state) { / {{ row.state }} }
+              } @else {
+                —
+              }
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>E-mail</th>
+            <td mat-cell *matCellDef="let row" class="muted cell-email">{{ row.email || '—' }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="columns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: columns" class="result-row"
+              tabindex="0" role="button" [attr.aria-label]="'Editar cliente ' + row.name"
+              (click)="edit(row)" (keydown.enter)="edit(row)"></tr>
+          <tr class="mat-mdc-row empty-row" *matNoDataRow>
+            <td class="empty" [attr.colspan]="columns.length">
+              @if (isLoading()) {
+                Buscando…
+              } @else if (isFiltered()) {
+                Nenhum cliente encontrado.
+              } @else if (hasSearched()) {
+                Nenhum cliente cadastrado.
+              } @else {
+                Carregando…
+              }
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      @if (totalCount() > 0) {
+        <div class="footer">
+          <span class="total">
+            @if (isFiltered()) {
+              {{ totalCount() }} {{ totalCount() === 1 ? 'encontrado' : 'encontrados' }}
+            } @else {
+              Últimos clientes · {{ totalCount() }} no total
+            }
+          </span>
+          <mat-paginator [length]="totalCount()" [pageSize]="20" [pageIndex]="pageIndex()"
+                         [hidePageSize]="true" aria-label="Selecionar página" (page)="changePage($event)">
+          </mat-paginator>
+        </div>
+      }
     </section>
   </div>
 </app-base-layout>

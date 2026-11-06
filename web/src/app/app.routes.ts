@@ -24,8 +24,8 @@ export const routes: Routes = [
         canActivate: [authGuard],
     },
     {
-        path: 'buscar',
-        title: 'Buscar OS',
+        path: 'ordens',
+        title: 'Ordens',
         loadComponent: () => import('./features/search-service-orders/search-service-orders.component').then(m => m.SearchServiceOrdersComponent),
         canActivate: [authGuard],
     },
@@ -41,5 +41,7 @@ export const routes: Routes = [
         loadComponent: () => import('./features/metrics/metrics.component').then(m => m.MetricsComponent),
         canActivate: [authGuard],
     },
+    // Endereço antigo da tela de ordens (antes "Buscar OS").
+    { path: 'buscar', redirectTo: 'ordens', pathMatch: 'full' },
     { path: '**', redirectTo: '' },
 ];

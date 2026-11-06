@@ -1,0 +1,157 @@
+@use '@angular/material' as mat;
+@use 'brand' as *;
+
+// Layout das telas de lista (Ordens, Clientes): filtros no topo, grade rolável no meio e rodapé com
+// total + paginação. Uso: `@include list-page;` na raiz do .scss do componente. Larguras de campos
+// e de colunas ficam em cada tela.
+@mixin list-page($desktop: 56rem, $rule: #ead8d3, $rule-soft: #f3e6e2) {
+  :host {
+    display: block;
+    color: $ink;
+    font-family: $font-body;
+
+    @include mat.form-field-overrides((
+      outlined-outline-color: $rule,
+      outlined-hover-outline-color: $ink-muted,
+      outlined-focus-outline-color: $brand-red,
+      outlined-focus-label-text-color: $brand-red,
+      outlined-caret-color: $brand-red,
+      outlined-container-shape: 0.25rem,
+    ));
+
+    @include mat.button-overrides((
+      filled-container-color: $brand-red,
+      filled-label-text-color: #fff,
+      filled-container-shape: 0.25rem,
+      filled-container-height: 48px,
+      filled-disabled-container-color: $rule,
+      filled-disabled-label-text-color: $ink-muted,
+      outlined-label-text-color: $brand-red,
+      outlined-outline-color: $brand-red,
+      outlined-container-shape: 0.25rem,
+      outlined-container-height: 48px,
+    ));
+
+    @include mat.table-overrides((
+      background-color: #fff,
+      header-container-height: 52px,
+      header-headline-color: $ink-muted,
+      header-headline-size: 1.0625rem,
+      header-headline-weight: 600,
+      row-item-container-height: 52px,
+      row-item-label-text-color: $ink,
+      row-item-label-text-size: 0.9375rem,
+      row-item-outline-color: $rule-soft,
+    ));
+
+    @include mat.paginator-overrides((
+      container-background-color: transparent,
+      container-text-color: $ink-muted,
+    ));
+  }
+
+  .page {
+    display: flex;
+    flex-direction: column;
+    height: max(28rem, calc(100dvh - 3.5rem));
+    background-color: $surface;
+
+    @media (min-width: $desktop) {
+      height: max(28rem, 100dvh);
+    }
+  }
+
+  .filters {
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.75rem;
+    align-items: flex-start;
+    padding: 1rem 1.25rem 0;
+    border-bottom: 1px solid $rule;
+
+    mat-form-field {
+      flex: 1 1 10rem;
+    }
+
+    ::ng-deep .mat-mdc-text-field-wrapper { background-color: #fff; }
+  }
+
+  .filter-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding-top: 0.25rem;
+    padding-bottom: 1rem;
+
+    mat-spinner {
+      display: inline-block;
+      margin-right: 0.5rem;
+      vertical-align: middle;
+    }
+  }
+
+  .sheet {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    background-color: #fff;
+  }
+
+  .scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+  }
+
+  table {
+    width: 100%;
+    min-width: 56rem;
+  }
+
+  th.mat-mdc-header-cell {
+    background-color: $field;
+    white-space: nowrap;
+  }
+
+  .mat-mdc-cell,
+  .mat-mdc-header-cell {
+    padding-inline: 1.25rem;
+  }
+
+  .result-row {
+    cursor: pointer;
+
+    &:hover { background-color: $field; }
+
+    &:focus-visible {
+      outline: 3px solid $signal;
+      outline-offset: -3px;
+    }
+  }
+
+  .muted { color: $ink-muted; }
+
+  .cell-nowrap { white-space: nowrap; }
+
+  .empty {
+    padding: 3rem 1rem;
+    color: $ink-muted;
+    text-align: center;
+  }
+
+  .footer {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 1.25rem;
+    border-top: 1px solid $rule;
+  }
+
+  .total {
+    color: $ink-muted;
+    font-size: 0.875rem;
+  }
+}

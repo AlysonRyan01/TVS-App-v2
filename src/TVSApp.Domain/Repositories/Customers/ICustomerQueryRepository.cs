@@ -7,4 +7,5 @@ public interface ICustomerQueryRepository
 {
     Task<BaseResponse<Customer?>> GetByIdAsync(long id);
     Task<BaseResponse<List<Customer>>> GetCustomerByName(string name, int limit);
+    Task<BaseResponse<PaginatedResult<Customer>>> SearchAsync(CustomerSearchFilter filter, int pageNumber, int pageSize);
 }

@@ -8,6 +8,9 @@ public class FakeCustomerQueryRepository : ICustomerQueryRepository
 {
     public List<Customer> Customers { get; } = new();
     public int? LastLimit { get; private set; }
+    public CustomerSearchFilter? LastSearchFilter { get; private set; }
+    public int? LastSearchPage { get; private set; }
+    public int? LastSearchPageSize { get; private set; }
 
     public Task<BaseResponse<Customer?>> GetByIdAsync(long id)
     {
@@ -25,4 +28,14 @@ public class FakeCustomerQueryRepository : ICustomerQueryRepository
         return Task.FromResult(new BaseResponse<List<Customer>>(found, 200, "Clientes obtidos com sucesso!"));
     }
 
+    public Task<BaseResponse<PaginatedResult<Customer>>> SearchAsync(CustomerSearchFilter filter, int pageNumber, int pageSize)
+    {
+        LastSearchFilter = filter;
+        LastSearchPage = pageNumber;
+        LastSearchPageSize = pageSize;
+        var items = Customers.OrderByDescending(c => c.Id).Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+        var page = new PaginatedResult<Customer>(items, Customers.Count, pageNumber, pageSize,
+            (int)Math.Ceiling(Customers.Count / (double)pageSize));
+        return Task.FromResult(new BaseResponse<PaginatedResult<Customer>>(page, 200, "ok"));
+    }
 }

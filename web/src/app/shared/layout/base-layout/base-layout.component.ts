@@ -25,7 +25,7 @@ export class BaseLayoutComponent {
     { label: 'Gerenciar', icon: 'dashboard', route: '/' },
     { label: 'Adicionar OS', icon: 'add', route: '/adicionar' },
     { label: 'Vender', icon: 'sell', route: '/vender' },
-    { label: 'Buscar OS', icon: 'search', route: '/buscar' },
+    { label: 'Ordens', icon: 'receipt_long', route: '/ordens' },
     { label: 'Clientes', icon: 'group', route: '/clientes' },
     { label: 'Métricas', icon: 'bar_chart', route: '/metricas' },
   ];

@@ -1,3 +1,4 @@
+using TVS_App.Application.Requests.CustomerRequests.CustomerQueries;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using TVS_App.Api.Extensions;
@@ -15,6 +16,12 @@ public static class CustomerQueryEndpoints
         app.MapGet("/customers", async (ICustomerQueryHandler handler, [FromQuery] string name) =>
         {
             var result = await handler.SearchByName(name);
+            return result.ToResult();
+        }).WithTags("Customer").RequireAuthorization();
+
+        app.MapGet("/customers/search", async (ICustomerQueryHandler handler, [AsParameters] CustomerSearchQuery query) =>
+        {
+            var result = await handler.Search(query);
             return result.ToResult();
         }).WithTags("Customer").RequireAuthorization();
 

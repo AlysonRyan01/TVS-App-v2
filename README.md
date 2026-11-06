@@ -237,7 +237,8 @@ Precisa só do **Docker rodando** (não usa `.env`, Azure SQL nem a Evolution re
 2. percorre o ciclo pela API, como o sistema faria: login, cliente, abrir OS (PDF), orçamento,
    aprovação pela loja e pelo link do cliente (inclusive código errado), reprovação e liberação,
    Philco/Britania, peça, conserto, entrega (PDF), pagamentos e comprovante, venda, contato do site,
-   busca, listas, métricas e envio de teste;
+   busca de ordens, grade de clientes (nome sem acento, telefone com/sem pontuação, documento,
+   paginação), listas, métricas e envio de teste;
 3. confere, em cada etapa, **a mensagem de WhatsApp exata** que seria enviada (número, nº da OS,
    texto) — ou que nenhuma foi gerada quando não deve.
 
@@ -390,7 +391,8 @@ curl -b cookies.txt -X POST https://SEU_DOMINIO/api/auth/refresh
 
 | Método | Rota | Login | Descrição | Tempo real | Evento |
 |--------|------|-------|-----------|------------|--------|
-| `GET` | `/customers` | Sim | Busca clientes pelo nome | — | — |
+| `GET` | `/customers` | Sim | Busca rápida pelo nome (lista simples, usada ao escolher o cliente da OS/venda) | — | — |
+| `GET` | `/customers/search` | Sim | Grade de clientes: filtros combinados e paginação (tela **Clientes**) | — | — |
 | `POST` | `/customers` | Sim | Cadastra cliente | Sim | `customer.created` |
 | `PUT` | `/customers/{id}` | Sim | Atualiza cliente | Sim | `customer.updated` |
 | `GET` | `/addresses/{cep}` | Sim | Busca endereço pelo CEP | — | — |
@@ -399,6 +401,23 @@ curl -b cookies.txt -X POST https://SEU_DOMINIO/api/auth/refresh
 
 - Query: `name` (obrigatório) — parte do nome.
 - `200`: envelope com lista de [`CustomerDto`](#customerdto).
+
+#### `GET /customers/search`
+
+- Query: [`CustomerSearchQuery`](#customersearchquery) — `name`, `phone`, `document` **combinados**
+  (todos opcionais) e paginação (`pageSize` padrão `20`, máximo `100`). Sem filtros → todos, cadastrados
+  por último primeiro.
+- Nome sem diferenciar maiúsculas **nem acentos** (`joao` encontra `JOÃO`); telefone compara só os
+  dígitos, no principal ou no secundário (encontra números gravados com ou sem pontuação); CPF/CNPJ com
+  ou sem pontuação.
+- `200`: envelope com [`PaginatedResult`](#paginatedresult) de [`CustomerDto`](#customerdto) e mensagem
+  "N clientes encontrados." / "Nenhum cliente encontrado.".
+- `400`: "Digite pelo menos 3 letras do nome." · "Digite pelo menos 4 números do telefone." ·
+  "Digite pelo menos 3 caracteres do CPF/CNPJ." · "Paginação inválida."
+
+```bash
+curl "http://localhost:5001/customers/search?phone=(41)%2099999-0000" -H "Authorization: Bearer $TOKEN"
+```
 
 #### `POST /customers`
 
@@ -844,6 +863,18 @@ Mesmos campos e regras de [`AddPaymentCommand`](#addpaymentcommand).
 |-------|------|-------------|-----------|
 | `id` | long | sim | número da OS |
 | `code` | string | sim | código de segurança recebido pelo cliente |
+
+#### `CustomerSearchQuery`
+
+Parâmetros de query de `GET /customers/search` (filtros combinados, todos opcionais):
+
+| Parâmetro | Tipo | Descrição |
+|-----------|------|-----------|
+| `name` | string? | parte do nome (mínimo 3 letras; sem diferenciar maiúsculas e acentos) |
+| `phone` | string? | telefone principal ou secundário; só os dígitos contam (mínimo 4) |
+| `document` | string? | parte do CPF/CNPJ, com ou sem pontuação (mínimo 3) |
+| `pageNumber` | int | padrão `1` (≥ 1) |
+| `pageSize` | int | padrão `20` (1 a 100) |
 
 #### `ServiceOrderSearchQuery`
 
