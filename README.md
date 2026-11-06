@@ -987,7 +987,7 @@ Resumo:
 | Serviço | O que é | Portas |
 |---------|---------|--------|
 | `api` | API .NET (`src/TVSApp.Api/Dockerfile`), porta interna 8080, healthcheck em `/` | — |
-| `web` | Caddy: serve o Angular, repassa `/api` para a API, publica o Grafana, emite HTTPS | 80, 443 |
+| `web` | Caddy: serve o Angular, repassa `/api` para a API, publica o Grafana, emite HTTPS | `HTTP_PORT` (80), `HTTPS_PORT` (443) |
 | `loki` | armazena logs (30 dias) | — |
 | `prometheus` | armazena métricas (15 dias) | — |
 | `alloy` | coleta logs dos containers e métricas | — |
@@ -1017,6 +1017,7 @@ docker compose down                    # para tudo (volumes e dados ficam)
 | Variável | Obrigatória | Para quê |
 |----------|-------------|----------|
 | `SITE_ADDRESS` | sim | domínio do sistema (HTTPS automático) ou `:80` para HTTP pelo IP |
+| `HTTP_PORT`, `HTTPS_PORT` | não | portas da VPS (padrão `80`/`443`); troque se já estiverem em uso, ex.: `8080` → `http://IP:8080` |
 | `DB_CONNECTION_STRING` | sim | cadeia ADO.NET do Azure SQL |
 | `JWT_SECRET_KEY` | sim | chave dos tokens (`openssl rand -base64 48`) |
 | `JWT_ISSUER`, `JWT_AUDIENCE` | não | padrão `tvs-app` |

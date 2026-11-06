@@ -39,6 +39,7 @@ Pronto: abra `https://SEU_DOMINIO` (ou `http://IP_DA_VPS` se `SITE_ADDRESS=:80`)
 | Variável | Obrigatória | Para quê |
 |----------|-------------|----------|
 | `SITE_ADDRESS` | sim | Domínio do sistema (HTTPS automático) ou `:80` para só HTTP pelo IP |
+| `HTTP_PORT`, `HTTPS_PORT` | não | Portas da VPS (padrão `80`/`443`). Se já estiverem em uso (ex.: nginx de outro site), use `8080`/`8443` e acesse `http://IP_DA_VPS:8080` |
 | `DB_CONNECTION_STRING` | sim | Azure SQL (cadeia ADO.NET). Para conviver com o sistema antigo, use **o mesmo banco** dele |
 | `JWT_SECRET_KEY` | sim | Chave do login (`openssl rand -base64 48`) |
 | `JWT_ISSUER`, `JWT_AUDIENCE` | não | Padrão `tvs-app` |
