@@ -47,7 +47,8 @@ Pronto: abra `https://SEU_DOMINIO` (ou `http://IP_DA_VPS` se `SITE_ADDRESS=:80`)
 | `EVOLUTION_BASE_URL`, `EVOLUTION_API_KEY`, `EVOLUTION_INSTANCE` | sim, para WhatsApp | Evolution API (outro servidor, ou `http://evolution-api:8080` se ela rodar aqui — seção 6) |
 | `WHATSAPP_TEST_PHONE` | não | Número do dono para o envio real de teste sob demanda (ver seção 4) |
 | `COMPOSE_PROFILES` | não | `whatsapp` sobe a Evolution API nesta VPS (seção 6) |
-| `EVOLUTION_DB_PASSWORD`, `EVOLUTION_MANAGER_PORT` | só com a Evolution aqui | Senha do banco interno da Evolution; porta local do painel (padrão `8090`) |
+| `EVOLUTION_DB_PASSWORD`, `EVOLUTION_MANAGER_PORT` | só com a Evolution aqui | Senha do banco interno da Evolution; porta do painel (padrão `8090`) |
+| `EVOLUTION_MANAGER_BIND` | não | `127.0.0.1` (padrão: painel só por túnel SSH) ou `0.0.0.0` (aberto pelo IP — só durante a conexão do número) |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | só em banco novo | Cria o primeiro usuário ao subir (se o e-mail ainda não existir) |
 | `GRAFANA_ADDRESS` | não | Subdomínio próprio do Grafana (ex.: `grafana.tvseletronica.com`), HTTPS automático. Sem ele, use `/grafana` |
 | `GRAFANA_ROOT_URL` | não | Endereço completo do Grafana para links absolutos (ex.: `http://IP_DA_VPS/grafana/`) |
@@ -148,8 +149,10 @@ disso sobe. Para trazer para esta VPS:
    EVOLUTION_DB_PASSWORD=outra-senha-forte          # openssl rand -base64 24
    ```
 2. Suba: `docker compose up -d` (cria os 3 containers e recria a `api` com a nova URL).
-3. Conecte o número lendo o QR Code no painel. O painel só abre na própria VPS; do seu computador,
-   use um túnel SSH:
+3. Conecte o número lendo o QR Code no painel. Se não tiver SSH com túnel, abra o painel pelo IP
+   **só durante a conexão**: `EVOLUTION_MANAGER_BIND=0.0.0.0` no `.env`, `docker compose up -d
+   evolution-api`, `ufw allow 8090/tcp`, acesse `http://IP_DA_VPS:8090/manager` e, ao terminar, volte
+   para `127.0.0.1`, `docker compose up -d evolution-api` e `ufw delete allow 8090/tcp`. Com SSH, use o túnel:
    ```bash
    ssh -L 8090:localhost:8090 root@IP_DA_VPS
    ```

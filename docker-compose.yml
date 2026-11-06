@@ -125,7 +125,7 @@ services:
     environment:
       SERVER_TYPE: http
       SERVER_PORT: 8080
-      SERVER_URL: http://localhost:${EVOLUTION_MANAGER_PORT:-8090}
+      SERVER_URL: ${EVOLUTION_SERVER_URL:-http://localhost:8090}
       AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY:-}
       DATABASE_PROVIDER: postgresql
       DATABASE_CONNECTION_URI: postgresql://evolution:${EVOLUTION_DB_PASSWORD:-evolution}@evolution-postgres:5432/evolution?schema=public
@@ -143,8 +143,9 @@ services:
       LOG_LEVEL: ERROR,WARN,INFO
       LANGUAGE: pt-BR
     ports:
-      # Painel (/manager) só na própria VPS: acesse por túnel SSH para ler o QR Code.
-      - "127.0.0.1:${EVOLUTION_MANAGER_PORT:-8090}:8080"
+      # Painel (/manager): por padrão só na própria VPS (túnel SSH). Para abrir pelo IP durante a
+      # conexão do número, use EVOLUTION_MANAGER_BIND=0.0.0.0 e feche de novo depois.
+      - "${EVOLUTION_MANAGER_BIND:-127.0.0.1}:${EVOLUTION_MANAGER_PORT:-8090}:8080"
     volumes:
       - evolution_instances:/evolution/instances
     mem_limit: 512m

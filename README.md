@@ -1072,7 +1072,8 @@ docker compose down                    # para tudo (volumes e dados ficam)
 | `CORS_ORIGINS` | não | sites externos que chamam a API (ex.: o site público) |
 | `EVOLUTION_BASE_URL`, `EVOLUTION_API_KEY`, `EVOLUTION_INSTANCE` | para WhatsApp | Evolution API (outro servidor, ou `http://evolution-api:8080` se rodar nesta VPS) |
 | `COMPOSE_PROFILES` | não | `whatsapp` sobe também a Evolution API nesta VPS |
-| `EVOLUTION_DB_PASSWORD`, `EVOLUTION_MANAGER_PORT` | só com a Evolution nesta VPS | senha do banco interno da Evolution; porta local do painel (padrão `8090`) |
+| `EVOLUTION_DB_PASSWORD`, `EVOLUTION_MANAGER_PORT` | só com a Evolution nesta VPS | senha do banco interno da Evolution; porta do painel (padrão `8090`) |
+| `EVOLUTION_MANAGER_BIND` | não | `127.0.0.1` (padrão, painel só por túnel SSH) ou `0.0.0.0` (painel aberto pelo IP — só enquanto conecta o número) |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | só em banco novo | cria o primeiro usuário |
 | `GRAFANA_ADDRESS` | não | subdomínio próprio do Grafana com HTTPS (ex.: `grafana.seudominio.com`); sem ele, use `/grafana` |
 | `GRAFANA_ROOT_URL` | não | endereço completo do Grafana para links absolutos (ex.: `http://IP_DA_VPS/grafana/`) |
