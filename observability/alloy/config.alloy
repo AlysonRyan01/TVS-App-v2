@@ -1,0 +1,110 @@
+// Coletor único: logs dos containers -> Loki; métricas da API, da VPS e dos containers -> Prometheus.
+
+// ---------- Logs ----------
+
+discovery.docker "containers" {
+	host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "containers" {
+	targets = []
+
+	rule {
+		source_labels = ["__meta_docker_container_name"]
+		regex         = "/(.*)"
+		target_label  = "container"
+	}
+
+	rule {
+		source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+		target_label  = "service"
+	}
+}
+
+loki.source.docker "containers" {
+	host          = "unix:///var/run/docker.sock"
+	targets       = discovery.docker.containers.targets
+	relabel_rules = discovery.relabel.containers.rules
+	forward_to    = [loki.process.containers.receiver]
+}
+
+loki.process "containers" {
+	// A API escreve JSON compacto do Serilog (CLEF): "@l" é o nível e é omitido quando é Information.
+	stage.match {
+		selector = "{service=\"api\"}"
+
+		stage.json {
+			expressions = {level = "\"@l\""}
+		}
+
+		stage.template {
+			source   = "level"
+			template = "{{ if .level }}{{ .level }}{{ else }}Information{{ end }}"
+		}
+
+		stage.labels {
+			values = {level = ""}
+		}
+	}
+
+	forward_to = [loki.write.default.receiver]
+}
+
+loki.write "default" {
+	endpoint {
+		url = "http://loki:3100/loki/api/v1/push"
+	}
+}
+
+// ---------- Métricas ----------
+
+// API: rota interna, não publicada pelo Caddy.
+prometheus.scrape "api" {
+	targets         = [{"__address__" = "api:8080"}]
+	job_name        = "tvs-api"
+	metrics_path    = "/internal/metrics"
+	scrape_interval = "15s"
+	forward_to      = [prometheus.remote_write.default.receiver]
+}
+
+// VPS: CPU, memória, disco e rede (o / do host montado em /host).
+prometheus.exporter.unix "host" {
+	rootfs_path = "/host"
+	procfs_path = "/host/proc"
+	sysfs_path  = "/host/sys"
+
+	filesystem {
+		mount_points_exclude = "^/(dev|proc|run|sys|var/lib/docker/.+)($|/)"
+		fs_types_exclude     = "^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs|tmpfs)$"
+	}
+}
+
+prometheus.scrape "host" {
+	targets         = prometheus.exporter.unix.host.targets
+	job_name        = "node"
+	scrape_interval = "15s"
+	forward_to      = [prometheus.remote_write.default.receiver]
+}
+
+// Containers: CPU e memória por container.
+prometheus.exporter.cadvisor "containers" {
+	docker_host = "unix:///var/run/docker.sock"
+	// Docker com o "containerd image store" (padrão em instalações novas): os containers são lidos pelo containerd.
+	containerd_host      = "/run/containerd/containerd.sock"
+	containerd_namespace = "moby"
+	docker_only          = true
+	storage_duration     = "5m"
+}
+
+prometheus.scrape "containers" {
+	targets         = prometheus.exporter.cadvisor.containers.targets
+	job_name        = "cadvisor"
+	scrape_interval = "15s"
+	forward_to      = [prometheus.remote_write.default.receiver]
+}
+
+prometheus.remote_write "default" {
+	endpoint {
+		url = "http://prometheus:9090/api/v1/write"
+	}
+}

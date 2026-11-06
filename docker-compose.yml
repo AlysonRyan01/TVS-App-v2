@@ -25,6 +25,7 @@ services:
     restart: unless-stopped
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+      GRAFANA_ADDRESS: ${GRAFANA_ADDRESS:-grafana.localhost}
     ports:
       - "80:80"
       - "443:443"
@@ -36,9 +37,86 @@ services:
     networks:
       - appnetwork
 
+  # ---------- Observabilidade (a API não depende de nada daqui) ----------
+
+  loki:
+    image: grafana/loki:3.4.2
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki.yaml
+    volumes:
+      - ./observability/loki/loki.yaml:/etc/loki/loki.yaml:ro
+      - loki_data:/loki
+    mem_limit: 512m
+    networks:
+      - appnetwork
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      - --web.enable-remote-write-receiver
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    mem_limit: 512m
+    networks:
+      - appnetwork
+
+  alloy:
+    image: grafana/alloy:v1.7.5
+    restart: unless-stopped
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    volumes:
+      - ./observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/host:ro,rslave
+      - /sys:/host/sys:ro
+      - /proc:/host/proc:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro   # cAdvisor: cgroups de todos os containers
+      - /run/containerd/containerd.sock:/run/containerd/containerd.sock:ro
+    cgroup: host
+    mem_limit: 256m
+    networks:
+      - appnetwork
+
+  grafana:
+    image: grafana/grafana:11.5.2
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?defina GRAFANA_ADMIN_PASSWORD no .env}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_SERVER_ROOT_URL: https://${GRAFANA_ADDRESS:-grafana.localhost}
+      GF_DEFAULT_LOCALE: pt-BR
+      GF_USERS_DEFAULT_LANGUAGE: pt-BR
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_NEWS_NEWS_FEED_ENABLED: "false"
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    mem_limit: 256m
+    depends_on:
+      - loki
+      - prometheus
+    networks:
+      - appnetwork
+
 networks:
   appnetwork:
 
 volumes:
   caddy_data:
   caddy_config:
+  loki_data:
+  prometheus_data:
+  grafana_data:

@@ -1,3 +1,5 @@
+using TVS_App.Api.Observability;
+using TVS_App.Application.Observability;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using TVS_App.Api.Extensions;
@@ -75,7 +77,7 @@ public static class ServiceOrderQueryEndpoints
                 return result.ToResult();
 
             return Results.File(result.Data, "application/pdf", $"ordem_servico_{id}.pdf");
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.ServiceOrderPdfReprinted).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapGet("/service-orders/{id:long}/payments/{paymentId:long}/receipt", async (
                 IServiceOrderCommandHandler handler,
@@ -87,7 +89,7 @@ public static class ServiceOrderQueryEndpoints
                 return result.ToResult();
 
             return Results.File(result.Data, "application/pdf", $"comprovante_pagamento_{paymentId}.pdf");
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.PaymentReceiptPrinted).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapGet("/service-orders/{id:long}/payments", async (IServiceOrderQueryHandler handler, long id) =>
         {

@@ -1,3 +1,5 @@
+using TVS_App.Api.Observability;
+using TVS_App.Application.Observability;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using TVS_App.Api.Extensions;
@@ -26,7 +28,7 @@ public static class ServiceOrderCommandEndpoints
 
             httpContext.Response.Headers["X-Service-Order-Id"] = result.Data.Id.ToString();
             return Results.File(result.Data.Pdf, "application/pdf", $"ordem_servico_{result.Data.Id}.pdf");
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.ServiceOrderCreated).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPost("/service-orders/sales", async (
                 IServiceOrderCommandHandler handler,
@@ -42,7 +44,7 @@ public static class ServiceOrderCommandEndpoints
 
             httpContext.Response.Headers["X-Service-Order-Id"] = result.Data.Id.ToString();
             return Results.File(result.Data.Pdf, "application/pdf", $"venda_{result.Data.Id}.pdf");
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.SaleCreated).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPut("/service-orders/{id:long}", async (
                 IServiceOrderCommandHandler handler,
@@ -55,7 +57,7 @@ public static class ServiceOrderCommandEndpoints
                 await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
             return result.ToResult();
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.ServiceOrderUpdated).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPut("/service-orders/{id:long}/estimate", async (
                 IServiceOrderCommandHandler handler,
@@ -68,7 +70,7 @@ public static class ServiceOrderCommandEndpoints
                 await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
             return result.ToResult();
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.EstimateAdded).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPut("/service-orders/{id:long}/estimate/approve", async (
                 IServiceOrderCommandHandler handler,
@@ -80,7 +82,7 @@ public static class ServiceOrderCommandEndpoints
                 await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
             return result.ToResult();
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.EstimateApproved).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPut("/service-orders/{id:long}/estimate/reject", async (
                 IServiceOrderCommandHandler handler,
@@ -92,7 +94,7 @@ public static class ServiceOrderCommandEndpoints
                 await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
             return result.ToResult();
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.EstimateRejected).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPut("/service-orders/{id:long}/ready-for-pickup", async (
                 IServiceOrderCommandHandler handler,
@@ -104,7 +106,7 @@ public static class ServiceOrderCommandEndpoints
                 await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
             return result.ToResult();
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.ServiceOrderReadyForPickup).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPut("/service-orders/{id:long}/part/purchase", async (
                 IServiceOrderCommandHandler handler,
@@ -116,7 +118,7 @@ public static class ServiceOrderCommandEndpoints
                 await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
             return result.ToResult();
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.PartPurchased).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPut("/service-orders/{id:long}/part/purchase-cost", async (
                 IServiceOrderCommandHandler handler,
@@ -125,7 +127,7 @@ public static class ServiceOrderCommandEndpoints
         {
             var result = await handler.UpdatePartPurchaseCost(id, body.PartPurchaseCost);
             return result.ToResult();
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.PartPurchaseCostUpdated).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPut("/service-orders/{id:long}/repair", async (
                 IServiceOrderCommandHandler handler,
@@ -137,7 +139,7 @@ public static class ServiceOrderCommandEndpoints
                 await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
             return result.ToResult();
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.ServiceOrderRepaired).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPut("/service-orders/{id:long}/delivery", async (
                 IServiceOrderCommandHandler handler,
@@ -154,7 +156,7 @@ public static class ServiceOrderCommandEndpoints
                 return Results.File(result.Data, "application/pdf", $"ordem_servico_{id}.pdf");
 
             return result.ToResult();
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.ServiceOrderDelivered).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPut("/service-orders/{id:long}/product/location", async (
                 IServiceOrderCommandHandler handler,
@@ -167,7 +169,7 @@ public static class ServiceOrderCommandEndpoints
                 await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
             return result.ToResult();
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.ServiceOrderLocationUpdated).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPost("/service-orders/{id:long}/payments", async (
                 IServiceOrderCommandHandler handler,
@@ -176,7 +178,7 @@ public static class ServiceOrderCommandEndpoints
         {
             var result = await handler.AddPayment(id, command);
             return result.ToResult();
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.PaymentAdded).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapPut("/service-orders/{id:long}/payments/{paymentId:long}", async (
                 IServiceOrderCommandHandler handler,
@@ -186,7 +188,7 @@ public static class ServiceOrderCommandEndpoints
         {
             var result = await handler.UpdatePayment(id, paymentId, command);
             return result.ToResult();
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.PaymentUpdated).WithTags("ServiceOrder").RequireAuthorization();
 
         app.MapDelete("/service-orders/{id:long}/payments/{paymentId:long}", async (
                 IServiceOrderCommandHandler handler,
@@ -195,7 +197,7 @@ public static class ServiceOrderCommandEndpoints
         {
             var result = await handler.RemovePayment(id, paymentId);
             return result.ToResult();
-        }).WithTags("ServiceOrder").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.PaymentRemoved).WithTags("ServiceOrder").RequireAuthorization();
     }
 }
 

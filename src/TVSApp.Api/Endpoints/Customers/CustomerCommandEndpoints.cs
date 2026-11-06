@@ -1,3 +1,5 @@
+using TVS_App.Api.Observability;
+using TVS_App.Application.Observability;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using TVS_App.Api.Extensions;
@@ -22,7 +24,7 @@ public static class CustomerCommandEndpoints
                 await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
             return result.ToResult();
-        }).WithTags("Customer").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.CustomerCreated).WithTags("Customer").RequireAuthorization();
 
         app.MapPut("/customers/{id:long}", async (
                 ICustomerCommandHandler handler,
@@ -35,6 +37,6 @@ public static class CustomerCommandEndpoints
                 await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
             return result.ToResult();
-        }).WithTags("Customer").RequireAuthorization();
+        }).WithBusinessEvent(BusinessEvents.CustomerUpdated).WithTags("Customer").RequireAuthorization();
     }
 }

@@ -27,8 +27,6 @@ public class ExceptionMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ocorreu uma exceção: {Message}", ex.Message);
-
             context.Response.ContentType = "application/json";
 
             int code;
@@ -51,6 +49,11 @@ public class ExceptionMiddleware
                         : ex.Message;
                     break;
             }
+
+            if (code == 400)
+                _logger.LogWarning("Validação recusada em {RequestPath}: {Message}", context.Request.Path.Value, message);
+            else
+                _logger.LogError(ex, "Erro inesperado em {RequestPath}: {Message}", context.Request.Path.Value, ex.Message);
 
             context.Response.StatusCode = code;
             var response = new BaseResponse<object?>(null, code, message);

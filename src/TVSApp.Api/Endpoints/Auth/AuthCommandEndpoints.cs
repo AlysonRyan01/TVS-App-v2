@@ -1,3 +1,5 @@
+using TVS_App.Api.Observability;
+using TVS_App.Application.Observability;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using TVS_App.Application.DTOs.Auth;
@@ -16,12 +18,15 @@ public static class AuthCommandEndpoints
             LoginRequest login,
             JwtService jwtService,
             UserManager<User> userManager,
-            HttpContext httpContext) =>
+            HttpContext httpContext,
+            ILoggerFactory loggerFactory) =>
         {
             var user = await userManager.FindByEmailAsync(login.Email);
 
             if (user == null || !await userManager.CheckPasswordAsync(user, login.Password))
             {
+                loggerFactory.CreateLogger("Auth")
+                    .LogWarning("Falha de login para {Email:l}", LogMask.Email(login.Email));
                 return Results.BadRequest(new BaseResponse<AuthTokensDto>(null, 401, "Email ou senha inválidos"));
             }
 
@@ -31,7 +36,7 @@ public static class AuthCommandEndpoints
 
             return Results.Ok(new BaseResponse<AuthTokensDto>(new AuthTokensDto(accessToken, refreshToken), 200,
                 "Login realizado com sucesso!"));
-        }).WithTags("Auth");
+        }).WithBusinessEvent(BusinessEvents.AuthLogin).WithTags("Auth");
 
         app.MapPost("/auth/logout", async (RefreshTokenRequest request, JwtService jwtService) =>
         {

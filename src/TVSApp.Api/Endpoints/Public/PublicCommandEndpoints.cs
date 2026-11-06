@@ -1,3 +1,5 @@
+using TVS_App.Api.Observability;
+using TVS_App.Application.Observability;
 using Microsoft.AspNetCore.SignalR;
 using TVS_App.Api.Extensions;
 using TVS_App.Api.SignalR;
@@ -26,7 +28,7 @@ public static class PublicCommandEndpoints
                 await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
             return result.ToResult();
-        }).WithTags("Public");
+        }).WithBusinessEvent(BusinessEvents.EstimateApprovedByCustomer).WithTags("Public");
 
         app.MapPut("/add-service-order-reject-estimate", async (
                 IServiceOrderCommandHandler handler,
@@ -38,7 +40,7 @@ public static class PublicCommandEndpoints
                 await hubContext.Clients.All.SendAsync("Atualizar", result.Message);
 
             return result.ToResult();
-        }).WithTags("Public");
+        }).WithBusinessEvent(BusinessEvents.EstimateRejectedByCustomer).WithTags("Public");
 
         app.MapPost("/v1/whatsapp/site-contact", async (HttpRequest httpRequest, IWhatsAppQueue whatsAppQueue) =>
             {

@@ -172,7 +172,7 @@ public static class BuilderExtensions
                     .WithOrigins(origins!)
                     .AllowAnyMethod()
                     .AllowAnyHeader()
-                    .WithExposedHeaders("X-Service-Order-Id")
+                    .WithExposedHeaders("X-Service-Order-Id", "X-Correlation-Id")
                     .AllowCredentials();
             });
         });

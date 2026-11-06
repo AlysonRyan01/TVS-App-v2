@@ -1,6 +1,7 @@
 using TVS_App.Api.Common;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddObservability();
 builder.AddCompression();
 builder.AddQuestPdfConfiguration();
 builder.AddCorsConfiguration();
@@ -15,6 +16,7 @@ builder.AddSwagger();
 
 var app = builder.Build();
 app.UseResponseCompression();
+app.UseObservability();
 app.AddExceptionMiddleware();
 app.UseCors(builder.Configuration["Cors:PolicyName"]!);
 app.AddSwagger();
@@ -25,5 +27,6 @@ app.AddAuthorization();
 app.AddEndpoints();
 
 app.MapGet("/", () => "RUNNING");
+app.MapObservability();
 
 app.Run();

@@ -1,6 +1,7 @@
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using TVS_App.Application.Interfaces.Services;
+using TVS_App.Application.Observability;
 using TVS_App.Application.Requests.WhatsAppQueueRequests;
 
 namespace TVS_App.Infrastructure.Messaging.Queue;
@@ -27,13 +28,19 @@ public class WhatsAppQueue : IWhatsAppQueue, IDisposable
     {
         try
         {
+            var messageType = job.GetType().Name;
+            var serviceOrderId = ServiceOrderOf(job);
+
+            using var scope = _logger.BeginScope(new Dictionary<string, object?> { ["Event"] = BusinessEvents.WhatsAppEnqueued });
+
             if (_queue.Writer.TryWrite(job))
             {
-                _logger.LogDebug("Mensagem enfileirada: {RequestType}", job.GetType().Name);
+                _logger.LogInformation("WhatsApp enfileirado {MessageType:l} OS {ServiceOrderId:l}", messageType, serviceOrderId);
                 return true;
             }
 
-            _logger.LogWarning("Falha ao enfileirar mensagem (canal fechado ou cheio)");
+            _logger.LogWarning("WhatsApp recusado pela fila (canal fechado ou cheio) {MessageType:l} OS {ServiceOrderId:l}",
+                messageType, serviceOrderId);
             return false;
         }
         catch (Exception ex)
@@ -42,6 +49,9 @@ public class WhatsAppQueue : IWhatsAppQueue, IDisposable
             throw;
         }
     }
+
+    public static string? ServiceOrderOf(IWhatsAppServiceRequest job)
+        => job.GetType().GetProperty("ServiceOrder")?.GetValue(job)?.ToString();
 
     public ChannelReader<IWhatsAppServiceRequest> Reader => _queue.Reader;
 

@@ -5,7 +5,10 @@ repassa `/api` para a API (inclusive o tempo real) e emite o HTTPS sozinho quand
 
 ```
 navegador ──► Caddy (web, portas 80/443) ──► /api/* ──► api:8080 (.NET) ──► Azure SQL
-                    └─► arquivos do Angular
+                    ├─► arquivos do Angular
+                    └─► GRAFANA_ADDRESS ──► grafana:3000 ──► Loki (logs) / Prometheus (métricas)
+                                                                 ▲
+                                          alloy (coleta logs dos containers e métricas) ┘
 ```
 
 ## 1. Pré-requisitos na VPS
@@ -13,6 +16,8 @@ navegador ──► Caddy (web, portas 80/443) ──► /api/* ──► api:80
 - Docker e o plugin Compose (`docker compose version`).
 - Portas 80 e 443 liberadas no firewall.
 - Para HTTPS: o domínio (ex.: `gerenciamento.tvseletronica.com`) apontando (registro A) para o IP da VPS.
+- Para o Grafana: o subdomínio dele (ex.: `grafana.tvseletronica.com`) também com registro A para o IP da VPS.
+- Memória: a pilha de observabilidade usa até ~1,5 GB de RAM (limites por container); prefira VPS com 4 GB.
 - **Azure SQL**: no Portal do Azure, servidor SQL > **Rede** > regras de firewall > adicionar o **IP público
   da VPS** (`curl -4 ifconfig.me` na VPS). Sem isso a API não conecta e fica reiniciando.
 
@@ -39,6 +44,8 @@ Pronto: abra `https://SEU_DOMINIO` (ou `http://IP_DA_VPS` se `SITE_ADDRESS=:80`)
 | `CORS_ORIGINS` | não | Sites externos que chamam a API (ex.: `https://www.tvseletronica.com`) |
 | `EVOLUTION_BASE_URL`, `EVOLUTION_API_KEY`, `EVOLUTION_INSTANCE` | sim, para WhatsApp | Evolution API |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | só em banco novo | Cria o primeiro usuário ao subir (se o e-mail ainda não existir) |
+| `GRAFANA_ADDRESS` | para acessar o Grafana | Subdomínio do Grafana (ex.: `grafana.tvseletronica.com`), HTTPS automático |
+| `GRAFANA_ADMIN_USER`, `GRAFANA_ADMIN_PASSWORD` | sim (senha) | Login do Grafana. Sem a senha o `docker compose up` recusa subir |
 | `ASPNETCORE_ENVIRONMENT` | não | Deixe `Production` (em `Development` o WhatsApp vai para o número de teste) |
 
 ### Banco (Azure SQL)
@@ -70,6 +77,42 @@ docker compose logs -f api           # logs da API
 docker compose logs -f web           # logs do Caddy (HTTPS, acessos)
 docker compose restart api
 docker compose down                  # para tudo (volumes e dados ficam)
+```
+
+## 5. Observabilidade (logs, métricas e painéis)
+
+Sobe junto com o resto (`docker compose up -d --build`), em 4 containers sem portas publicadas:
+
+| Serviço | Para quê | Memória máx. | Retenção |
+|---------|----------|--------------|----------|
+| `alloy` | Lê os logs de todos os containers (socket do Docker) e coleta métricas da API, da VPS e dos containers | 256 MB | — |
+| `loki` | Guarda os logs (volume `loki_data`) | 512 MB | 30 dias |
+| `prometheus` | Guarda as métricas (volume `prometheus_data`) | 512 MB | 15 dias |
+| `grafana` | Painéis e alertas, publicado pelo Caddy em `https://GRAFANA_ADDRESS` | 256 MB | — |
+
+- **Acesso**: `https://GRAFANA_ADDRESS` com `GRAFANA_ADMIN_USER`/`GRAFANA_ADMIN_PASSWORD`. Não há
+  cadastro aberto nem acesso anônimo. A senha do `.env` só vale na primeira subida; depois, troque
+  pelo próprio Grafana (ou `docker compose exec grafana grafana cli admin reset-admin-password NOVA`).
+- **Painéis** (pasta *TVS*): *Visão geral* (API no ar, requisições/min, % de erros, latência,
+  eventos de negócio, alertas), *Logs*, *WhatsApp* (enviadas × falhas, motivo) e *Servidor* (CPU,
+  memória, disco e rede da VPS e por container).
+- **Achar uma OS nos logs**: painel *Logs* → campo *Nº da OS* = número da OS (ex.: `4312`). Aparecem
+  as requisições e os eventos (`service_order.delivered`, `whatsapp.sent`...). Para ver tudo de uma
+  mesma requisição, copie o `CorrelationId` (detalhes da linha; também vem no cabeçalho
+  `X-Correlation-Id` da resposta) e cole no campo *Busca*.
+- **Alertas** (Alerting → Regras, pasta *TVS*): API fora do ar, taxa de erros > 5%, WhatsApp
+  falhando (3+ em 10 min) e disco > 85%. Só aparecem no Grafana — nenhum aviso é enviado.
+- **Privacidade**: telefones aparecem mascarados (`41*****0000`), e-mails de login com falha também;
+  senhas, tokens e corpos de requisição nunca são registrados.
+- As métricas internas da API (`/internal/metrics`) só são acessíveis na rede do Docker; pela
+  internet, `/api/internal/...` responde 404.
+- **A API não depende da observabilidade**: se `loki`, `prometheus`, `grafana` ou `alloy` pararem, o
+  sistema segue igual e os logs continuam em `docker compose logs api`.
+
+```bash
+docker compose ps                                   # os 6 serviços "running"
+docker compose logs -f alloy                        # se logs/métricas não chegam
+docker compose stop loki prometheus grafana alloy   # desliga só a observabilidade
 ```
 
 ## Observações
