@@ -44,7 +44,9 @@ Pronto: abra `https://SEU_DOMINIO` (ou `http://IP_DA_VPS` se `SITE_ADDRESS=:80`)
 | `JWT_SECRET_KEY` | sim | Chave do login (`openssl rand -base64 48`) |
 | `JWT_ISSUER`, `JWT_AUDIENCE` | não | Padrão `tvs-app` |
 | `CORS_ORIGINS` | não | Sites externos que chamam a API (ex.: `https://www.tvseletronica.com`) |
-| `EVOLUTION_BASE_URL`, `EVOLUTION_API_KEY`, `EVOLUTION_INSTANCE` | sim, para WhatsApp | Evolution API |
+| `EVOLUTION_BASE_URL`, `EVOLUTION_API_KEY`, `EVOLUTION_INSTANCE` | sim, para WhatsApp | Evolution API (outro servidor, ou `http://evolution-api:8080` se ela rodar aqui — seção 6) |
+| `COMPOSE_PROFILES` | não | `whatsapp` sobe a Evolution API nesta VPS (seção 6) |
+| `EVOLUTION_DB_PASSWORD`, `EVOLUTION_MANAGER_PORT` | só com a Evolution aqui | Senha do banco interno da Evolution; porta local do painel (padrão `8090`) |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | só em banco novo | Cria o primeiro usuário ao subir (se o e-mail ainda não existir) |
 | `GRAFANA_ADDRESS` | não | Subdomínio próprio do Grafana (ex.: `grafana.tvseletronica.com`), HTTPS automático. Sem ele, use `/grafana` |
 | `GRAFANA_ROOT_URL` | não | Endereço completo do Grafana para links absolutos (ex.: `http://IP_DA_VPS/grafana/`) |
@@ -119,6 +121,40 @@ docker compose ps                                   # os 6 serviços "running"
 docker compose logs -f alloy                        # se logs/métricas não chegam
 docker compose stop loki prometheus grafana alloy   # desliga só a observabilidade
 ```
+
+## 6. WhatsApp: Evolution API na mesma VPS (opcional)
+
+O compose já traz a Evolution API (`evolution-api`, `evolution-postgres`, `evolution-redis`),
+**desligada por padrão** (profile `whatsapp`). Enquanto a Evolution rodar em outro servidor, nada
+disso sobe. Para trazer para esta VPS:
+
+1. No `.env`:
+   ```bash
+   COMPOSE_PROFILES=whatsapp
+   EVOLUTION_BASE_URL=http://evolution-api:8080     # rede interna do Docker
+   EVOLUTION_API_KEY=uma-chave-longa                # openssl rand -hex 32 (vale para TVS e Evolution)
+   EVOLUTION_INSTANCE=tvs                           # nome da instância (o número do WhatsApp)
+   EVOLUTION_DB_PASSWORD=outra-senha-forte          # openssl rand -base64 24
+   ```
+2. Suba: `docker compose up -d` (cria os 3 containers e recria a `api` com a nova URL).
+3. Conecte o número lendo o QR Code no painel. O painel só abre na própria VPS; do seu computador,
+   use um túnel SSH:
+   ```bash
+   ssh -L 8090:localhost:8090 root@IP_DA_VPS
+   ```
+   Abra `http://localhost:8090/manager`, entre com a `EVOLUTION_API_KEY`, crie a instância com o
+   nome do `EVOLUTION_INSTANCE` e leia o QR Code com o WhatsApp da loja
+   (Aparelhos conectados → Conectar aparelho).
+4. Teste: crie uma OS de teste e veja o painel **WhatsApp** do Grafana ou
+   `docker compose logs api | grep -E "WhatsApp (enviado|falhou)"`.
+5. Desconecte o número na Evolution antiga e desligue o servidor antigo.
+
+- A sessão do WhatsApp fica nos volumes `evolution_instances`, `evolution_postgres` e
+  `evolution_redis`. **Não apague esses volumes** (nem com `docker volume prune`), senão é preciso
+  ler o QR Code de novo.
+- A Evolution não fica exposta na internet: a API do TVS fala com ela pela rede interna.
+- Memória: ~500 MB a mais (limites: Evolution 512 MB, Postgres 256 MB, Redis 128 MB).
+- Logs da Evolution aparecem no Grafana (painel Logs, `{service="evolution-api"}` no Explore).
 
 ## Observações
 

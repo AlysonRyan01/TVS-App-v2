@@ -113,6 +113,71 @@ services:
     networks:
       - appnetwork
 
+  # ---------- WhatsApp (Evolution API) — opcional ----------
+  # Só sobe com o profile "whatsapp" (COMPOSE_PROFILES=whatsapp no .env). Com ele ativo, use
+  # EVOLUTION_BASE_URL=http://evolution-api:8080 para a API falar com a Evolution pela rede interna.
+
+  evolution-api:
+    image: evoapicloud/evolution-api:v2.3.7
+    profiles: ["whatsapp"]
+    restart: unless-stopped
+    environment:
+      SERVER_TYPE: http
+      SERVER_PORT: 8080
+      SERVER_URL: http://localhost:${EVOLUTION_MANAGER_PORT:-8090}
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY:-}
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://evolution:${EVOLUTION_DB_PASSWORD:-evolution}@evolution-postgres:5432/evolution?schema=public
+      DATABASE_CONNECTION_CLIENT_NAME: tvs_evolution
+      DATABASE_SAVE_DATA_INSTANCE: "true"
+      DATABASE_SAVE_DATA_NEW_MESSAGE: "false"
+      DATABASE_SAVE_MESSAGE_UPDATE: "false"
+      DATABASE_SAVE_DATA_CONTACTS: "false"
+      DATABASE_SAVE_DATA_CHATS: "false"
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://evolution-redis:6379/6
+      CACHE_REDIS_PREFIX_KEY: evolution
+      CACHE_REDIS_SAVE_INSTANCES: "false"
+      CACHE_LOCAL_ENABLED: "false"
+      LOG_LEVEL: ERROR,WARN,INFO
+      LANGUAGE: pt-BR
+    ports:
+      # Painel (/manager) só na própria VPS: acesse por túnel SSH para ler o QR Code.
+      - "127.0.0.1:${EVOLUTION_MANAGER_PORT:-8090}:8080"
+    volumes:
+      - evolution_instances:/evolution/instances
+    mem_limit: 512m
+    depends_on:
+      - evolution-postgres
+      - evolution-redis
+    networks:
+      - appnetwork
+
+  evolution-postgres:
+    image: postgres:16-alpine
+    profiles: ["whatsapp"]
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: evolution
+      POSTGRES_PASSWORD: ${EVOLUTION_DB_PASSWORD:-evolution}
+      POSTGRES_DB: evolution
+    volumes:
+      - evolution_postgres:/var/lib/postgresql/data
+    mem_limit: 256m
+    networks:
+      - appnetwork
+
+  evolution-redis:
+    image: redis:7-alpine
+    profiles: ["whatsapp"]
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - evolution_redis:/data
+    mem_limit: 128m
+    networks:
+      - appnetwork
+
 networks:
   appnetwork:
 
@@ -122,3 +187,6 @@ volumes:
   loki_data:
   prometheus_data:
   grafana_data:
+  evolution_instances:
+  evolution_postgres:
+  evolution_redis:
