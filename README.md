@@ -533,6 +533,8 @@ curl -X POST http://localhost:5001/service-orders \
 #### `PUT /service-orders/{id}`
 
 - Corpo: [`EditServiceOrderCommand`](#editserviceordercommand) (substitui todos os campos editáveis).
+  Com o bloco opcional `estimate`, também corrige situação, resposta do orçamento, resultado,
+  mensagem do orçamento e custo de compra da peça — correção manual, **sem** WhatsApp nem notificação.
 - `200`: envelope com [`ServiceOrderDto`](#serviceorderdto).
 
 #### `PUT /service-orders/{id}/estimate`
@@ -815,6 +817,17 @@ Textos são gravados em maiúsculas.
 | `inspectionDate`, `responseDate`, `repairDate`, `purchasePartDate`, `deliveryDate` | DateTime? | não | datas das etapas |
 | `partCost` | decimal | sim (≥ 0) | valor da peça cobrado |
 | `laborCost` | decimal | sim (≥ 0) | mão de obra |
+| `estimate` | objeto? | não | dados do orçamento (abaixo). Enviado → substitui todos; omitido → ficam como estão |
+
+`estimate`:
+
+| Campo | Tipo | Obrigatório | Descrição |
+|-------|------|-------------|-----------|
+| `serviceOrderStatus` | [`EServiceOrderStatus`](#eserviceorderstatus) | sim | situação ("Situação inválida.") |
+| `repairStatus` | [`ERepairStatus`](#erepairstatus) | sim | resposta do orçamento ("Resposta do orçamento inválida.") |
+| `repairResult` | [`ERepairResult`](#erepairresult)? | não | resultado; `null` deixa vazio |
+| `estimateMessage` | string? | não | mensagem do orçamento; vazio vira `null` |
+| `partPurchaseCost` | decimal | sim (≥ 0) | custo de compra da peça |
 
 #### `AddServiceOrderEstimateCommand`
 

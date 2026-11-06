@@ -66,6 +66,9 @@ export class ServiceOrderDetailsDialogComponent implements OnInit {
 
     protected readonly productOptions = enumOptions('product');
     protected readonly enterpriseOptions = enumOptions('enterprise');
+    protected readonly statusOptions = enumOptions('serviceOrderStatus');
+    protected readonly repairStatusOptions = enumOptions('repairStatus');
+    protected readonly repairResultOptions = enumOptions('repairResult');
     protected readonly maskPhone = maskPhone;
     protected readonly formatDocument = formatDocument;
 
@@ -88,6 +91,11 @@ export class ServiceOrderDetailsDialogComponent implements OnInit {
         purchasePartDate: [''],
         repairDate: [''],
         deliveryDate: [''],
+        serviceOrderStatus: [1],
+        repairStatus: [1],
+        repairResult: this._fb.control<number | null>(null),
+        estimateMessage: [''],
+        partPurchaseCost: [0, Validators.min(0)],
     });
 
     private _values = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
@@ -192,7 +200,8 @@ export class ServiceOrderDetailsDialogComponent implements OnInit {
     }
 
     private syncSelects() {
-        for (const control of [this.form.controls.type, this.form.controls.enterprise]) {
+        const c = this.form.controls;
+        for (const control of [c.type, c.enterprise, c.serviceOrderStatus, c.repairStatus, c.repairResult]) {
             if (this.editing()) {
                 control.enable({ emitEvent: false });
             } else {
@@ -229,6 +238,14 @@ export class ServiceOrderDetailsDialogComponent implements OnInit {
             guarantee: v.guarantee,
             partCost: Number(v.partCost) || 0,
             laborCost: Number(v.laborCost) || 0,
+            // Vendas não têm orçamento: os dados de orçamento só vão para OS de conserto.
+            estimate: this.isSale(order) ? undefined : {
+                serviceOrderStatus: v.serviceOrderStatus,
+                repairStatus: v.repairStatus,
+                repairResult: v.repairResult,
+                estimateMessage: v.estimateMessage.trim() || null,
+                partPurchaseCost: Number(v.partPurchaseCost) || 0,
+            },
         })
         .pipe(finalize(() => this.isSaving.set(false)))
         .subscribe({
@@ -280,6 +297,11 @@ export class ServiceOrderDetailsDialogComponent implements OnInit {
             purchasePartDate: toDateInput(order.purchasePartDate),
             repairDate: toDateInput(order.repairDate),
             deliveryDate: toDateInput(order.deliveryDate),
+            serviceOrderStatus: order.serviceOrderStatus,
+            repairStatus: order.repairStatus,
+            repairResult: order.repairResult ?? null,
+            estimateMessage: order.estimateMessage ?? '',
+            partPurchaseCost: order.partPurchaseCost ?? 0,
         });
     }
 }

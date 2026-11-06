@@ -117,16 +117,44 @@
               <div class="row">
                 <mat-form-field appearance="outline">
                   <mat-label>Situação</mat-label>
-                  <input matInput readonly [value]="o.serviceOrderStatus | enumLabel: 'serviceOrderStatus'" />
+                  <mat-select formControlName="serviceOrderStatus">
+                    @for (option of statusOptions; track option.value) {
+                      <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
                 </mat-form-field>
                 <mat-form-field appearance="outline">
+                  <mat-label>Resposta do orçamento</mat-label>
+                  <mat-select formControlName="repairStatus">
+                    @for (option of repairStatusOptions; track option.value) {
+                      <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div class="row">
+                <mat-form-field appearance="outline">
                   <mat-label>Resultado</mat-label>
-                  <input matInput readonly [value]="(o.repairResult | enumLabel: 'repairResult') || '—'" />
+                  <mat-select formControlName="repairResult" placeholder="—">
+                    <mat-option [value]="null">—</mat-option>
+                    @for (option of repairResultOptions; track option.value) {
+                      <mat-option [value]="option.value">{{ option.label }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Custo de compra da peça</mat-label>
+                  <span matTextPrefix>R$&nbsp;</span>
+                  <input matInput type="number" min="0" step="0.01" class="amount" formControlName="partPurchaseCost" [readonly]="!editing()" />
                 </mat-form-field>
               </div>
               <mat-form-field appearance="outline">
                 <mat-label>Solução</mat-label>
                 <textarea matInput formControlName="solution" [readonly]="!editing()" rows="2"></textarea>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Mensagem do orçamento</mat-label>
+                <textarea matInput formControlName="estimateMessage" [readonly]="!editing()" rows="3"></textarea>
               </mat-form-field>
             }
             <mat-form-field appearance="outline">

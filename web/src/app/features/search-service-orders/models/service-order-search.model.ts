@@ -43,4 +43,14 @@ export interface EditServiceOrder {
     guarantee: string;
     partCost: number;
     laborCost: number;
+    /** Dados do orçamento; quando enviado, substitui todos (só em OS de conserto). */
+    estimate?: EditServiceOrderEstimate;
+}
+
+export interface EditServiceOrderEstimate {
+    serviceOrderStatus: number;
+    repairStatus: number;
+    repairResult: number | null;
+    estimateMessage: string | null;
+    partPurchaseCost: number;
 }
