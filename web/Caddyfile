@@ -23,8 +23,11 @@
 		file_server
 	}
 
-	@static path *.js *.css *.woff2 *.png *.svg *.ico
+	# Arquivos do build com hash no nome: cache longo. Ícones têm nome fixo: cache de 1 dia.
+	@static path *.js *.css *.woff2
 	header @static Cache-Control "public, max-age=31536000, immutable"
+	@icons path /favicon.ico /site.webmanifest /img/*
+	header @icons Cache-Control "public, max-age=86400"
 	header /index.html Cache-Control "no-cache"
 }
 
