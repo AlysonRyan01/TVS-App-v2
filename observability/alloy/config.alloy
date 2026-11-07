@@ -88,8 +88,11 @@ prometheus.scrape "host" {
 
 // Containers: CPU e memória por container.
 prometheus.exporter.cadvisor "containers" {
-	docker_host = "unix:///var/run/docker.sock"
-	// Docker com o "containerd image store" (padrão em instalações novas): os containers são lidos pelo containerd.
+	// Docker com o "containerd image store" (Storage Driver: overlayfs, io.containerd.snapshotter.v1):
+	// o leitor "docker" do cAdvisor procura /var/lib/docker/image/overlayfs/layerdb, que não existe nesse modo,
+	// falha ("failed to identify the read-write layer ID") e descarta o container sem passar para o containerd.
+	// Apontar para um socket inexistente desliga o leitor docker e deixa o containerd ler os containers.
+	docker_host = "unix:///var/run/docker-disabled.sock"
 	containerd_host      = "/run/containerd/containerd.sock"
 	containerd_namespace = "moby"
 	docker_only          = true
