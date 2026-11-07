@@ -1,3 +1,5 @@
+using TVS_App.Application.Search;
+using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.Mappers;
 using TVS_App.Application.Requests.CustomerRequests.CustomerQueries;
@@ -11,25 +13,38 @@ public class CustomerQueryHandler : ICustomerQueryHandler
     public const int SearchLimit = 21;
 
     private readonly ICustomerQueryRepository _customerQueryRepository;
+    private readonly ICustomerSearchCache _searchCache;
 
-    public CustomerQueryHandler(ICustomerQueryRepository customerQueryRepository)
+    public CustomerQueryHandler(ICustomerQueryRepository customerQueryRepository, ICustomerSearchCache searchCache)
     {
         _customerQueryRepository = customerQueryRepository;
+        _searchCache = searchCache;
     }
 
-    public async Task<BaseResponse<List<CustomerDto>>> SearchByName(string name)
+    public async Task<BaseResponse<List<CustomerSearchItemDto>>> SearchByName(string name)
     {
-        if (string.IsNullOrWhiteSpace(name) || name.Trim().Length < 3)
-            return new BaseResponse<List<CustomerDto>>(null, 400, "Digite pelo menos 3 letras.");
+        var term = CustomerNameNormalizer.Normalize(name);
+        if (term.Length < 2)
+            return new BaseResponse<List<CustomerSearchItemDto>>(null, 400, "Digite pelo menos 2 letras.");
 
-        var customersResponse = await _customerQueryRepository.GetCustomerByName(name, SearchLimit);
+        var entries = await _searchCache.GetEntriesAsync();
 
-        if (!customersResponse.IsSuccess || customersResponse.Data == null)
-            return new BaseResponse<List<CustomerDto>>(null, customersResponse.Code, customersResponse.Message);
+        var found = entries
+            .Where(e => e.SearchKey.Contains(term, StringComparison.Ordinal))
+            .Take(SearchLimit)
+            .Select(e => new CustomerSearchItemDto(e.Id, e.Name, e.Phone))
+            .ToList();
 
-        var dto = CustomerMapper.MapToDtoList(customersResponse.Data);
+        return new BaseResponse<List<CustomerSearchItemDto>>(found, 200, "Clientes obtidos com sucesso!");
+    }
 
-        return new BaseResponse<List<CustomerDto>>(dto, 200, customersResponse.Message);
+    public async Task<BaseResponse<CustomerDto?>> GetById(long id)
+    {
+        var response = await _customerQueryRepository.GetByIdAsync(id);
+        if (!response.IsSuccess || response.Data is null)
+            return new BaseResponse<CustomerDto?>(null, response.Code, response.Message);
+
+        return new BaseResponse<CustomerDto?>(CustomerMapper.MapToDto(response.Data), 200, response.Message);
     }
 
     /// <summary>Grade de clientes: filtros combinados (nome, telefone, CPF/CNPJ), mais recentes primeiro.</summary>

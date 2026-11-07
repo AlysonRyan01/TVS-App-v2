@@ -1,3 +1,4 @@
+using TVS_App.Application.Interfaces.Services;
 using TVS_App.Application.DTOs;
 using TVS_App.Application.Mappers;
 using TVS_App.Application.Requests.CustomerRequests.CustomerCommands;
@@ -12,13 +13,16 @@ public class CustomerCommandHandler : ICustomerCommandHandler
 {
     private readonly ICustomerCommandRepository _customerCommandRepository;
     private readonly ICustomerQueryRepository _customerQueryRepository;
+    private readonly ICustomerSearchCache _customerSearchCache;
 
     public CustomerCommandHandler(
         ICustomerCommandRepository customerCommandRepository,
-        ICustomerQueryRepository customerQueryRepository)
+        ICustomerQueryRepository customerQueryRepository,
+        ICustomerSearchCache customerSearchCache)
     {
         _customerCommandRepository = customerCommandRepository;
         _customerQueryRepository = customerQueryRepository;
+        _customerSearchCache = customerSearchCache;
     }
 
     public async Task<BaseResponse<CustomerDto?>> Create(CreateCustomerCommand command)
@@ -42,6 +46,8 @@ public class CustomerCommandHandler : ICustomerCommandHandler
         var customer = new Customer(name, address, phone, phone2, email, document);
 
         await _customerCommandRepository.CreateAsync(customer);
+        // A busca de clientes (barra "Buscar cliente") vem de um índice em memória; invalida para a próxima busca ver a gravação.
+        _customerSearchCache.Invalidate();
             
         var dto = CustomerMapper.MapToDto(customer);
             
@@ -73,6 +79,8 @@ public class CustomerCommandHandler : ICustomerCommandHandler
         customer.UpdateDocument(normalized.Document);
 
         await _customerCommandRepository.UpdateAsync(customer);
+        // A busca de clientes (barra "Buscar cliente") vem de um índice em memória; invalida para a próxima busca ver a gravação.
+        _customerSearchCache.Invalidate();
             
         var dto = CustomerMapper.MapToDto(customer);
             

@@ -11,6 +11,7 @@ import { CustomerSearchComponent } from "../customer-search/customer-search.comp
 import { CustomerDialogComponent } from "../customer-dialog/customer-dialog.component";
 import { CustomerFormComponent } from "../customer-form/customer-form.component";
 import { Customer } from "../models/customer.model";
+import { CustomerSearchItem } from "../models/customer-search-item.model";
 import { formatDocument } from "../models/document";
 
 const DIALOG_OPTIONS = { width: '44rem', maxWidth: '95vw', autoFocus: 'first-tabbable' as const };
@@ -32,12 +33,32 @@ export class CustomerPickerComponent {
     readonly customer = model<Customer | null>(null);
 
     protected isSavingCustomer = signal(false);
+    protected isOpeningCustomer = signal(false);
     protected readonly formatDocument = formatDocument;
     protected readonly maskPhone = maskPhone;
 
     reset() {
         this.customer.set(null);
         this._search()?.clear();
+    }
+
+    /** A busca traz só id/nome/telefone; a ficha completa vem da API antes de abrir o diálogo. */
+    protected openFromSearch(item: CustomerSearchItem) {
+        if (this.isOpeningCustomer()) {
+            return;
+        }
+
+        this.isOpeningCustomer.set(true);
+        this._service.getCustomer(item.id)
+            .pipe(finalize(() => this.isOpeningCustomer.set(false)))
+            .subscribe({
+                next: result => {
+                    if (result.data) {
+                        this.openExisting(result.data);
+                    }
+                },
+                error: () => this._snackbar.error('Não foi possível abrir o cliente. Tente de novo.'),
+            });
     }
 
     protected openExisting(customer: Customer) {

@@ -131,4 +131,64 @@ public class ClientesTests : VerificationTestBase
         var ids = result.Data!.AsArray().Select(i => i!["id"]!.GetValue<long>()).ToList();
         Check.True("Rota antiga", ids.Contains(id), $"cliente {id}", string.Join(",", ids));
     }
+    private async Task<List<long>> QuickSearchAsync(string name)
+    {
+        var result = await Api.GetAsync($"/customers?name={Uri.EscapeDataString(name)}");
+        Check.Status($"Busca rápida ({name})", HttpStatusCode.OK, result);
+        return result.Data!.AsArray().Select(i => i!["id"]!.GetValue<long>()).ToList();
+    }
+
+    [TestMethod("Clientes: busca rápida vê cadastro e edição na hora (cache invalidado)")]
+    public async Task Busca_rapida_ve_cadastro_e_edicao()
+    {
+        var token = Token();
+        await QuickSearchAsync("aquecer cache"); // monta o índice em memória antes do cadastro
+
+        var id = await CreateAsync($"BUSCA {token} ÚNICA", "41900009999");
+
+        var aposCadastro = await QuickSearchAsync($"busca {token} unica".ToLower());
+        Check.True("Após cadastro", aposCadastro.FirstOrDefault() == id, $"cliente {id} no topo", string.Join(",", aposCadastro));
+
+        var update = await Api.PutAsync($"/customers/{id}", new
+        {
+            name = $"RENOMEADO {token}", phone = "41900009999", phone2 = "", email = "", document = (string?)null,
+            street = "RUA", number = "1", neighborhood = "CENTRO", city = "CAMPO LARGO", state = "PR", zipCode = "83600000"
+        });
+        Check.Status("Renomear", HttpStatusCode.OK, update);
+
+        var nomeNovo = await QuickSearchAsync($"renomeado {token}");
+        var nomeAntigo = await QuickSearchAsync($"busca {token}");
+        Check.True("Nome novo", nomeNovo.Contains(id), $"cliente {id}", string.Join(",", nomeNovo));
+        Check.True("Nome antigo", !nomeAntigo.Contains(id), "não incluir", string.Join(",", nomeAntigo));
+    }
+
+    [TestMethod("Clientes: busca rápida devolve só id, nome e telefone")]
+    public async Task Busca_rapida_formato()
+    {
+        var token = Token();
+        var id = await CreateAsync($"FORMATO {token}", "41900001212");
+
+        var result = await Api.GetAsync($"/customers?name=formato%20{token}");
+
+        Check.Status("Formato", HttpStatusCode.OK, result);
+        var item = result.Data!.AsArray().Single()!.AsObject();
+        Check.Equal("Formato (id)", id, item["id"]!.GetValue<long>());
+        Check.Equal("Formato (telefone)", "41900001212", item["phone"]!.GetValue<string>());
+        Check.Equal("Formato (campos)", "id,name,phone", string.Join(",", item.Select(p => p.Key).OrderBy(k => k)));
+    }
+
+    [TestMethod("Clientes: ficha completa por id")]
+    public async Task Ficha_por_id()
+    {
+        var token = Token();
+        var id = await CreateAsync($"FICHA {token}", "41900003434");
+
+        var result = await Api.GetAsync($"/customers/{id}");
+        var inexistente = await Api.GetAsync("/customers/999999999");
+
+        Check.Status("Ficha", HttpStatusCode.OK, result);
+        Check.Equal("Ficha (nome)", $"FICHA {token}", result.Data!["name"]!.GetValue<string>());
+        Check.Equal("Ficha (rua)", "RUA", result.Data!["street"]!.GetValue<string>());
+        Check.Status("Ficha inexistente", HttpStatusCode.NotFound, inexistente);
+    }
 }

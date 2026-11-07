@@ -1,3 +1,5 @@
+using TVS_App.Infrastructure.Caching;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using TVS_App.Application.Handlers.Customers;
 using System.IO.Compression;
 using System.Reflection;
@@ -72,6 +74,11 @@ public static class BuilderExtensions
         builder.Services.AddHostedService<WhatsAppNotificationWorker>();
         builder.Services.AddScoped<ICustomerCommandRepository, CustomerCommandRepository>();
         builder.Services.AddScoped<ICustomerQueryRepository, CustomerQueryRepository>();
+        // Busca de clientes (barra "Buscar cliente") em memória; invalidada ao criar/editar cliente.
+        builder.Services.AddMemoryCache();
+        builder.Services.TryAddSingleton(TimeProvider.System);
+        builder.Services.AddSingleton<ICustomerSearchSource, CustomerSearchSource>();
+        builder.Services.AddSingleton<ICustomerSearchCache, CustomerSearchCache>();
         builder.Services.AddScoped<IServiceOrderCommandRepository, ServiceOrderCommandRepository>();
         builder.Services.AddScoped<IServiceOrderQueryRepository, ServiceOrderQueryRepository>();
         builder.Services.AddScoped<INotificationCommandRepository, NotificationCommandRepository>();

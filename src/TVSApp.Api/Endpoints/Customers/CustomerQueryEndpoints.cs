@@ -19,6 +19,12 @@ public static class CustomerQueryEndpoints
             return result.ToResult();
         }).WithTags("Customer").RequireAuthorization();
 
+        app.MapGet("/customers/{id:long}", async (ICustomerQueryHandler handler, long id) =>
+        {
+            var result = await handler.GetById(id);
+            return result.ToResult();
+        }).WithTags("Customer").RequireAuthorization();
+
         app.MapGet("/customers/search", async (ICustomerQueryHandler handler, [AsParameters] CustomerSearchQuery query) =>
         {
             var result = await handler.Search(query);

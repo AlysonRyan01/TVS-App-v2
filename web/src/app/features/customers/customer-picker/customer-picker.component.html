@@ -14,7 +14,7 @@
     </div>
   </article>
 } @else {
-  <app-customer-search (selected)="openExisting($event)" (createNew)="useSearchTermAsName($event)" />
+  <app-customer-search (selected)="openFromSearch($event)" (createNew)="useSearchTermAsName($event)" />
 
   <form class="new-customer" (submit)="$event.preventDefault(); createCustomer()">
     <h3 class="section-title">Criar cliente</h3>

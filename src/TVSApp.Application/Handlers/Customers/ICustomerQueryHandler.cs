@@ -6,6 +6,8 @@ namespace TVS_App.Application.Handlers.Customers;
 
 public interface ICustomerQueryHandler
 {
-    Task<BaseResponse<List<CustomerDto>>> SearchByName(string name);
+    /// <summary>Barra "Buscar cliente": busca por nome no índice em memória (sem acento, mais recentes primeiro).</summary>
+    Task<BaseResponse<List<CustomerSearchItemDto>>> SearchByName(string name);
+    Task<BaseResponse<CustomerDto?>> GetById(long id);
     Task<BaseResponse<PaginatedResult<CustomerDto>>> Search(CustomerSearchQuery query);
 }

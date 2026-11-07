@@ -15,7 +15,7 @@
   </div>
 
   @if (term().trim().length > 0 && term().trim().length < minLetters) {
-    <p class="search-hint">Digite pelo menos 3 letras.</p>
+    <p class="search-hint">Digite pelo menos 2 letras.</p>
   } @else if (errorMessage()) {
     <p class="search-hint error">{{ errorMessage() }}</p>
   } @else if (searched()) {

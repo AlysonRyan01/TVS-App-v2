@@ -4,6 +4,7 @@ import { Observable } from "rxjs";
 import { BaseResponse } from "../../shared/models/base-response.interface";
 import { environment } from "../../../environments/environment";
 import { Customer, CustomerForm } from "./models/customer.model";
+import { CustomerSearchItem } from "./models/customer-search-item.model";
 import { Address } from "./models/address.model";
 import { CustomerSearchParams } from "./models/customer-search.model";
 import { PaginatedResult } from "../../shared/models/paginated-result.interface";
@@ -12,8 +13,14 @@ import { PaginatedResult } from "../../shared/models/paginated-result.interface"
 export class CustomersService {
     private _http = inject(HttpClient);
 
-    searchCustomers(name: string): Observable<BaseResponse<Customer[]>> {
-        return this._http.get<BaseResponse<Customer[]>>(`${environment.apiUrl}/customers`, { params: { name } });
+    /** Barra "Buscar cliente": resultado enxuto (id, nome, telefone). */
+    searchCustomers(name: string): Observable<BaseResponse<CustomerSearchItem[]>> {
+        return this._http.get<BaseResponse<CustomerSearchItem[]>>(`${environment.apiUrl}/customers`, { params: { name } });
+    }
+
+    /** Ficha completa do cliente. */
+    getCustomer(id: number): Observable<BaseResponse<Customer>> {
+        return this._http.get<BaseResponse<Customer>>(`${environment.apiUrl}/customers/${id}`);
     }
 
     /** Grade de clientes: filtros combinados, mais recentes primeiro, paginada. */

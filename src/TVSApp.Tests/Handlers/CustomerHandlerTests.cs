@@ -1,3 +1,4 @@
+using TVS_App.Application.DTOs;
 using TVS_App.Application.Exceptions;
 using TVS_App.Application.Handlers.Customers;
 using TVS_App.Application.Requests.CustomerRequests.CustomerCommands;
@@ -12,6 +13,7 @@ public class CustomerHandlerTests
 {
     private FakeCustomerQueryRepository _queryRepository = null!;
     private FakeCustomerCommandRepository _commandRepository = null!;
+    private FakeCustomerSearchCache _searchCache = null!;
     private CustomerQueryHandler _queryHandler = null!;
     private CustomerCommandHandler _commandHandler = null!;
 
@@ -20,8 +22,9 @@ public class CustomerHandlerTests
     {
         _queryRepository = new FakeCustomerQueryRepository();
         _commandRepository = new FakeCustomerCommandRepository();
-        _queryHandler = new CustomerQueryHandler(_queryRepository);
-        _commandHandler = new CustomerCommandHandler(_commandRepository, _queryRepository);
+        _searchCache = new FakeCustomerSearchCache();
+        _queryHandler = new CustomerQueryHandler(_queryRepository, _searchCache);
+        _commandHandler = new CustomerCommandHandler(_commandRepository, _queryRepository, _searchCache);
     }
 
     private static CreateCustomerCommand NewCustomer(string name = "maria souza", string phone = "41999990000", string? document = null)
@@ -31,26 +34,109 @@ public class CustomerHandlerTests
         => new(id, "João da Silva", "Rua A", "Centro", "Curitiba", "10", "80000000", "PR", phone, "", "", null);
 
     [TestMethod]
-    public async Task SearchByName_LessThanThreeLetters_Returns400()
+    [DataRow("jo")]
+    [DataRow("  jo   ")]
+    [DataRow("")]
+    public async Task SearchByName_LessThanThreeLetters_Returns400WithoutReadingCache(string term)
     {
-        var result = await _queryHandler.SearchByName("jo");
+        var result = await _queryHandler.SearchByName(term);
 
         Assert.AreEqual(400, result.Code);
         Assert.AreEqual("Digite pelo menos 3 letras.", result.Message);
-        Assert.IsNull(_queryRepository.LastLimit);
+        Assert.AreEqual(0, _searchCache.GetEntriesCalls);
     }
 
     [TestMethod]
-    public async Task SearchByName_ValidTerm_AsksFor21AndMapsCustomers()
+    public async Task SearchByName_IgnoresAccentsAndCase_KeepsOriginalName()
     {
-        _queryRepository.Customers.Add(ServiceOrderFactory.Create().Customer);
+        _searchCache.Add(1, "JOSÉ CONCEIÇÃO", "41999990000").Add(2, "MARIA SOUZA");
 
-        var result = await _queryHandler.SearchByName("joão");
+        var result = await _queryHandler.SearchByName("jose conceicao");
 
         Assert.AreEqual(200, result.Code);
-        Assert.AreEqual(21, _queryRepository.LastLimit);
         Assert.AreEqual(1, result.Data!.Count);
-        Assert.AreEqual("JOÃO DA SILVA", result.Data[0].Name);
+        Assert.AreEqual(new CustomerSearchItemDto(1, "JOSÉ CONCEIÇÃO", "41999990000"), result.Data[0]);
+    }
+
+    [TestMethod]
+    public async Task SearchByName_ReturnsAtMost21_MostRecentFirst()
+    {
+        for (var i = 1; i <= 30; i++)
+            _searchCache.Add(i, $"CLIENTE SILVA {i}");
+
+        var result = await _queryHandler.SearchByName("silva");
+
+        Assert.AreEqual(CustomerQueryHandler.SearchLimit, result.Data!.Count);
+        Assert.AreEqual(30, result.Data[0].Id);
+        Assert.AreEqual(10, result.Data[^1].Id);
+    }
+
+    [TestMethod]
+    public async Task SearchByName_MatchesInTheMiddleOfTheName()
+    {
+        _searchCache.Add(5, "MARIA APARECIDA");
+
+        var result = await _queryHandler.SearchByName("recid");
+
+        Assert.AreEqual(5, result.Data!.Single().Id);
+    }
+
+    [TestMethod]
+    public async Task SearchByName_NoMatch_Returns200AndEmptyList()
+    {
+        _searchCache.Add(1, "JOAO");
+
+        var result = await _queryHandler.SearchByName("pedro");
+
+        Assert.AreEqual(200, result.Code);
+        Assert.AreEqual(0, result.Data!.Count);
+    }
+
+    [TestMethod]
+    public async Task SearchByName_WildcardCharactersAreLiteral()
+    {
+        _searchCache.Add(1, "JOAO").Add(2, "LOJA 100% OFF");
+
+        var result = await _queryHandler.SearchByName("%%%");
+
+        Assert.AreEqual(0, result.Data!.Count);
+        Assert.AreEqual(2, (await _queryHandler.SearchByName("100%")).Data!.Single().Id);
+    }
+
+    [TestMethod]
+    public async Task SearchByName_CopiesPhone_EmptyStaysEmpty()
+    {
+        _searchCache.Add(1, "ANA SEM FONE").Add(2, "ANA COM FONE", "41988887777");
+
+        var result = await _queryHandler.SearchByName("ana");
+
+        Assert.AreEqual("41988887777", result.Data![0].Phone);
+        Assert.AreEqual(string.Empty, result.Data[1].Phone);
+    }
+
+    [TestMethod]
+    public async Task GetById_Existing_ReturnsFullCustomer()
+    {
+        var customer = ServiceOrderFactory.Create().Customer;
+        _queryRepository.Customers.Add(customer);
+
+        var result = await _queryHandler.GetById(customer.Id);
+
+        Assert.AreEqual(200, result.Code);
+        Assert.AreEqual(customer.Id, result.Data!.Id);
+        Assert.AreEqual(customer.Name.CustomerName, result.Data.Name);
+        Assert.AreEqual(customer.Address.Street, result.Data.Street);
+        Assert.AreEqual(customer.Phone.CustomerPhone, result.Data.Phone);
+    }
+
+    [TestMethod]
+    public async Task GetById_NotFound_Returns404()
+    {
+        var result = await _queryHandler.GetById(999);
+
+        Assert.AreEqual(404, result.Code);
+        Assert.IsNull(result.Data);
+        Assert.AreEqual("Cliente não encontrado.", result.Message);
     }
 
     [TestMethod]
@@ -102,6 +188,65 @@ public class CustomerHandlerTests
     }
 
     [TestMethod]
+    public async Task Create_Valid_InvalidatesSearchCache()
+    {
+        await _commandHandler.Create(NewCustomer());
+
+        Assert.AreEqual(1, _searchCache.InvalidateCalls);
+    }
+
+    [TestMethod]
+    public async Task Create_Invalid_DoesNotInvalidateSearchCache()
+    {
+        await Assert.ThrowsExceptionAsync<CommandException<CreateCustomerCommand>>(
+            () => _commandHandler.Create(NewCustomer(name: " ")));
+
+        Assert.AreEqual(0, _searchCache.InvalidateCalls);
+    }
+
+    [TestMethod]
+    public async Task Create_RepositoryThrows_DoesNotInvalidateSearchCache()
+    {
+        _commandRepository.ThrowOnWrite = new InvalidOperationException("banco fora");
+
+        await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => _commandHandler.Create(NewCustomer()));
+
+        Assert.AreEqual(0, _searchCache.InvalidateCalls);
+    }
+
+    [TestMethod]
+    public async Task Update_Existing_InvalidatesSearchCache()
+    {
+        var customer = ServiceOrderFactory.Create().Customer;
+        _queryRepository.Customers.Add(customer);
+
+        await _commandHandler.Update(customer.Id, ExistingCustomer(0, "41911112222"));
+
+        Assert.AreEqual(1, _searchCache.InvalidateCalls);
+    }
+
+    [TestMethod]
+    public async Task Update_NotFound_DoesNotInvalidateSearchCache()
+    {
+        await _commandHandler.Update(99, ExistingCustomer(0, "41911112222"));
+
+        Assert.AreEqual(0, _searchCache.InvalidateCalls);
+    }
+
+    [TestMethod]
+    public async Task Update_RepositoryThrows_DoesNotInvalidateSearchCache()
+    {
+        var customer = ServiceOrderFactory.Create().Customer;
+        _queryRepository.Customers.Add(customer);
+        _commandRepository.ThrowOnWrite = new InvalidOperationException("banco fora");
+
+        await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+            () => _commandHandler.Update(customer.Id, ExistingCustomer(0, "41911112222")));
+
+        Assert.AreEqual(0, _searchCache.InvalidateCalls);
+    }
+
+    [TestMethod]
     public async Task Update_NotFound_Returns404()
     {
         var result = await _commandHandler.Update(99, ExistingCustomer(0, "41911112222"));
@@ -136,7 +281,7 @@ public class CustomerSearchHandlerTests
     public void Setup()
     {
         _repository = new FakeCustomerQueryRepository();
-        _handler = new CustomerQueryHandler(_repository);
+        _handler = new CustomerQueryHandler(_repository, new FakeCustomerSearchCache());
     }
 
     private static TVS_App.Application.Requests.CustomerRequests.CustomerQueries.CustomerSearchQuery Query(

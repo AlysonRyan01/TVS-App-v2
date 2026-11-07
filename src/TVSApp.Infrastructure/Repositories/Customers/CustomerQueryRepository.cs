@@ -29,23 +29,6 @@ public class CustomerQueryRepository : ICustomerQueryRepository
         return new BaseResponse<Customer?>(customer, 200, "Cliente recuperado com sucesso!"); 
     }
 
-    public async Task<BaseResponse<List<Customer>>> GetCustomerByName(string name, int limit)
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            return new BaseResponse<List<Customer>>(new List<Customer>(), 400, "O nome não pode ser vazio.");
-        
-        var searchTerm = name.Trim().ToUpper();
-
-        var customers = await _context.Customers
-            .AsNoTracking()
-            .Where(c => c.Name.CustomerName.Contains(searchTerm))
-            .OrderByDescending(c => c.Id)
-            .Take(limit)
-            .ToListAsync();
-
-        return new BaseResponse<List<Customer>>(customers, 200, "Clientes obtidos com sucesso!");
-    }
-
     public async Task<BaseResponse<PaginatedResult<Customer>>> SearchAsync(CustomerSearchFilter filter, int pageNumber, int pageSize)
     {
         var query = _context.Customers.AsNoTracking().AsQueryable();

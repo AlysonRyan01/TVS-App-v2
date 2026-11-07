@@ -5,11 +5,11 @@ import { MatButtonModule } from "@angular/material/button";
 import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
 import { debounceTime, distinctUntilChanged, finalize, Subject, switchMap, of, catchError } from "rxjs";
 import { CustomersService } from "../customers.service";
-import { Customer } from "../models/customer.model";
+import { CustomerSearchItem } from "../models/customer-search-item.model";
 import { maskPhone } from "../../../shared/masks/masks";
 
 const VISIBLE_RESULTS = 20;
-const MIN_LETTERS = 3;
+const MIN_LETTERS = 2;
 
 @Component({
     selector: 'app-customer-search',
@@ -22,12 +22,12 @@ export class CustomerSearchComponent implements OnInit {
     private _destroyRef = inject(DestroyRef);
     private _terms = new Subject<string>();
 
-    selected = output<Customer>();
+    selected = output<CustomerSearchItem>();
     createNew = output<string>();
     allowCreate = input(true);
 
     protected term = signal('');
-    protected results = signal<Customer[]>([]);
+    protected results = signal<CustomerSearchItem[]>([]);
     protected hasMore = signal(false);
     protected isSearching = signal(false);
     protected searched = signal(false);
@@ -38,7 +38,6 @@ export class CustomerSearchComponent implements OnInit {
 
     ngOnInit(): void {
         this._terms.pipe(
-            debounceTime(300),
             distinctUntilChanged(),
             switchMap(term => {
                 if (term.trim().length < MIN_LETTERS) {

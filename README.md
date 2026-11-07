@@ -392,6 +392,7 @@ curl -b cookies.txt -X POST https://SEU_DOMINIO/api/auth/refresh
 | Método | Rota | Login | Descrição | Tempo real | Evento |
 |--------|------|-------|-----------|------------|--------|
 | `GET` | `/customers` | Sim | Busca rápida pelo nome (lista simples, usada ao escolher o cliente da OS/venda) | — | — |
+| `GET` | `/customers/{id}` | Sim | Ficha completa do cliente (aberta ao escolher um resultado da busca rápida) | — | — |
 | `GET` | `/customers/search` | Sim | Grade de clientes: filtros combinados e paginação (tela **Clientes**) | — | — |
 | `POST` | `/customers` | Sim | Cadastra cliente | Sim | `customer.created` |
 | `PUT` | `/customers/{id}` | Sim | Atualiza cliente | Sim | `customer.updated` |
@@ -399,8 +400,18 @@ curl -b cookies.txt -X POST https://SEU_DOMINIO/api/auth/refresh
 
 #### `GET /customers?name={nome}`
 
-- Query: `name` (obrigatório) — parte do nome.
-- `200`: envelope com lista de [`CustomerDto`](#customerdto).
+- Query: `name` (obrigatório) — parte do nome; sem diferenciar maiúsculas **nem acentos**.
+- Respondida por um **índice em memória** (todos os clientes: id, nome, telefone), sem consultar o banco
+  a cada busca. O índice é montado na primeira busca, expira em 1 hora e é **invalidado a cada
+  cadastro/edição de cliente** — a busca seguinte já vê a gravação.
+- `200`: envelope com até 21 itens `{ id, name, phone }`, cadastrados por último primeiro (a tela mostra
+  20; o 21º indica "Refine a busca para ver mais").
+- `400`: "Digite pelo menos 3 letras.".
+
+#### `GET /customers/{id}`
+
+- `200`: envelope com o [`CustomerDto`](#customerdto) completo.
+- `404`: "O cliente com id:{id} não existe".
 
 #### `GET /customers/search`
 
