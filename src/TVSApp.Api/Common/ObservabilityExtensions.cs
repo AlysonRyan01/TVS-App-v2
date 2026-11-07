@@ -11,6 +11,7 @@ namespace TVS_App.Api.Common;
 public static class ObservabilityExtensions
 {
     private const string PrometheusPath = "/internal/metrics";
+    private const string SignalRHubPath = "/osHub";
     private static readonly HashSet<string> IgnoredPaths = ["/", PrometheusPath];
 
     public static void AddObservability(this WebApplicationBuilder builder)
@@ -53,6 +54,8 @@ public static class ObservabilityExtensions
             options.GetLevel = (context, _, exception) =>
                 IgnoredPaths.Contains(context.Request.Path.Value ?? string.Empty) ? LogEventLevel.Verbose
                 : exception is not null || context.Response.StatusCode >= 500 ? LogEventLevel.Error
+                // SignalR (/osHub, /osHub/negotiate): conexões frequentes e longas, só poluem o log.
+                : context.Request.Path.StartsWithSegments(SignalRHubPath) ? LogEventLevel.Verbose
                 : LogEventLevel.Information;
             options.GetMessageTemplateProperties = (context, requestPath, elapsed, statusCode) =>
             [
