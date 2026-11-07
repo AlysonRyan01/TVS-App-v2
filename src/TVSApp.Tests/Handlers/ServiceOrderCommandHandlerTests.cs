@@ -675,6 +675,7 @@ public class ServiceOrderCommandHandlerTests
 
         var message = _whatsAppQueue.Enqueued.Single() as SendProductSaleMessageRequest;
         Assert.IsNotNull(message);
+        Assert.AreEqual("1", message.ServiceOrder);
         Assert.AreEqual("JOÃO DA SILVA", message.CustomerName);
         Assert.AreEqual("41999999999", message.PhoneNumber);
         Assert.AreEqual(1499.90m, message.Amount);

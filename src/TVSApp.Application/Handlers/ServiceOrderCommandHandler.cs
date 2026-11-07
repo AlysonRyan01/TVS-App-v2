@@ -286,6 +286,7 @@ public class ServiceOrderCommandHandler : IServiceOrderCommandHandler
             return new BaseResponse<CreatedServiceOrderPdf>(null, 500, createPdf.Message);
 
         _whatsAppQueue.Enqueue(new SendProductSaleMessageRequest(
+            serviceOrder.Id.ToString(),
             serviceOrder.Customer.Name.CustomerName,
             serviceOrder.Customer.Phone.CustomerPhone,
             serviceOrder.PartCost.ServiceOrderPartCost,
